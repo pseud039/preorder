@@ -1,18 +1,60 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary: #F1623A;
+  --secondary: #ffffff;
+  --accent1: #FFF4E7;
+  --secondary_text: #000000;
+  --primary-text:#333333;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  * {
+  box-sizing: border-box;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent1);
+  --color-primary-text: var(--primary-text);
+  --color-secondary-text:var(--secondary-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+.btn-primary{
+  color: var(--primary);
+  background-color: var(--secondary);
+  border-radius: 50px;
+  border: 1px solid var(--primary);
+  padding:10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+}
+.btn-primary:hover{
+  color: var(--secondary);
+background-color: var(--primary);
+cursor: pointer;
+
+}
+
+.btn-secondary{
+  text-align: center;
+color: var(--secondary);
+background-color: var(--primary);
+border-radius: 50px;
+border: 1px solid var(--primary);
+padding: 1px;
+
+}
+
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
@@ -23,4 +65,4 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-}
+} */
