@@ -1,0 +1,36 @@
+"use client";
+import Image from "next/image";
+import getStarted from "@/public/get-Started.png";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+export default function GetStartedPage() {
+  const router = useRouter();
+
+  return (
+    <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 flex flex-col justify-center items-center px-6 py-8 gap-6">
+      <Image 
+        height={300} 
+        width={300} 
+        alt="get-Started illustration" 
+        src={getStarted}
+        priority
+      />
+      
+      <div className="text-center space-y-2">
+        <h1 className="font-bold text-primary-text text-2xl">
+          Thinking About What to Eat?
+        </h1>
+        <p className="text-secondary-text">
+          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Modi dolore
+          facilis laudantium omnis libero nostrum eius distinctio itaque odit
+          deserunt
+        </p>
+      </div>
+      
+      <div className="flex flex-col gap-4 w-full max-w-xs">
+        <button className="btn-secondary " onClick={()=> router.push("/login")}>Log In</button>
+        <button className="btn-secondary" onClick={()=>router.push("/signup")}>Sign Up</button>
+      </div>
+    </div>
+  );
+}

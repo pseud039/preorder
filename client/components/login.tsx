@@ -1,7 +1,6 @@
-// import LoginPage from "@/components/signUp"
+"use client";
 export default function loginPage(){
     return(
         <main>Hii</main>
-        // <LoginPage/>
     )
 }

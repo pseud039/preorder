@@ -1,27 +1,32 @@
 "use client";
-import React, { useState } from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingSlides() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const router = useRouter();
 
   const slides = [
     {
       image: "/onboardingslide1.png",
       title: "Order whatever you want to eat",
-      description: "Order delicious food from your favorite restaurants with just a few taps",
+      description:
+        "Order delicious food from your favorite restaurants with just a few taps",
     },
     {
       image: "/onboardingslide2.png",
       title: "Choose according to your preferred time slot",
-      description: "Select your preferred pickup or delivery time slot that fits your schedule",
+      description:
+        "Select your preferred pickup or delivery time slot that fits your schedule",
     },
     {
       image: "/onboardingslide3.png",
       title: "Let's end your cravings",
-      description: "Get your food delivered fresh and hot right without any hassle",
+      description:
+        "Get your food delivered fresh and hot right without any hassle",
     },
   ];
 
@@ -42,7 +47,9 @@ export default function OnboardingSlides() {
   };
 
   const handleGetStarted = () => {
-    // window.location.href = '/(auth)/login';
+    // window.location.href = "/login";
+    router.push("/get-started");
+
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -71,7 +78,7 @@ export default function OnboardingSlides() {
           alt={slides[currentSlide].title}
           className="w-full h-full object-cover"
         />
-        </div>
+      </div>
 
       {/* Skip Button */}
       {currentSlide < slides.length - 1 && (
@@ -113,8 +120,8 @@ export default function OnboardingSlides() {
                 onClick={() => setCurrentSlide(index)}
                 className={`h-1 w-8 transition-all duration-300 ${
                   index === currentSlide
-                    ? 'w-16 bg-orange-500'
-                    : 'w-2 bg-gray-300 hover:bg-gray-400'
+                    ? "w-16 bg-orange-500"
+                    : "w-2 bg-gray-300 hover:bg-gray-400"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
@@ -122,16 +129,18 @@ export default function OnboardingSlides() {
           </div>
 
           {/* Navigation Button */}
-          {currentSlide === slides.length - 1 ?(
+          {currentSlide === slides.length - 1 ? (
             <button
               onClick={handleGetStarted}
-            //   className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
-            className='btn-primary'
+              //   className="w-full bg-primary hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+              className="btn-primary"
             >
               Get Started
               <ChevronRight size={20} />
             </button>
-          ):(<div className='pb-2'></div>)}
+          ) : (
+            <div className="pb-2"></div>
+          )}
         </div>
       </div>
     </div>
