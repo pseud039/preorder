@@ -170,7 +170,7 @@ export default function LoginPage() {
           </button>
           <div className="flex flex-row justify-center items-center gap-1">
           <span className="text-center text-sm text-gray-600">
-            Don't have an account? </span>
+            Don{`&apos;`}t have an account? </span>
             <button
               type="button"
               onClick={() => router.push("/signup")}
