@@ -1,6 +1,4 @@
-import SignUpPage from "@/components/signUp"
-export default function loginPage(){
-    return(
-        <SignUpPage/>
-    )
+import SignUpPage from "@/components/signUp";
+export default function loginPage() {
+  return <SignUpPage />
 }

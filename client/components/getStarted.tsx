@@ -8,14 +8,13 @@ export default function GetStartedPage() {
 
   return (
     <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 flex flex-col justify-center items-center px-6 py-8 gap-6">
-      <Image 
-        height={300} 
-        width={300} 
-        alt="get-Started illustration" 
+      <Image
+        height={250}
+        width={250}
+        alt="get-Started illustration"
         src={getStarted}
-        priority
       />
-      
+
       <div className="text-center space-y-2">
         <h1 className="font-bold text-primary-text text-2xl">
           Thinking About What to Eat?
@@ -26,10 +25,20 @@ export default function GetStartedPage() {
           deserunt
         </p>
       </div>
-      
-      <div className="flex flex-col gap-4 w-full max-w-xs">
-        <button className="btn-secondary " onClick={()=> router.push("/login")}>Log In</button>
-        <button className="btn-secondary" onClick={()=>router.push("/signup")}>Sign Up</button>
+
+      <div className="flex flex-col gap-4 w-1/2 max-w-xs">
+        <button
+          className="btn-secondary "
+          onClick={() => router.push("/login")}
+        >
+          Log In
+        </button>
+        <button
+          className="btn-secondary"
+          onClick={() => router.push("/signup")}
+        >
+          Sign Up
+        </button>
       </div>
     </div>
   );

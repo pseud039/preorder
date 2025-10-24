@@ -49,7 +49,6 @@ export default function OnboardingSlides() {
   const handleGetStarted = () => {
     // window.location.href = "/login";
     router.push("/get-started");
-
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {

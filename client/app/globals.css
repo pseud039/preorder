@@ -52,7 +52,7 @@
   padding: 10px 20px 10px 20px;
 }
 
-.btn-secondary:hover{
- border: 5px double var(--accent1); 
-   cursor: pointer;
+.btn-secondary:hover {
+  border: 5px double var(--accent1);
+  cursor: pointer;
 }
