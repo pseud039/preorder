@@ -144,4 +144,4 @@ dist
 trial.js
 # End of https://www.toptal.com/developers/gitignore/api/node
 
-/lib/generated/prisma
+/server/lib/generated/prisma
