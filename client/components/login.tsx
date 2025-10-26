@@ -96,7 +96,7 @@ export default function LoginPage() {
 
       // Redirect after successful login
       setTimeout(() => {
-        router.push("/dashboard"); // or wherever you want to redirect
+        router.push("/home"); // or wherever you want to redirect
       }, 1000);
     } catch (error) {
       console.error("Login error:", error);

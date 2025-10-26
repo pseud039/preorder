@@ -20,7 +20,7 @@ export default function Navbar() {
     } else if (page === "orders") {
       router.push("/orders");
     } else {
-      router.push("/dashboard");
+      router.push("/home");
     }
   }, [page]);
   const Navigations = {
