@@ -84,27 +84,31 @@ export default function SignUpPage() {
 
     setIsSubmitting(true);
     try {
-      //API call here
-      // const response = await fetch("/api/signup", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     email: formData.email,
-      //     password: formData.password,
-      //   }),
-      // });
+      // API call here
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/signUp`,
+        {
+          // const response = await fetch(`http://localhost:8000/signUp`,{
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
 
-      // const data = await response.json();
+      const data = await response.json();
 
-      // if (!response.ok) {
-      //   // Show toast for API errors
-      //   if (response.status === 409) {
-      //     toast.error("Email already exists");
-      //   } else {
-      //     toast.error(data.message || "Something went wrong");
-      //   }
-      //   return;
-      // }
+      if (!response.ok) {
+        // Show toast for API errors
+        if (response.status === 409) {
+          toast.error("Email already exists");
+        } else {
+          toast.error(data.message || "Something went wrong");
+        }
+        return;
+      }
 
       // Success toast
       toast.success("Account created successfully!");
@@ -207,7 +211,7 @@ export default function SignUpPage() {
             </span>
             <button
               type="button"
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/auth/login")}
               className="text-orange-500 font-semibold hover:underline cursor-pointer"
               disabled={isSubmitting}
             >

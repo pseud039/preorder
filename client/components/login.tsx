@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -70,7 +70,8 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       // API call here
-      const response = await fetch("/api/login", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        // const response = await fetch(`http://localhost:8000/signUp`,{
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,8 +84,8 @@ export default function LoginPage() {
 
       if (!response.ok) {
         // Show toast for API errors
-        if (response.status === 401) {
-          toast.error("Invalid email or password");
+        if (response.status === 409) {
+          toast.error("Email already exists");
         } else {
           toast.error(data.message || "Something went wrong");
         }
@@ -92,11 +93,11 @@ export default function LoginPage() {
       }
 
       // Success toast
-      toast.success("Login successful!");
+      toast.success("Logged In successfully!");
 
-      // Redirect after successful login
+      // Redirect after successful signup
       setTimeout(() => {
-        router.push("/home"); // or wherever you want to redirect
+        router.push("/dashboard");
       }, 1000);
     } catch (error) {
       console.error("Login error:", error);
@@ -107,14 +108,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 flex flex-col items-center px-6 py-8">
-      <div className="w-full max-w-sm space-y-6 mt-12">
+    <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 flex flex-col justify-center items-center px-6 py-8">
+      <div className="w-full max-w-sm space-y-6">
         <div className="flex justify-center">
           <Image
             height={250}
             width={250}
             src={login}
-            alt="Sign in illustration"
+            alt="LogIn illustration"
             priority
             className="object-contain"
           />
@@ -158,26 +159,25 @@ export default function LoginPage() {
               )}
             </div>
           </div>
-          <div className="text-primary flex justify-end hover:text-red-600 hover:cursor-pointer">
-            Forgot Password?
-          </div>
+
           <button
             type="submit"
             disabled={isSubmitting}
             className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Logging in" : "Log In"}
+            {isSubmitting ? "Signing up" : "Sign Up"}
           </button>
           <div className="flex flex-row justify-center items-center gap-1">
-          <span className="text-center text-sm text-gray-600">
-            Don{`&apos;`}t have an account? </span>
+            <span className="text-center text-sm text-primary-text/60">
+              Forgot Password?
+            </span>
             <button
               type="button"
-              onClick={() => router.push("/signup")}
-              className="text-orange-500 font-semibold hover:underline"
+              onClick={() => router.push("/login")}
+              className="text-orange-500 font-semibold hover:underline cursor-pointer"
               disabled={isSubmitting}
             >
-              Sign Up
+              SignUp
             </button>
           </div>
         </form>

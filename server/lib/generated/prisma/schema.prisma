@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  address       String?
+  contactNumber String?
+  imageUrl      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  admins    RestaurantAdmin[]
+  menuItems MenuItem[]
+  orders    Order[]
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(customer)
+  name         String? // optional until first order
+  phone        String? // required only when ordering
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  adminOf       RestaurantAdmin[]
+  orders        Order[]
+  refreshTokens RefreshToken[]
+}
+
+model RestaurantAdmin {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  restaurantId Int
+  assignedAt   DateTime @default(now())
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id])
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@unique([userId, restaurantId]) // prevent duplicate admin entries
+}
+
+model MenuItem {
+  id           Int      @id @default(autoincrement())
+  restaurantId Int
+  name         String
+  description  String?
+  price        Decimal  @db.Decimal(10, 2)
+  imageUrl     String?
+  category     String?
+  isAvailable  Boolean  @default(true)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id])
+  orderItems OrderItem[]
+
+  @@unique([restaurantId, name])
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  restaurantId  Int
+  status        OrderStatus   @default(Waiting)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  timeSlotId    Int?
+  paymentStatus PaymentStatus @default(pending)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  user       User        @relation(fields: [userId], references: [id])
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id])
+  timeSlot   TimeSlot?   @relation(fields: [timeSlotId], references: [id])
+  orderItems OrderItem[]
+  payment    Payment?
+
+  @@index([userId, status])
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    Int
+  menuItemId Int
+  quantity   Int
+  price      Decimal @db.Decimal(10, 2)
+
+  // Relations
+  order    Order    @relation(fields: [orderId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model Payment {
+  id               Int           @id @default(autoincrement())
+  orderId          Int           @unique
+  paymentGateway   String?
+  paymentReference String?
+  amount           Decimal       @db.Decimal(10, 2)
+  status           PaymentStatus
+  createdAt        DateTime      @default(now())
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model TimeSlot {
+  id          Int      @id @default(autoincrement())
+  slotStart   DateTime
+  slotEnd     DateTime
+  isAvailable Boolean  @default(true)
+
+  // Relations
+  orders Order[]
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  admin
+  customer
+}
+
+enum OrderStatus {
+  Waiting
+  Finished
+  Delivered
+  Cancelled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}

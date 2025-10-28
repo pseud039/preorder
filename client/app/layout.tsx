@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono,Inter,Roboto, Poppins } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Roboto, Poppins } from "next/font/google";
 import "./globals.css";
+import { usePathname } from "next/navigation";
+import Onboardingpage1 from "@/components/splashScreen";
 
 // import LoadWS from "./loadws";
 const APP_NAME = "Predine";
@@ -49,13 +51,13 @@ export const metadata: Metadata = {
 // });
 const roboto = Roboto({
   variable: "--font-roboto",
-  subsets: ['latin'],
-})
+  subsets: ["latin"],
+});
 const poppins = Poppins({
-  weight:"200",
+  weight: "200",
   variable: "--font-poppins",
-  subsets: ['latin'],
-})
+  subsets: ["latin"],
+});
 const InterSans = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -71,11 +73,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // const pathname = usePathname();
+  // const isHome = pathname ==="/";
+  // const[isLoading, setIsLoading] = useState();
+
   return (
     <html lang="en">
       <body
         className={`${roboto.variable} ${poppins.variable} ${InterSans.variable} antialiased`}
       >
+        <Onboardingpage1 />
         {children}
       </body>
     </html>
