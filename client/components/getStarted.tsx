@@ -26,7 +26,7 @@ export default function GetStartedPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 w-1/2 max-w-xs">
+      <div className="flex flex-col gap-4 w-full max-w-xs">
         <button
           className="btn-secondary "
           onClick={() => router.push("/auth/login")}

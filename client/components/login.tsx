@@ -24,7 +24,6 @@ export default function SignUpPage() {
       [name]: value,
     }));
 
-    // Clear error when user starts typing
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({
         ...prev,
@@ -40,7 +39,6 @@ export default function SignUpPage() {
     };
     let isValid = true;
 
-    // Email validation
     if (!formData.email) {
       newErrors.email = "Email is required";
       isValid = false;
@@ -49,7 +47,6 @@ export default function SignUpPage() {
       isValid = false;
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
       isValid = false;
@@ -62,14 +59,12 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate form
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // API call here
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         // const response = await fetch(`http://localhost:8000/signUp`,{
         method: "POST",
@@ -83,7 +78,6 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Show toast for API errors
         if (response.status === 409) {
           toast.error("Email already exists");
         } else {
@@ -92,10 +86,8 @@ export default function SignUpPage() {
         return;
       }
 
-      // Success toast
       toast.success("Logged In successfully!");
 
-      // Redirect after successful signup
       setTimeout(() => {
         router.push("/dashboard");
       }, 1000);
@@ -165,7 +157,7 @@ export default function SignUpPage() {
             disabled={isSubmitting}
             className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Signing up" : "Sign Up"}
+            {isSubmitting ? "LogIn" : "LogIn"}
           </button>
           <div className="flex flex-row justify-center items-center gap-1">
             <span className="text-center text-sm text-primary-text/60">

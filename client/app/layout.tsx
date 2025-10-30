@@ -80,7 +80,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.variable} ${poppins.variable} ${InterSans.variable} antialiased`}
+        className={`${poppins.variable}  antialiased`}
       >
         <Onboardingpage1 />
         {children}

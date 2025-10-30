@@ -7,7 +7,6 @@ export default function Onboardingpage1() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Hide splash after 2 seconds (or when your app is ready)
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);

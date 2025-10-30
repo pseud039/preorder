@@ -23,23 +23,34 @@ model Restaurant {
   admins        RestaurantAdmin[]
   menuItems     MenuItem[]
   orders        Order[]
+  
+  @@index([isActive])
 }
 
 model User {
-  id             Int        @id @default(autoincrement())
-  email          String     @unique
-  passwordHash   String
-  role           Role       @default(customer)
-  name           String?    // optional until first order
-  phone          String?    // required only when ordering
-  isActive       Boolean    @default(true)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id                  Int                   @id @default(autoincrement())
+  email               String                @unique
+  passwordHash        String
+  role                Role                  @default(customer)
+  name                String?               // optional until first order
+  phone               String?               // required only when ordering
+  
+  // Email verification
+  emailVerified       Boolean               @default(false)
+  emailVerifiedAt     DateTime?
+  isActive            Boolean               @default(false)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
 
   // Relations
-  adminOf        RestaurantAdmin[]
-  orders         Order[]
-  refreshTokens  RefreshToken[]
+  adminOf             RestaurantAdmin[]
+  orders              Order[]
+  refreshTokens       RefreshToken[]
+  emailVerifications  EmailVerification[]   
+  passwordResets      PasswordReset[]       
+  
+  @@index([email])
+  @@index([role])
 }
 
 model RestaurantAdmin {
@@ -49,10 +60,12 @@ model RestaurantAdmin {
   assignedAt    DateTime    @default(now())
 
   // Relations
-  user          User        @relation(fields: [userId], references: [id])
-  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, restaurantId]) // prevent duplicate admin entries
+  @@unique([userId, restaurantId])
+  @@index([userId])
+  @@index([restaurantId])
 }
 
 model MenuItem {
@@ -69,10 +82,13 @@ model MenuItem {
   updatedAt     DateTime     @updatedAt
 
   // Relations
-  restaurant    Restaurant   @relation(fields: [restaurantId], references: [id])
+  restaurant    Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems    OrderItem[]
 
   @@unique([restaurantId, name])
+  @@index([restaurantId])
+  @@index([category])
+  @@index([isAvailable, isActive])
 }
 
 model Order {
@@ -88,13 +104,17 @@ model Order {
   updatedAt      DateTime      @updatedAt
 
   // Relations
-  user           User          @relation(fields: [userId], references: [id])
-  restaurant     Restaurant    @relation(fields: [restaurantId], references: [id])
-  timeSlot       TimeSlot?     @relation(fields: [timeSlotId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  restaurant     Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  timeSlot       TimeSlot?     @relation(fields: [timeSlotId], references: [id], onDelete: SetNull)
   orderItems     OrderItem[]
   payment        Payment?
 
-  @@index([userId, status])
+  @@index([userId])
+  @@index([restaurantId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -105,8 +125,11 @@ model OrderItem {
   price       Decimal   @db.Decimal(10, 2)
 
   // Relations
-  order       Order     @relation(fields: [orderId], references: [id])
-  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id])
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+  
+  @@index([orderId])
+  @@index([menuItemId])
 }
 
 model Payment {
@@ -117,9 +140,13 @@ model Payment {
   amount             Decimal      @db.Decimal(10, 2)
   status             PaymentStatus
   createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   // Relations
-  order              Order        @relation(fields: [orderId], references: [id])
+  order              Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([status])
+  @@index([paymentReference])
 }
 
 model TimeSlot {
@@ -127,9 +154,13 @@ model TimeSlot {
   slotStart    DateTime
   slotEnd      DateTime
   isAvailable  Boolean    @default(true)
+  createdAt    DateTime   @default(now())
 
   // Relations
   orders       Order[]
+  
+  @@index([slotStart, slotEnd])
+  @@index([isAvailable])
 }
 
 model RefreshToken {
@@ -137,10 +168,48 @@ model RefreshToken {
   userId      Int
   token       String     @unique
   expiresAt   DateTime
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime   @default(now())
 
   // Relations
-  user        User        @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// Email Verification Table
+model EmailVerification {
+  id          Int        @id @default(autoincrement())
+  userId      Int
+  token       String     @unique
+  expiresAt   DateTime
+  createdAt   DateTime   @default(now())
+
+  // Relations
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// Password Reset Table 
+model PasswordReset {
+  id          Int        @id @default(autoincrement())
+  userId      Int
+  token       String     @unique
+  expiresAt   DateTime
+  used        Boolean    @default(false)
+  usedAt      DateTime?
+  createdAt   DateTime   @default(now())
+
+  // Relations
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
 }
 
 enum Role {

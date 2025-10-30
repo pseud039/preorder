@@ -139,6 +139,8 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   name: 'name',
   phone: 'phone',
+  emailVerified: 'emailVerified',
+  emailVerifiedAt: 'emailVerifiedAt',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -193,14 +195,16 @@ exports.Prisma.PaymentScalarFieldEnum = {
   paymentReference: 'paymentReference',
   amount: 'amount',
   status: 'status',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TimeSlotScalarFieldEnum = {
   id: 'id',
   slotStart: 'slotStart',
   slotEnd: 'slotEnd',
-  isAvailable: 'isAvailable'
+  isAvailable: 'isAvailable',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.RefreshTokenScalarFieldEnum = {
@@ -208,6 +212,24 @@ exports.Prisma.RefreshTokenScalarFieldEnum = {
   userId: 'userId',
   token: 'token',
   expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.EmailVerificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PasswordResetScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  used: 'used',
+  usedAt: 'usedAt',
   createdAt: 'createdAt'
 };
 
@@ -252,7 +274,9 @@ exports.Prisma.ModelName = {
   OrderItem: 'OrderItem',
   Payment: 'Payment',
   TimeSlot: 'TimeSlot',
-  RefreshToken: 'RefreshToken'
+  RefreshToken: 'RefreshToken',
+  EmailVerification: 'EmailVerification',
+  PasswordReset: 'PasswordReset'
 };
 
 /**

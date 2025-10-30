@@ -20,7 +20,7 @@ export default function Navbar() {
     } else if (page === "orders") {
       router.push("/orders");
     } else {
-      router.push("/home");
+      router.push("/dashboard ");
     }
   }, [page]);
   const Navigations = {
@@ -43,7 +43,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="flex flex-row justify-between max-w-md mx-auto items-end font-semibold py-4 fixed bottom-0 left-0 right-0 px-12">
+    <div className="flex flex-row justify-between max-w-md mx-auto items-end font-semibold py-4 fixed bottom-0 left-0 right-0 px-12 z-100 bg-white shadow-md rounded-t-[45px]">
       {Object.entries(Navigations).map(([key, { icon: Icon, title }]) => (
         <button
           key={key}
