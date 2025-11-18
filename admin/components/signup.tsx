@@ -49,23 +49,25 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 gap-12 md:px-16 md:py-8">
       <div className="bg-[#e8eee3] rounded-xl  hidden md:block">
-        <div className="">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div>
+        {/* <div className="">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div> */}
       </div>
       <form
         className="flex justify-center w-3/4 mx-auto flex-col gap-6"
         {...props}
         onSubmit={handleSubmit}
-      >
-        <div className="flex items-center justify-center mb-4 ">
+      ><div className="flex justify-center items-center gap-10 flex-row">
+        <div className="flex items-center justify-center mb-4 flex-col">
           <img
             src="/image.png"
             alt="Image"
             className="absolute w-20 object-center"
           />
         </div>
+        {/* <p className="font-bold text-xl pb-5 text-orange-600 ">Predine</p> */}
+        </div>
         <div className="flex flex-col  items-center gap-2 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p> 
+          {/* <p className="">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>  */}
         </div>
         <div className="grid gap-6">
           <div className="grid gap-2">
