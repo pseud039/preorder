@@ -3,80 +3,100 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-
+import { toast } from "sonner";
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
   className?: string;
 }
-const formData = {
-  email: "",
-  password: ""
-};
 export function LoginForm({ className, ...props }: LoginFormProps) {
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  // useEffect(async()=>{
-     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 409) {
-          // Toaster.error("Email already exists");
-        } else {
-          // toast.error(data.message || "Something went wrong");
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
         }
-        return;
+      );
+      if (response.status === 200) {
+        window.location.href = "/admin/dashboard";
       }
-  } catch (error) {
+      if(response.status!==200){
+        // alert("Signup failed. Please try again.");
+      toast.error(response
+        .json().then((data) => data.message)
+      );
+      }
+
+    } catch (error) {
       console.error("An unexpected error occurred:", error);
-    }};
+    }
+  };
 
   return (
-    <div className="flex flex-col justify-between">
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Login to your account</h1>
-        <p className="text-muted-foreground text-sm text-balance">
-          Enter your email below to login to your account
-        </p>
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 gap-12 md:px-16 md:py-8">
+      <div className="bg-[#e8eee3] rounded-xl  hidden md:block">
+        {/* <div className="">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div> */}
       </div>
-      <div className="grid gap-6">
-        <div className="grid gap-3">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="admin@example.com"
-            name="email"
-            required
+      <form
+        className="flex justify-center w-3/4 mx-auto flex-col gap-6"
+        {...props}
+        onSubmit={handleSubmit}
+      ><div className="flex justify-center items-center gap-10 flex-row">
+        <div className="flex items-center justify-center mb-4 flex-col">
+          <img
+            src="/image.png"
+            alt="Image"
+            className="absolute w-20 object-center"
           />
         </div>
-        <div className="grid gap-3">
-          <div className="flex items-center">
-            <Label htmlFor="password">Password</Label>
-          </div>
-          <Input id="password" type="password" name="password" required />
-          <a href="#" className="ml-auto text-xs hover:underline">
-            
-            Forgot your password?
-          </a>
+        {/* <p className="font-bold text-xl pb-5 text-orange-600 ">Predine</p> */}
         </div>
-
-        <Button type="submit" className="w-full cursor-pointer">
-          Login
-        </Button>
-      </div>
-    </form></div>
+        <div className="flex flex-col  items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">Log into your account</h1>
+          {/* <p className="">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>  */}
+        </div>
+        <div className="grid gap-6">
+          <div className="grid gap-2">
+            <Input
+              id="email"
+              type="email"
+              placeholder="Email address"
+              name="email"
+              required
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-12 px-6 placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="grid gap-2">
+          
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-12 px-6 placeholder:text-muted-foreground"
+            />
+          </div>
+        
+          <p className="text-right text-sm text-muted-foreground">Donot have an account?{" "}
+          <a href="/admin/signup" className="text-black hover:text-[#ff5c00] hover:underline">SignUp</a></p>
+          <Button type="submit" className="w-full cursor-pointer bg-[#ff5c00] hover:bg-[#ff5c00] h-12 w-15/16 mx-auto text-white">
+            Login
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

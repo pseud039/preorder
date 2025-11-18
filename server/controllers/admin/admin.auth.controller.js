@@ -8,123 +8,141 @@ import { emailTemplates } from "../../utils/email/emailTemplates.js";
 import { generateAccessToken } from "../user.controller.js";
 import crypto from "crypto";
 
-// const SignUpClient = asyncHandler(async (req, res) => {
-//   const { email, password } = req.body;
+const SignUpAdmin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password || email.trim() === "" || password.trim() === "") {
+    throw new ApiError(400, "All fields are required");
+  }
 
-//   if (!email || !password || email.trim() === "" || password.trim() === "") {
-//     throw new ApiError(400, "All fields are required");
-//   }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new ApiError(400, "Invalid email format");
+  }
 
-//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   if (!emailRegex.test(email)) {
-//     throw new ApiError(400, "Invalid email format");
-//   }
+  if (password.length < 8) {
+    throw new ApiError(400, "Password must be at least 8 characters long");
+  }
 
-//   if (password.length < 8) {
-//     throw new ApiError(400, "Password must be at least 8 characters long");
-//   }
+  // Check if user already exists
+  const existingUser = await prisma.user.findFirst({
+    where: { email, role: "admin" },
+  });
+  console.log(existingUser);
 
-//   // Check if user already exists
-//   const existingUser = await prisma.restrauntAdmin.findFirst({
-//     where: { email, role: "admin" },
-//   });
-//   console.log(existingUser);
+  if (existingUser) {
+    throw new ApiError(409, "User already exists");
+  }
 
-//   if (existingUser) {
-//     throw new ApiError(409, "User already exists");
-//   }
+  // Hash password
+  const passwordHash = await bcrypt.hash(password, 10);
 
-//   // Hash password
-//   const passwordHash = await bcrypt.hash(password, 10);
+  // Generate tokens
+  const refreshToken = crypto.randomBytes(64).toString("hex");
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
-//   // Generate tokens
-//   const refreshToken = crypto.randomBytes(64).toString("hex");
-//   const expiresAt = new Date();
-//   expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+  const result = await prisma.$transaction(async (tx) => {
+    // Create user
+    const admin = await tx.user.create({
+      data: {
+      email,
+      passwordHash,
+      emailVerified: false,
+      role: "admin",
+      },
+      select: {
+      id: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      },
+    });
 
-//   const result = await prisma.$transaction(async (tx) => {
-//     // Create user
-//     const admin = await tx.restrauntAdmin.create({
-//       data: {
-//         email,
-//         passwordHash,
-//         emailVerified: false,
-//       },
-//       select: {
-//         id: true,
-//         email: true,
-//         role: true,
-//         createdAt: true,
-//       },
-//     });
+    const restaurantId = req.body?.restaurantId
+      ? parseInt(req.body.restaurantId, 10)
+      : 3;
 
-//     await tx.refreshToken.create({
-//       data: {
-//         token: refreshToken,
-//         userId: restrauntAdmin.id,
-//         expiresAt,
-//       },
-//     });
+    // Ensure restaurant exists within the same transaction
+    const restaurant = await tx.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+    if (!restaurant) {
+      throw new ApiError(404, "Restaurant not found");
+    }
 
-//     return admin;
-//   });
+    await tx.restaurantAdmin.create({
+      data: {
+      userId: admin.id,
+      restaurantId,
+      },
+    });
 
-//   const accessToken = generateAccessToken(result.id, result.email);
+    await tx.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: admin.id,
+        expiresAt,
+      },
+    });
 
-//   // Generate email confirmation link
-//   const verificationToken = crypto.randomBytes(32).toString("hex");
-//   const verificationExpiry = new Date();
-//   verificationExpiry.setHours(verificationExpiry.getHours() + 24); // 24 hours
+    return admin;
+  });
 
-//   await prisma.emailVerification
-//     .create({
-//       data: {
-//         userId: result.id,
-//         token: verificationToken,
-//         expiresAt: verificationExpiry,
-//       },
-//     })
-//     .catch((err) => {
-//       console.error("Failed to create email verification:", err);
-//     });
+  const accessToken = generateAccessToken(result.id, result.email);
 
-//   const confirmationLink = `${process.env.API_LINK}/api/auth/verify-email?token=${verificationToken}`;
-//   try {
-//     const mailTemp = emailTemplates.emailConformation(
-//       result.email,
-//       confirmationLink
-//     );
-//     const info = await transporter.sendMail({
-//       ...mailTemp,
-//       to: email,
-//     });
-//   } catch (error) {
-//     console.error("Failed to send booking link", error);
-//     throw new ApiError(400, "Bad Request");
-//   }
+  // Generate email confirmation link
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationExpiry = new Date();
+  verificationExpiry.setHours(verificationExpiry.getHours() + 24); // 24 hours
 
-//   // Set refresh token as httpOnly cookie
-//   res.cookie("refreshToken", refreshToken, {
-//     httpOnly: true,
-//     secure: process.env.NODE_ENV === "production",
-//     sameSite: "strict",
-//     maxAge: 7 * 24 * 60 * 60 * 1000,
-//   });
+  await prisma.emailVerification
+    .create({
+      data: {
+        userId: result.id,
+        token: verificationToken,
+        expiresAt: verificationExpiry,
+      },
+    })
+    .catch((err) => {
+      console.error("Failed to create email verification:", err);
+    });
 
-//   return res.status(201).json(
-//     new ApiResponse(
-//       201,
-//       {
-//         user: result,
-//         accessToken,
-//         message: "Please check your email to verify your account",
-//       },
-//       "Admin Registered Successfully"
-//     )
-//   );
-// });
+  const confirmationLink = `${process.env.API_LINK}/api/auth/verify-email?token=${verificationToken}`;
+  try {
+    const mailTemp = emailTemplates.emailConformation(
+      result.email,
+      confirmationLink
+    );
+    const info = await transporter.sendMail({
+      ...mailTemp,
+      to: email,
+    });
+  } catch (error) {
+    console.error("Failed to send booking link", error);
+    throw new ApiError(400, "Bad Request");
+  }
 
-const LoginClient = asyncHandler(async (req, res) => {
+  // Set refresh token as httpOnly cookie
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      {
+        user: result,
+        accessToken,
+        message: "Please check your email to verify your account",
+      },
+      "Admin Registered Successfully"
+    )
+  );
+});
+
+const LoginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password || email.trim() === "" || password.trim() === "") {
@@ -139,7 +157,7 @@ const LoginClient = asyncHandler(async (req, res) => {
   if (password.length < 8) {
     throw new ApiError(400, "Password must be at least 8 characters long");
   }
-  const existingUser = await prisma.restrauntAdmin.findUnique({
+  const existingUser = await prisma.user.findUnique({
     where: { email, role: "admin" },
   });
   if (!existingUser) {
@@ -159,7 +177,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   if (!emailRegex.test(email)) {
     throw new ApiError(400, "Invalid email format");
   }
-  const existingUser = await prisma.restrauntAdmin.findUnique({
+  const existingUser = await prisma.user.findUnique({
     where: { email, role: "admin" },
   });
   if (!existingUser) {
@@ -261,4 +279,4 @@ const resetpass = asyncHandler(async (req, res) => {
 
 const logoutClient = asyncHandler(async (req, res) => {});
 
-export { LoginClient, forgotPassword, resetpass, logoutClient };
+export { LoginAdmin, forgotPassword, resetpass, logoutClient, SignUpAdmin };

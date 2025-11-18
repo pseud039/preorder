@@ -3,46 +3,44 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
   className?: string;
 }
-const formData = {
-  email: "",
-  password: "",
-  confirmPassword: "",
-};
 export function SignupForm({ className, ...props }: LoginFormProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/client/signup`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/signup`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
+            email: email,
+            password: password,
+            confirmPassword: confirmPassword,
           }),
         }
       );
-      if (response.status === 200) {
-        // Handle successful signup
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
         window.location.href = "/admin/emailVerification";
-      }
-      if(response.status!==200){
-        // alert("Signup failed. Please try again.");
-      toast.error(response
-        .json().then((data) => data.message)
-      );
+        return;
       }
 
+      toast.error(data?.message || "Signup failed. Please try again.");
     } catch (error) {
       console.error("An unexpected error occurred:", error);
+      toast.error("An unexpected error occurred. Check console for details.");
     }
   };
 
@@ -78,6 +76,8 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
               placeholder="Email address"
               name="email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="h-12 px-6 placeholder:text-muted-foreground"
             />
           </div>
@@ -89,6 +89,8 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
               name="password"
               placeholder="Password"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="h-12 px-6 placeholder:text-muted-foreground"
             />
           </div>
@@ -100,11 +102,13 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
               placeholder="Confirm Password"
               name="confirmPassword"
               required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="h-12 px-6 placeholder:text-muted-foreground"
             />
           </div>
           <p className="text-right text-sm text-muted-foreground">Already have an account?{" "}
-          <a href="" className="text-black hover:text-[#ff5c00] hover:underline">Login</a></p>
+          <a href="/admin/login" className="text-black hover:text-[#ff5c00] hover:underline">Login</a></p>
           <Button type="submit" className="w-full cursor-pointer bg-[#ff5c00] hover:bg-[#ff5c00] h-12 w-15/16 mx-auto text-white">
             SignUp
           </Button>
