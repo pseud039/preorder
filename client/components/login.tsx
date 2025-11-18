@@ -65,8 +65,7 @@ export default function SignUpPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-        // const response = await fetch(`http://localhost:8000/signUp`,{
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

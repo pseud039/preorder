@@ -161,8 +161,27 @@ exports.Prisma.MenuItemScalarFieldEnum = {
   price: 'price',
   imageUrl: 'imageUrl',
   category: 'category',
+  isVeg: 'isVeg',
   isAvailable: 'isAvailable',
   isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CartScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  restaurantId: 'restaurantId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CartItemScalarFieldEnum = {
+  id: 'id',
+  cartId: 'cartId',
+  menuItemId: 'menuItemId',
+  quantity: 'quantity',
+  price: 'price',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -176,6 +195,7 @@ exports.Prisma.OrderScalarFieldEnum = {
   timeSlotId: 'timeSlotId',
   paymentStatus: 'paymentStatus',
   notes: 'notes',
+  razorpayOrderId: 'razorpayOrderId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -192,9 +212,12 @@ exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   paymentGateway: 'paymentGateway',
-  paymentReference: 'paymentReference',
+  razorpayPaymentId: 'razorpayPaymentId',
+  razorpayOrderId: 'razorpayOrderId',
+  razorpaySignature: 'razorpaySignature',
   amount: 'amount',
   status: 'status',
+  failureReason: 'failureReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -262,7 +285,8 @@ exports.OrderStatus = exports.$Enums.OrderStatus = {
 exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   pending: 'pending',
   paid: 'paid',
-  failed: 'failed'
+  failed: 'failed',
+  refunded: 'refunded'
 };
 
 exports.Prisma.ModelName = {
@@ -270,6 +294,8 @@ exports.Prisma.ModelName = {
   User: 'User',
   RestaurantAdmin: 'RestaurantAdmin',
   MenuItem: 'MenuItem',
+  Cart: 'Cart',
+  CartItem: 'CartItem',
   Order: 'Order',
   OrderItem: 'OrderItem',
   Payment: 'Payment',

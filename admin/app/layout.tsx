@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Open_Sans, Montserrat} from "next/font/google";
 import "./globals.css";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar";
+import { ThemeProvider } from "@/components/themeSwitch";
+import Navbar from "@/components/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -9,6 +13,16 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
 });
 
@@ -25,9 +39,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${montserrat.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+      <SidebarProvider>
+          <div className="flex h-screen w-full">
+            <AppSidebar />
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <Navbar />
+              <main className="flex-1 overflow-y-auto bg-gray-50 p-6 rounded-lg shadow-lg transition duration-200 ease-linear mr-1 mt-1 m-2 border-1">
+                {children}
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

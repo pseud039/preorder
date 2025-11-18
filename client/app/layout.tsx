@@ -82,7 +82,7 @@ export default function RootLayout({
       <body
         className={`${poppins.variable}  antialiased`}
       >
-        <Onboardingpage1 />
+        {/* <Onboardingpage1 /> */}
         {children}
       </body>
     </html>

@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
-import { SignUpClient } from "./controllers/client.controller.js";
+import Clientrouter from "./routes/client.route.js"
+import MenuRouter from "./routes/menu.route.js"
+import AdminRouter from "./routes/admin.route.js"
 
 const app = express();
 
@@ -12,10 +14,12 @@ app.use(
 );
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 // app.use(cookieParser());
 
-app.post("/signUp", SignUpClient);
+app.use("/client",Clientrouter);
+app.use("/home",MenuRouter);
+app.use("/admin",AdminRouter);
 
 export { app };
