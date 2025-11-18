@@ -160,11 +160,11 @@ export default function SignUpPage() {
           </button>
           <div className="flex flex-row justify-center items-center gap-1">
             <span className="text-center text-sm text-primary-text/60">
-              Forgot Password?
+              Donot have an account?
             </span>
             <button
               type="button"
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/auth/signup")}
               className="text-orange-500 font-semibold hover:underline cursor-pointer"
               disabled={isSubmitting}
             >
