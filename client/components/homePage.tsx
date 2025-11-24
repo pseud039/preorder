@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, ShoppingCart, Heart, User, Loader2 } from "lucide-react";
+import { Search, ShoppingCart, Heart, User, Loader2, Plus, Circle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface MenuItem {
   id: string | number;
@@ -27,8 +28,7 @@ interface ApiResponse<T> {
   };
 }
 
-
-export default function FoodOrderPage(){
+export default function FoodOrderPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [cartCount, setCartCount] = useState<number>(0);
   const [isVegOnly, setIsVegOnly] = useState<boolean>(false);
@@ -38,23 +38,28 @@ export default function FoodOrderPage(){
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const router = useRouter();
 
-  useEffect(() => {
+   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/home/menu?limit=100`
+          `${process.env.NEXT_PUBLIC_API_URL}/client/categories`
         );
-        const data: ApiResponse<MenuItem> = await response.json();
-        // console.log(data);
-        // console.log(menuItems.map(item => item.category));
-        if (data.success) {
-          const uniqueCategories = [
-            ...new Set(data.data.items.map((item) => item.category)),
-          ];
+        const data = await response.json();
+        
+        console.log("Categories API Response:", data);
+        
+        
+        const uniqueCategories = data.data;
 
-          console.log("Fetched Categories:", uniqueCategories);
-        }
+        const categoriesWithAll = [
+          { name: "All",
+          ...uniqueCategories}
+        ];
+
+        setCategories(categoriesWithAll);
+        console.log("Fetched Categories:", uniqueCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -62,6 +67,21 @@ export default function FoodOrderPage(){
 
     fetchCategories();
   }, []);
+
+  // // Helper function to get emoji for category
+  // const getCategoryEmoji = (category: string): string => {
+  //   const emojiMap: Record<string, string> = {
+  // //     pizza: "🍕",
+  // //     burger: "🍔",
+  // //     pasta: "🍝",
+  // //     dessert: "🍰",
+  // //     drinks: "🥤",
+  // //     salad: "🥗",
+  // //     indian: "🍛",
+  // //     chinese: "🥡",
+  //   };
+  //   return emojiMap[category.toLowerCase()] || "🍴";
+  // };
 
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -105,9 +125,57 @@ export default function FoodOrderPage(){
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const addToCart = (item: MenuItem): void => {
-    setCartCount((prev) => prev + 1);
-    console.log("Added to cart:", item);
+ const addToCart = async (item: MenuItem): Promise<void>  => {
+    try {
+      console.log("Attempting to add to cart...");
+      
+      // Get token from localStorage
+      const token = localStorage.getItem('auth_token');
+      console.log("Token from localStorage:", token ? "Found" : "Not found");
+      
+      if (!token) {
+        alert("Please login first");
+        window.location.href = "/auth/login";
+        return;
+      }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/add`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Send token in Authorization header
+        },
+        credentials: 'include', // Still include for same-origin scenarios
+        body: JSON.stringify({
+          menuItemId: item.id,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // Handle specific error messages
+        if (response.status === 401) {
+          console.error("Authentication required. Please log in.");
+          alert("Please log in to add items to cart");
+          return;
+        }
+        console.error("Failed to add to cart:", data.message || response.statusText);
+        alert(`Failed to add to cart: ${data.message || 'Unknown error'}`);
+        return;
+      }
+
+      // Only increment cart count if the request was successful
+      setCartCount((prev) => prev + 1);
+      console.log("Added to cart:", item.id);
+      
+      // Optional: Show success message
+      // You could add a toast notification here
+      
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Network error. Please check your connection and try again.");
+    }
   };
 
   return (
@@ -127,13 +195,13 @@ export default function FoodOrderPage(){
               Hey Foodie!!
             </span>
           </div>
-          <button className="relative">
+          <button className="relative" onClick={() => router.push("/orders")}>
             <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center">
               <ShoppingCart fill="#f1623a" className="w-5 h-5 text-primary" />
             </div>
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {cartCount}
+              <span className="absolute top-1 -right-[2px] w-3 h-3 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+            
               </span>
             )}
           </button>
@@ -144,7 +212,7 @@ export default function FoodOrderPage(){
         </h1>
 
         {/* Search Bar */}
-        <div className="relative mb-6 flex flex-row gap-2 items-center">
+        <div className="relative mb-6 flex flex-row gap-2 items-center" onClick={()=>{router.push("/search")}}>
           <input
             type="text"
             placeholder="Search here.."
@@ -193,7 +261,9 @@ export default function FoodOrderPage(){
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900">Categories</h3>
-            <button className="text-primary font-medium text-sm">See More</button>
+            <a href="/search" className="text-primary font-medium text-sm hover:cursor-pointer">
+              See More
+            </a>
           </div>
 
           <div className="flex justify-between gap-3 overflow-x-auto">
@@ -213,7 +283,7 @@ export default function FoodOrderPage(){
                       : "bg-white shadow-sm"
                   }`}
                 >
-                  {cat.emoji}
+                  {/* {cat.emoji} */}
                 </div>
                 <span
                   className={`text-xs font-medium ${
@@ -238,9 +308,9 @@ export default function FoodOrderPage(){
         {!loading && menuItems.length > 0 && (
           <div className="grid grid-cols-2 gap-4">
             {menuItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-3xl p-4 shadow-sm">
-                <div className="relative mb-3">
-                  <div className="w-full h-32 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-2xl overflow-hidden">
+              <div key={item.id} className="bg-white rounded-3xl shadow-sm">
+                <div className="relative mb-2">
+                  <div className="w-full h-38 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-t-2xl overflow-hidden">
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
@@ -248,35 +318,35 @@ export default function FoodOrderPage(){
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl">
-                        
+                      <div className="w-full h-full flex items-center justify-center text-sm">
+                        :)
                       </div>
                     )}
                   </div>
-                  <button className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center">
-                    <Heart className="w-4 h-4 text-gray-400" />
-                  </button>
+
                   {item.isVeg && (
-                    <div className="absolute top-2 left-2 w-6 h-6 bg-white rounded flex items-center justify-center">
+                    <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded flex items-center justify-center">
                       <div className="w-3 h-3 border-2 border-green-600 rounded flex items-center justify-center">
                         <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
                       </div>
                     </div>
                   )}
                 </div>
-                <h4 className="font-bold text-gray-900 text-sm mb-1 truncate">
+                <h4 className="font-bold px-4 text-gray-900 text-sm mb-1 truncate flex justify-between items-center">
                   {item.name}
+                  <button className="w-8 h-8 bg-white flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-red-500 hover:cursor-pointer" />
+                  </button>
                 </h4>
-                <p className="text-xs text-gray-500 mb-2 line-clamp-2">
-                  {item.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-gray-900">${item.price}</span>
+                <div className="pb-4 px-4 flex items-center justify-between">
+                  <span className="font-bold text-gray-900">₹{item.price}</span>
                   <button
                     onClick={() => addToCart(item)}
-                    className="w-8 h-8 bg-pink-300 rounded-full flex items-center justify-center hover:bg-pink-400 transition-colors"
+                    className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
-                    <span className="text-white text-xl leading-none">+</span>
+                    <span className="mx-auto text-white text-xl leading-none">
+                      <Plus className="w-4" />
+                    </span>
                   </button>
                 </div>
               </div>
@@ -290,7 +360,7 @@ export default function FoodOrderPage(){
           </div>
         )}
 
-          {totalPages > 1 && (
+        {totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-6">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}

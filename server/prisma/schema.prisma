@@ -38,6 +38,11 @@ model User {
   // Email verification
   emailVerified       Boolean               @default(false)
   emailVerifiedAt     DateTime?
+  
+  // Phone verification (NEW)
+  phoneVerified       Boolean               @default(false)
+  phoneVerifiedAt     DateTime?
+  
   isActive            Boolean               @default(false)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
@@ -48,10 +53,32 @@ model User {
   refreshTokens       RefreshToken[]
   emailVerifications  EmailVerification[]   
   passwordResets      PasswordReset[]
+  phoneOTPs           PhoneOTP[]            // NEW
   cart                Cart?                 // One active cart per user
   
   @@index([email])
   @@index([role])
+  @@index([phone])                          // NEW - for quick OTP lookup
+}
+
+// NEW MODEL - Phone OTP Verification
+model PhoneOTP {
+  id          Int        @id @default(autoincrement())
+  userId      Int
+  phone       String
+  otp         String     // Store hashed OTP (use bcrypt)
+  expiresAt   DateTime   // OTP valid for 10 minutes
+  verified    Boolean    @default(false)
+  attempts    Int        @default(0)  // Track failed attempts (max 3-5)
+  createdAt   DateTime   @default(now())
+
+  // Relations
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([phone])
+  @@index([expiresAt])
+  @@index([verified])
 }
 
 model RestaurantAdmin {
@@ -94,7 +121,6 @@ model MenuItem {
   @@index([isAvailable, isActive])
 }
 
-// Cart Model
 model Cart {
   id            Int          @id @default(autoincrement())
   userId        Int          @unique
@@ -109,7 +135,6 @@ model Cart {
   @@index([userId])
 }
 
-// Cart Items
 model CartItem {
   id          Int       @id @default(autoincrement())
   cartId      Int
@@ -198,18 +223,22 @@ model Payment {
   @@index([razorpayOrderId])
 }
 
+// IMPROVED TimeSlot Model
 model TimeSlot {
-  id           Int        @id @default(autoincrement())
-  slotStart    DateTime
-  slotEnd      DateTime
-  isAvailable  Boolean    @default(true)
-  createdAt    DateTime   @default(now())
+  id              Int        @id @default(autoincrement())
+  slotStart       DateTime   // Full datetime: 2025-11-24 12:00:00
+  slotEnd         DateTime   // Full datetime: 2025-11-24 12:30:00
+  capacity        Int        @default(10)      // NEW - Max orders per slot
+  bookedCount     Int        @default(0)       // NEW - Current bookings
+  isAvailable     Boolean    @default(true)
+  createdAt       DateTime   @default(now())
 
   // Relations
-  orders       Order[]
+  orders          Order[]
   
   @@index([slotStart, slotEnd])
   @@index([isAvailable])
+  @@index([slotStart, isAvailable])  // NEW - for availability queries
 }
 
 model RefreshToken {

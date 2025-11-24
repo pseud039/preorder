@@ -141,9 +141,22 @@ exports.Prisma.UserScalarFieldEnum = {
   phone: 'phone',
   emailVerified: 'emailVerified',
   emailVerifiedAt: 'emailVerifiedAt',
+  phoneVerified: 'phoneVerified',
+  phoneVerifiedAt: 'phoneVerifiedAt',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PhoneOTPScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  phone: 'phone',
+  otp: 'otp',
+  expiresAt: 'expiresAt',
+  verified: 'verified',
+  attempts: 'attempts',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.RestaurantAdminScalarFieldEnum = {
@@ -226,6 +239,8 @@ exports.Prisma.TimeSlotScalarFieldEnum = {
   id: 'id',
   slotStart: 'slotStart',
   slotEnd: 'slotEnd',
+  capacity: 'capacity',
+  bookedCount: 'bookedCount',
   isAvailable: 'isAvailable',
   createdAt: 'createdAt'
 };
@@ -292,6 +307,7 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
 exports.Prisma.ModelName = {
   Restaurant: 'Restaurant',
   User: 'User',
+  PhoneOTP: 'PhoneOTP',
   RestaurantAdmin: 'RestaurantAdmin',
   MenuItem: 'MenuItem',
   Cart: 'Cart',

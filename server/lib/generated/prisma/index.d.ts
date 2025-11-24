@@ -24,6 +24,11 @@ export type Restaurant = $Result.DefaultSelection<Prisma.$RestaurantPayload>
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
+ * Model PhoneOTP
+ * 
+ */
+export type PhoneOTP = $Result.DefaultSelection<Prisma.$PhoneOTPPayload>
+/**
  * Model RestaurantAdmin
  * 
  */
@@ -261,6 +266,16 @@ export class PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.phoneOTP`: Exposes CRUD operations for the **PhoneOTP** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PhoneOTPS
+    * const phoneOTPS = await prisma.phoneOTP.findMany()
+    * ```
+    */
+  get phoneOTP(): Prisma.PhoneOTPDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.restaurantAdmin`: Exposes CRUD operations for the **RestaurantAdmin** model.
@@ -814,6 +829,7 @@ export namespace Prisma {
   export const ModelName: {
     Restaurant: 'Restaurant',
     User: 'User',
+    PhoneOTP: 'PhoneOTP',
     RestaurantAdmin: 'RestaurantAdmin',
     MenuItem: 'MenuItem',
     Cart: 'Cart',
@@ -843,7 +859,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "restaurant" | "user" | "restaurantAdmin" | "menuItem" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "timeSlot" | "refreshToken" | "emailVerification" | "passwordReset"
+      modelProps: "restaurant" | "user" | "phoneOTP" | "restaurantAdmin" | "menuItem" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "timeSlot" | "refreshToken" | "emailVerification" | "passwordReset"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -992,6 +1008,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>
             result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      PhoneOTP: {
+        payload: Prisma.$PhoneOTPPayload<ExtArgs>
+        fields: Prisma.PhoneOTPFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PhoneOTPFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PhoneOTPFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>
+          }
+          findFirst: {
+            args: Prisma.PhoneOTPFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PhoneOTPFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>
+          }
+          findMany: {
+            args: Prisma.PhoneOTPFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>[]
+          }
+          create: {
+            args: Prisma.PhoneOTPCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>
+          }
+          createMany: {
+            args: Prisma.PhoneOTPCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PhoneOTPCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>[]
+          }
+          delete: {
+            args: Prisma.PhoneOTPDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>
+          }
+          update: {
+            args: Prisma.PhoneOTPUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>
+          }
+          deleteMany: {
+            args: Prisma.PhoneOTPDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PhoneOTPUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PhoneOTPUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>[]
+          }
+          upsert: {
+            args: Prisma.PhoneOTPUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhoneOTPPayload>
+          }
+          aggregate: {
+            args: Prisma.PhoneOTPAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePhoneOTP>
+          }
+          groupBy: {
+            args: Prisma.PhoneOTPGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PhoneOTPGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PhoneOTPCountArgs<ExtArgs>
+            result: $Utils.Optional<PhoneOTPCountAggregateOutputType> | number
           }
         }
       }
@@ -1907,6 +1997,7 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     restaurant?: RestaurantOmit
     user?: UserOmit
+    phoneOTP?: PhoneOTPOmit
     restaurantAdmin?: RestaurantAdminOmit
     menuItem?: MenuItemOmit
     cart?: CartOmit
@@ -2052,6 +2143,7 @@ export namespace Prisma {
     refreshTokens: number
     emailVerifications: number
     passwordResets: number
+    phoneOTPs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2060,6 +2152,7 @@ export namespace Prisma {
     refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
     emailVerifications?: boolean | UserCountOutputTypeCountEmailVerificationsArgs
     passwordResets?: boolean | UserCountOutputTypeCountPasswordResetsArgs
+    phoneOTPs?: boolean | UserCountOutputTypeCountPhoneOTPsArgs
   }
 
   // Custom InputTypes
@@ -2106,6 +2199,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPasswordResetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PasswordResetWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPhoneOTPsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PhoneOTPWhereInput
   }
 
 
@@ -3487,6 +3587,8 @@ export namespace Prisma {
     phone: string | null
     emailVerified: boolean | null
     emailVerifiedAt: Date | null
+    phoneVerified: boolean | null
+    phoneVerifiedAt: Date | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3501,6 +3603,8 @@ export namespace Prisma {
     phone: string | null
     emailVerified: boolean | null
     emailVerifiedAt: Date | null
+    phoneVerified: boolean | null
+    phoneVerifiedAt: Date | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3515,6 +3619,8 @@ export namespace Prisma {
     phone: number
     emailVerified: number
     emailVerifiedAt: number
+    phoneVerified: number
+    phoneVerifiedAt: number
     isActive: number
     createdAt: number
     updatedAt: number
@@ -3539,6 +3645,8 @@ export namespace Prisma {
     phone?: true
     emailVerified?: true
     emailVerifiedAt?: true
+    phoneVerified?: true
+    phoneVerifiedAt?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -3553,6 +3661,8 @@ export namespace Prisma {
     phone?: true
     emailVerified?: true
     emailVerifiedAt?: true
+    phoneVerified?: true
+    phoneVerifiedAt?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -3567,6 +3677,8 @@ export namespace Prisma {
     phone?: true
     emailVerified?: true
     emailVerifiedAt?: true
+    phoneVerified?: true
+    phoneVerifiedAt?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -3668,6 +3780,8 @@ export namespace Prisma {
     phone: string | null
     emailVerified: boolean
     emailVerifiedAt: Date | null
+    phoneVerified: boolean
+    phoneVerifiedAt: Date | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -3701,6 +3815,8 @@ export namespace Prisma {
     phone?: boolean
     emailVerified?: boolean
     emailVerifiedAt?: boolean
+    phoneVerified?: boolean
+    phoneVerifiedAt?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3709,6 +3825,7 @@ export namespace Prisma {
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     emailVerifications?: boolean | User$emailVerificationsArgs<ExtArgs>
     passwordResets?: boolean | User$passwordResetsArgs<ExtArgs>
+    phoneOTPs?: boolean | User$phoneOTPsArgs<ExtArgs>
     cart?: boolean | User$cartArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -3722,6 +3839,8 @@ export namespace Prisma {
     phone?: boolean
     emailVerified?: boolean
     emailVerifiedAt?: boolean
+    phoneVerified?: boolean
+    phoneVerifiedAt?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3736,6 +3855,8 @@ export namespace Prisma {
     phone?: boolean
     emailVerified?: boolean
     emailVerifiedAt?: boolean
+    phoneVerified?: boolean
+    phoneVerifiedAt?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3750,18 +3871,21 @@ export namespace Prisma {
     phone?: boolean
     emailVerified?: boolean
     emailVerifiedAt?: boolean
+    phoneVerified?: boolean
+    phoneVerifiedAt?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "passwordHash" | "role" | "name" | "phone" | "emailVerified" | "emailVerifiedAt" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "passwordHash" | "role" | "name" | "phone" | "emailVerified" | "emailVerifiedAt" | "phoneVerified" | "phoneVerifiedAt" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     adminOf?: boolean | User$adminOfArgs<ExtArgs>
     orders?: boolean | User$ordersArgs<ExtArgs>
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     emailVerifications?: boolean | User$emailVerificationsArgs<ExtArgs>
     passwordResets?: boolean | User$passwordResetsArgs<ExtArgs>
+    phoneOTPs?: boolean | User$phoneOTPsArgs<ExtArgs>
     cart?: boolean | User$cartArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -3776,6 +3900,7 @@ export namespace Prisma {
       refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
       emailVerifications: Prisma.$EmailVerificationPayload<ExtArgs>[]
       passwordResets: Prisma.$PasswordResetPayload<ExtArgs>[]
+      phoneOTPs: Prisma.$PhoneOTPPayload<ExtArgs>[]
       cart: Prisma.$CartPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -3787,6 +3912,8 @@ export namespace Prisma {
       phone: string | null
       emailVerified: boolean
       emailVerifiedAt: Date | null
+      phoneVerified: boolean
+      phoneVerifiedAt: Date | null
       isActive: boolean
       createdAt: Date
       updatedAt: Date
@@ -4189,6 +4316,7 @@ export namespace Prisma {
     refreshTokens<T extends User$refreshTokensArgs<ExtArgs> = {}>(args?: Subset<T, User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     emailVerifications<T extends User$emailVerificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$emailVerificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     passwordResets<T extends User$passwordResetsArgs<ExtArgs> = {}>(args?: Subset<T, User$passwordResetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PasswordResetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    phoneOTPs<T extends User$phoneOTPsArgs<ExtArgs> = {}>(args?: Subset<T, User$phoneOTPsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     cart<T extends User$cartArgs<ExtArgs> = {}>(args?: Subset<T, User$cartArgs<ExtArgs>>): Prisma__CartClient<$Result.GetResult<Prisma.$CartPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4227,6 +4355,8 @@ export namespace Prisma {
     readonly phone: FieldRef<"User", 'String'>
     readonly emailVerified: FieldRef<"User", 'Boolean'>
     readonly emailVerifiedAt: FieldRef<"User", 'DateTime'>
+    readonly phoneVerified: FieldRef<"User", 'Boolean'>
+    readonly phoneVerifiedAt: FieldRef<"User", 'DateTime'>
     readonly isActive: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
@@ -4738,6 +4868,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.phoneOTPs
+   */
+  export type User$phoneOTPsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    where?: PhoneOTPWhereInput
+    orderBy?: PhoneOTPOrderByWithRelationInput | PhoneOTPOrderByWithRelationInput[]
+    cursor?: PhoneOTPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PhoneOTPScalarFieldEnum | PhoneOTPScalarFieldEnum[]
+  }
+
+  /**
    * User.cart
    */
   export type User$cartArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4772,6 +4926,1145 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PhoneOTP
+   */
+
+  export type AggregatePhoneOTP = {
+    _count: PhoneOTPCountAggregateOutputType | null
+    _avg: PhoneOTPAvgAggregateOutputType | null
+    _sum: PhoneOTPSumAggregateOutputType | null
+    _min: PhoneOTPMinAggregateOutputType | null
+    _max: PhoneOTPMaxAggregateOutputType | null
+  }
+
+  export type PhoneOTPAvgAggregateOutputType = {
+    id: number | null
+    userId: number | null
+    attempts: number | null
+  }
+
+  export type PhoneOTPSumAggregateOutputType = {
+    id: number | null
+    userId: number | null
+    attempts: number | null
+  }
+
+  export type PhoneOTPMinAggregateOutputType = {
+    id: number | null
+    userId: number | null
+    phone: string | null
+    otp: string | null
+    expiresAt: Date | null
+    verified: boolean | null
+    attempts: number | null
+    createdAt: Date | null
+  }
+
+  export type PhoneOTPMaxAggregateOutputType = {
+    id: number | null
+    userId: number | null
+    phone: string | null
+    otp: string | null
+    expiresAt: Date | null
+    verified: boolean | null
+    attempts: number | null
+    createdAt: Date | null
+  }
+
+  export type PhoneOTPCountAggregateOutputType = {
+    id: number
+    userId: number
+    phone: number
+    otp: number
+    expiresAt: number
+    verified: number
+    attempts: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PhoneOTPAvgAggregateInputType = {
+    id?: true
+    userId?: true
+    attempts?: true
+  }
+
+  export type PhoneOTPSumAggregateInputType = {
+    id?: true
+    userId?: true
+    attempts?: true
+  }
+
+  export type PhoneOTPMinAggregateInputType = {
+    id?: true
+    userId?: true
+    phone?: true
+    otp?: true
+    expiresAt?: true
+    verified?: true
+    attempts?: true
+    createdAt?: true
+  }
+
+  export type PhoneOTPMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    phone?: true
+    otp?: true
+    expiresAt?: true
+    verified?: true
+    attempts?: true
+    createdAt?: true
+  }
+
+  export type PhoneOTPCountAggregateInputType = {
+    id?: true
+    userId?: true
+    phone?: true
+    otp?: true
+    expiresAt?: true
+    verified?: true
+    attempts?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PhoneOTPAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PhoneOTP to aggregate.
+     */
+    where?: PhoneOTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PhoneOTPS to fetch.
+     */
+    orderBy?: PhoneOTPOrderByWithRelationInput | PhoneOTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PhoneOTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PhoneOTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PhoneOTPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PhoneOTPS
+    **/
+    _count?: true | PhoneOTPCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PhoneOTPAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PhoneOTPSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PhoneOTPMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PhoneOTPMaxAggregateInputType
+  }
+
+  export type GetPhoneOTPAggregateType<T extends PhoneOTPAggregateArgs> = {
+        [P in keyof T & keyof AggregatePhoneOTP]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePhoneOTP[P]>
+      : GetScalarType<T[P], AggregatePhoneOTP[P]>
+  }
+
+
+
+
+  export type PhoneOTPGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PhoneOTPWhereInput
+    orderBy?: PhoneOTPOrderByWithAggregationInput | PhoneOTPOrderByWithAggregationInput[]
+    by: PhoneOTPScalarFieldEnum[] | PhoneOTPScalarFieldEnum
+    having?: PhoneOTPScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PhoneOTPCountAggregateInputType | true
+    _avg?: PhoneOTPAvgAggregateInputType
+    _sum?: PhoneOTPSumAggregateInputType
+    _min?: PhoneOTPMinAggregateInputType
+    _max?: PhoneOTPMaxAggregateInputType
+  }
+
+  export type PhoneOTPGroupByOutputType = {
+    id: number
+    userId: number
+    phone: string
+    otp: string
+    expiresAt: Date
+    verified: boolean
+    attempts: number
+    createdAt: Date
+    _count: PhoneOTPCountAggregateOutputType | null
+    _avg: PhoneOTPAvgAggregateOutputType | null
+    _sum: PhoneOTPSumAggregateOutputType | null
+    _min: PhoneOTPMinAggregateOutputType | null
+    _max: PhoneOTPMaxAggregateOutputType | null
+  }
+
+  type GetPhoneOTPGroupByPayload<T extends PhoneOTPGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PhoneOTPGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PhoneOTPGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PhoneOTPGroupByOutputType[P]>
+            : GetScalarType<T[P], PhoneOTPGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PhoneOTPSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    verified?: boolean
+    attempts?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["phoneOTP"]>
+
+  export type PhoneOTPSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    verified?: boolean
+    attempts?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["phoneOTP"]>
+
+  export type PhoneOTPSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    verified?: boolean
+    attempts?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["phoneOTP"]>
+
+  export type PhoneOTPSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    verified?: boolean
+    attempts?: boolean
+    createdAt?: boolean
+  }
+
+  export type PhoneOTPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "phone" | "otp" | "expiresAt" | "verified" | "attempts" | "createdAt", ExtArgs["result"]["phoneOTP"]>
+  export type PhoneOTPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PhoneOTPIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PhoneOTPIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $PhoneOTPPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PhoneOTP"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      userId: number
+      phone: string
+      otp: string
+      expiresAt: Date
+      verified: boolean
+      attempts: number
+      createdAt: Date
+    }, ExtArgs["result"]["phoneOTP"]>
+    composites: {}
+  }
+
+  type PhoneOTPGetPayload<S extends boolean | null | undefined | PhoneOTPDefaultArgs> = $Result.GetResult<Prisma.$PhoneOTPPayload, S>
+
+  type PhoneOTPCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PhoneOTPFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PhoneOTPCountAggregateInputType | true
+    }
+
+  export interface PhoneOTPDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PhoneOTP'], meta: { name: 'PhoneOTP' } }
+    /**
+     * Find zero or one PhoneOTP that matches the filter.
+     * @param {PhoneOTPFindUniqueArgs} args - Arguments to find a PhoneOTP
+     * @example
+     * // Get one PhoneOTP
+     * const phoneOTP = await prisma.phoneOTP.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PhoneOTPFindUniqueArgs>(args: SelectSubset<T, PhoneOTPFindUniqueArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PhoneOTP that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PhoneOTPFindUniqueOrThrowArgs} args - Arguments to find a PhoneOTP
+     * @example
+     * // Get one PhoneOTP
+     * const phoneOTP = await prisma.phoneOTP.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PhoneOTPFindUniqueOrThrowArgs>(args: SelectSubset<T, PhoneOTPFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PhoneOTP that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhoneOTPFindFirstArgs} args - Arguments to find a PhoneOTP
+     * @example
+     * // Get one PhoneOTP
+     * const phoneOTP = await prisma.phoneOTP.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PhoneOTPFindFirstArgs>(args?: SelectSubset<T, PhoneOTPFindFirstArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PhoneOTP that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhoneOTPFindFirstOrThrowArgs} args - Arguments to find a PhoneOTP
+     * @example
+     * // Get one PhoneOTP
+     * const phoneOTP = await prisma.phoneOTP.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PhoneOTPFindFirstOrThrowArgs>(args?: SelectSubset<T, PhoneOTPFindFirstOrThrowArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PhoneOTPS that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhoneOTPFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PhoneOTPS
+     * const phoneOTPS = await prisma.phoneOTP.findMany()
+     * 
+     * // Get first 10 PhoneOTPS
+     * const phoneOTPS = await prisma.phoneOTP.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const phoneOTPWithIdOnly = await prisma.phoneOTP.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PhoneOTPFindManyArgs>(args?: SelectSubset<T, PhoneOTPFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PhoneOTP.
+     * @param {PhoneOTPCreateArgs} args - Arguments to create a PhoneOTP.
+     * @example
+     * // Create one PhoneOTP
+     * const PhoneOTP = await prisma.phoneOTP.create({
+     *   data: {
+     *     // ... data to create a PhoneOTP
+     *   }
+     * })
+     * 
+     */
+    create<T extends PhoneOTPCreateArgs>(args: SelectSubset<T, PhoneOTPCreateArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PhoneOTPS.
+     * @param {PhoneOTPCreateManyArgs} args - Arguments to create many PhoneOTPS.
+     * @example
+     * // Create many PhoneOTPS
+     * const phoneOTP = await prisma.phoneOTP.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PhoneOTPCreateManyArgs>(args?: SelectSubset<T, PhoneOTPCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PhoneOTPS and returns the data saved in the database.
+     * @param {PhoneOTPCreateManyAndReturnArgs} args - Arguments to create many PhoneOTPS.
+     * @example
+     * // Create many PhoneOTPS
+     * const phoneOTP = await prisma.phoneOTP.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PhoneOTPS and only return the `id`
+     * const phoneOTPWithIdOnly = await prisma.phoneOTP.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PhoneOTPCreateManyAndReturnArgs>(args?: SelectSubset<T, PhoneOTPCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PhoneOTP.
+     * @param {PhoneOTPDeleteArgs} args - Arguments to delete one PhoneOTP.
+     * @example
+     * // Delete one PhoneOTP
+     * const PhoneOTP = await prisma.phoneOTP.delete({
+     *   where: {
+     *     // ... filter to delete one PhoneOTP
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PhoneOTPDeleteArgs>(args: SelectSubset<T, PhoneOTPDeleteArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PhoneOTP.
+     * @param {PhoneOTPUpdateArgs} args - Arguments to update one PhoneOTP.
+     * @example
+     * // Update one PhoneOTP
+     * const phoneOTP = await prisma.phoneOTP.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PhoneOTPUpdateArgs>(args: SelectSubset<T, PhoneOTPUpdateArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PhoneOTPS.
+     * @param {PhoneOTPDeleteManyArgs} args - Arguments to filter PhoneOTPS to delete.
+     * @example
+     * // Delete a few PhoneOTPS
+     * const { count } = await prisma.phoneOTP.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PhoneOTPDeleteManyArgs>(args?: SelectSubset<T, PhoneOTPDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PhoneOTPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhoneOTPUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PhoneOTPS
+     * const phoneOTP = await prisma.phoneOTP.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PhoneOTPUpdateManyArgs>(args: SelectSubset<T, PhoneOTPUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PhoneOTPS and returns the data updated in the database.
+     * @param {PhoneOTPUpdateManyAndReturnArgs} args - Arguments to update many PhoneOTPS.
+     * @example
+     * // Update many PhoneOTPS
+     * const phoneOTP = await prisma.phoneOTP.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PhoneOTPS and only return the `id`
+     * const phoneOTPWithIdOnly = await prisma.phoneOTP.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PhoneOTPUpdateManyAndReturnArgs>(args: SelectSubset<T, PhoneOTPUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PhoneOTP.
+     * @param {PhoneOTPUpsertArgs} args - Arguments to update or create a PhoneOTP.
+     * @example
+     * // Update or create a PhoneOTP
+     * const phoneOTP = await prisma.phoneOTP.upsert({
+     *   create: {
+     *     // ... data to create a PhoneOTP
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PhoneOTP we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PhoneOTPUpsertArgs>(args: SelectSubset<T, PhoneOTPUpsertArgs<ExtArgs>>): Prisma__PhoneOTPClient<$Result.GetResult<Prisma.$PhoneOTPPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PhoneOTPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhoneOTPCountArgs} args - Arguments to filter PhoneOTPS to count.
+     * @example
+     * // Count the number of PhoneOTPS
+     * const count = await prisma.phoneOTP.count({
+     *   where: {
+     *     // ... the filter for the PhoneOTPS we want to count
+     *   }
+     * })
+    **/
+    count<T extends PhoneOTPCountArgs>(
+      args?: Subset<T, PhoneOTPCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PhoneOTPCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PhoneOTP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhoneOTPAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PhoneOTPAggregateArgs>(args: Subset<T, PhoneOTPAggregateArgs>): Prisma.PrismaPromise<GetPhoneOTPAggregateType<T>>
+
+    /**
+     * Group by PhoneOTP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhoneOTPGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PhoneOTPGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PhoneOTPGroupByArgs['orderBy'] }
+        : { orderBy?: PhoneOTPGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PhoneOTPGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPhoneOTPGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PhoneOTP model
+   */
+  readonly fields: PhoneOTPFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PhoneOTP.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PhoneOTPClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PhoneOTP model
+   */
+  interface PhoneOTPFieldRefs {
+    readonly id: FieldRef<"PhoneOTP", 'Int'>
+    readonly userId: FieldRef<"PhoneOTP", 'Int'>
+    readonly phone: FieldRef<"PhoneOTP", 'String'>
+    readonly otp: FieldRef<"PhoneOTP", 'String'>
+    readonly expiresAt: FieldRef<"PhoneOTP", 'DateTime'>
+    readonly verified: FieldRef<"PhoneOTP", 'Boolean'>
+    readonly attempts: FieldRef<"PhoneOTP", 'Int'>
+    readonly createdAt: FieldRef<"PhoneOTP", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PhoneOTP findUnique
+   */
+  export type PhoneOTPFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * Filter, which PhoneOTP to fetch.
+     */
+    where: PhoneOTPWhereUniqueInput
+  }
+
+  /**
+   * PhoneOTP findUniqueOrThrow
+   */
+  export type PhoneOTPFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * Filter, which PhoneOTP to fetch.
+     */
+    where: PhoneOTPWhereUniqueInput
+  }
+
+  /**
+   * PhoneOTP findFirst
+   */
+  export type PhoneOTPFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * Filter, which PhoneOTP to fetch.
+     */
+    where?: PhoneOTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PhoneOTPS to fetch.
+     */
+    orderBy?: PhoneOTPOrderByWithRelationInput | PhoneOTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PhoneOTPS.
+     */
+    cursor?: PhoneOTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PhoneOTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PhoneOTPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PhoneOTPS.
+     */
+    distinct?: PhoneOTPScalarFieldEnum | PhoneOTPScalarFieldEnum[]
+  }
+
+  /**
+   * PhoneOTP findFirstOrThrow
+   */
+  export type PhoneOTPFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * Filter, which PhoneOTP to fetch.
+     */
+    where?: PhoneOTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PhoneOTPS to fetch.
+     */
+    orderBy?: PhoneOTPOrderByWithRelationInput | PhoneOTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PhoneOTPS.
+     */
+    cursor?: PhoneOTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PhoneOTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PhoneOTPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PhoneOTPS.
+     */
+    distinct?: PhoneOTPScalarFieldEnum | PhoneOTPScalarFieldEnum[]
+  }
+
+  /**
+   * PhoneOTP findMany
+   */
+  export type PhoneOTPFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * Filter, which PhoneOTPS to fetch.
+     */
+    where?: PhoneOTPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PhoneOTPS to fetch.
+     */
+    orderBy?: PhoneOTPOrderByWithRelationInput | PhoneOTPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PhoneOTPS.
+     */
+    cursor?: PhoneOTPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PhoneOTPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PhoneOTPS.
+     */
+    skip?: number
+    distinct?: PhoneOTPScalarFieldEnum | PhoneOTPScalarFieldEnum[]
+  }
+
+  /**
+   * PhoneOTP create
+   */
+  export type PhoneOTPCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PhoneOTP.
+     */
+    data: XOR<PhoneOTPCreateInput, PhoneOTPUncheckedCreateInput>
+  }
+
+  /**
+   * PhoneOTP createMany
+   */
+  export type PhoneOTPCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PhoneOTPS.
+     */
+    data: PhoneOTPCreateManyInput | PhoneOTPCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PhoneOTP createManyAndReturn
+   */
+  export type PhoneOTPCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * The data used to create many PhoneOTPS.
+     */
+    data: PhoneOTPCreateManyInput | PhoneOTPCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PhoneOTP update
+   */
+  export type PhoneOTPUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PhoneOTP.
+     */
+    data: XOR<PhoneOTPUpdateInput, PhoneOTPUncheckedUpdateInput>
+    /**
+     * Choose, which PhoneOTP to update.
+     */
+    where: PhoneOTPWhereUniqueInput
+  }
+
+  /**
+   * PhoneOTP updateMany
+   */
+  export type PhoneOTPUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PhoneOTPS.
+     */
+    data: XOR<PhoneOTPUpdateManyMutationInput, PhoneOTPUncheckedUpdateManyInput>
+    /**
+     * Filter which PhoneOTPS to update
+     */
+    where?: PhoneOTPWhereInput
+    /**
+     * Limit how many PhoneOTPS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PhoneOTP updateManyAndReturn
+   */
+  export type PhoneOTPUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * The data used to update PhoneOTPS.
+     */
+    data: XOR<PhoneOTPUpdateManyMutationInput, PhoneOTPUncheckedUpdateManyInput>
+    /**
+     * Filter which PhoneOTPS to update
+     */
+    where?: PhoneOTPWhereInput
+    /**
+     * Limit how many PhoneOTPS to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PhoneOTP upsert
+   */
+  export type PhoneOTPUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PhoneOTP to update in case it exists.
+     */
+    where: PhoneOTPWhereUniqueInput
+    /**
+     * In case the PhoneOTP found by the `where` argument doesn't exist, create a new PhoneOTP with this data.
+     */
+    create: XOR<PhoneOTPCreateInput, PhoneOTPUncheckedCreateInput>
+    /**
+     * In case the PhoneOTP was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PhoneOTPUpdateInput, PhoneOTPUncheckedUpdateInput>
+  }
+
+  /**
+   * PhoneOTP delete
+   */
+  export type PhoneOTPDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
+    /**
+     * Filter which PhoneOTP to delete.
+     */
+    where: PhoneOTPWhereUniqueInput
+  }
+
+  /**
+   * PhoneOTP deleteMany
+   */
+  export type PhoneOTPDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PhoneOTPS to delete
+     */
+    where?: PhoneOTPWhereInput
+    /**
+     * Limit how many PhoneOTPS to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PhoneOTP without action
+   */
+  export type PhoneOTPDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PhoneOTP
+     */
+    select?: PhoneOTPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PhoneOTP
+     */
+    omit?: PhoneOTPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhoneOTPInclude<ExtArgs> | null
   }
 
 
@@ -12973,16 +14266,22 @@ export namespace Prisma {
 
   export type TimeSlotAvgAggregateOutputType = {
     id: number | null
+    capacity: number | null
+    bookedCount: number | null
   }
 
   export type TimeSlotSumAggregateOutputType = {
     id: number | null
+    capacity: number | null
+    bookedCount: number | null
   }
 
   export type TimeSlotMinAggregateOutputType = {
     id: number | null
     slotStart: Date | null
     slotEnd: Date | null
+    capacity: number | null
+    bookedCount: number | null
     isAvailable: boolean | null
     createdAt: Date | null
   }
@@ -12991,6 +14290,8 @@ export namespace Prisma {
     id: number | null
     slotStart: Date | null
     slotEnd: Date | null
+    capacity: number | null
+    bookedCount: number | null
     isAvailable: boolean | null
     createdAt: Date | null
   }
@@ -12999,6 +14300,8 @@ export namespace Prisma {
     id: number
     slotStart: number
     slotEnd: number
+    capacity: number
+    bookedCount: number
     isAvailable: number
     createdAt: number
     _all: number
@@ -13007,16 +14310,22 @@ export namespace Prisma {
 
   export type TimeSlotAvgAggregateInputType = {
     id?: true
+    capacity?: true
+    bookedCount?: true
   }
 
   export type TimeSlotSumAggregateInputType = {
     id?: true
+    capacity?: true
+    bookedCount?: true
   }
 
   export type TimeSlotMinAggregateInputType = {
     id?: true
     slotStart?: true
     slotEnd?: true
+    capacity?: true
+    bookedCount?: true
     isAvailable?: true
     createdAt?: true
   }
@@ -13025,6 +14334,8 @@ export namespace Prisma {
     id?: true
     slotStart?: true
     slotEnd?: true
+    capacity?: true
+    bookedCount?: true
     isAvailable?: true
     createdAt?: true
   }
@@ -13033,6 +14344,8 @@ export namespace Prisma {
     id?: true
     slotStart?: true
     slotEnd?: true
+    capacity?: true
+    bookedCount?: true
     isAvailable?: true
     createdAt?: true
     _all?: true
@@ -13128,6 +14441,8 @@ export namespace Prisma {
     id: number
     slotStart: Date
     slotEnd: Date
+    capacity: number
+    bookedCount: number
     isAvailable: boolean
     createdAt: Date
     _count: TimeSlotCountAggregateOutputType | null
@@ -13155,6 +14470,8 @@ export namespace Prisma {
     id?: boolean
     slotStart?: boolean
     slotEnd?: boolean
+    capacity?: boolean
+    bookedCount?: boolean
     isAvailable?: boolean
     createdAt?: boolean
     orders?: boolean | TimeSlot$ordersArgs<ExtArgs>
@@ -13165,6 +14482,8 @@ export namespace Prisma {
     id?: boolean
     slotStart?: boolean
     slotEnd?: boolean
+    capacity?: boolean
+    bookedCount?: boolean
     isAvailable?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["timeSlot"]>
@@ -13173,6 +14492,8 @@ export namespace Prisma {
     id?: boolean
     slotStart?: boolean
     slotEnd?: boolean
+    capacity?: boolean
+    bookedCount?: boolean
     isAvailable?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["timeSlot"]>
@@ -13181,11 +14502,13 @@ export namespace Prisma {
     id?: boolean
     slotStart?: boolean
     slotEnd?: boolean
+    capacity?: boolean
+    bookedCount?: boolean
     isAvailable?: boolean
     createdAt?: boolean
   }
 
-  export type TimeSlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slotStart" | "slotEnd" | "isAvailable" | "createdAt", ExtArgs["result"]["timeSlot"]>
+  export type TimeSlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slotStart" | "slotEnd" | "capacity" | "bookedCount" | "isAvailable" | "createdAt", ExtArgs["result"]["timeSlot"]>
   export type TimeSlotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     orders?: boolean | TimeSlot$ordersArgs<ExtArgs>
     _count?: boolean | TimeSlotCountOutputTypeDefaultArgs<ExtArgs>
@@ -13202,6 +14525,8 @@ export namespace Prisma {
       id: number
       slotStart: Date
       slotEnd: Date
+      capacity: number
+      bookedCount: number
       isAvailable: boolean
       createdAt: Date
     }, ExtArgs["result"]["timeSlot"]>
@@ -13631,6 +14956,8 @@ export namespace Prisma {
     readonly id: FieldRef<"TimeSlot", 'Int'>
     readonly slotStart: FieldRef<"TimeSlot", 'DateTime'>
     readonly slotEnd: FieldRef<"TimeSlot", 'DateTime'>
+    readonly capacity: FieldRef<"TimeSlot", 'Int'>
+    readonly bookedCount: FieldRef<"TimeSlot", 'Int'>
     readonly isAvailable: FieldRef<"TimeSlot", 'Boolean'>
     readonly createdAt: FieldRef<"TimeSlot", 'DateTime'>
   }
@@ -17415,12 +18742,28 @@ export namespace Prisma {
     phone: 'phone',
     emailVerified: 'emailVerified',
     emailVerifiedAt: 'emailVerifiedAt',
+    phoneVerified: 'phoneVerified',
+    phoneVerifiedAt: 'phoneVerifiedAt',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+  export const PhoneOTPScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    phone: 'phone',
+    otp: 'otp',
+    expiresAt: 'expiresAt',
+    verified: 'verified',
+    attempts: 'attempts',
+    createdAt: 'createdAt'
+  };
+
+  export type PhoneOTPScalarFieldEnum = (typeof PhoneOTPScalarFieldEnum)[keyof typeof PhoneOTPScalarFieldEnum]
 
 
   export const RestaurantAdminScalarFieldEnum: {
@@ -17524,6 +18867,8 @@ export namespace Prisma {
     id: 'id',
     slotStart: 'slotStart',
     slotEnd: 'slotEnd',
+    capacity: 'capacity',
+    bookedCount: 'bookedCount',
     isAvailable: 'isAvailable',
     createdAt: 'createdAt'
   };
@@ -17812,6 +19157,8 @@ export namespace Prisma {
     phone?: StringNullableFilter<"User"> | string | null
     emailVerified?: BoolFilter<"User"> | boolean
     emailVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    phoneVerified?: BoolFilter<"User"> | boolean
+    phoneVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     isActive?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -17820,6 +19167,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenListRelationFilter
     emailVerifications?: EmailVerificationListRelationFilter
     passwordResets?: PasswordResetListRelationFilter
+    phoneOTPs?: PhoneOTPListRelationFilter
     cart?: XOR<CartNullableScalarRelationFilter, CartWhereInput> | null
   }
 
@@ -17832,6 +19180,8 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     emailVerified?: SortOrder
     emailVerifiedAt?: SortOrderInput | SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -17840,6 +19190,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenOrderByRelationAggregateInput
     emailVerifications?: EmailVerificationOrderByRelationAggregateInput
     passwordResets?: PasswordResetOrderByRelationAggregateInput
+    phoneOTPs?: PhoneOTPOrderByRelationAggregateInput
     cart?: CartOrderByWithRelationInput
   }
 
@@ -17855,6 +19206,8 @@ export namespace Prisma {
     phone?: StringNullableFilter<"User"> | string | null
     emailVerified?: BoolFilter<"User"> | boolean
     emailVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    phoneVerified?: BoolFilter<"User"> | boolean
+    phoneVerifiedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     isActive?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -17863,6 +19216,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenListRelationFilter
     emailVerifications?: EmailVerificationListRelationFilter
     passwordResets?: PasswordResetListRelationFilter
+    phoneOTPs?: PhoneOTPListRelationFilter
     cart?: XOR<CartNullableScalarRelationFilter, CartWhereInput> | null
   }, "id" | "email">
 
@@ -17875,6 +19229,8 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     emailVerified?: SortOrder
     emailVerifiedAt?: SortOrderInput | SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -17897,9 +19253,83 @@ export namespace Prisma {
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     emailVerified?: BoolWithAggregatesFilter<"User"> | boolean
     emailVerifiedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    phoneVerified?: BoolWithAggregatesFilter<"User"> | boolean
+    phoneVerifiedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     isActive?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
+  export type PhoneOTPWhereInput = {
+    AND?: PhoneOTPWhereInput | PhoneOTPWhereInput[]
+    OR?: PhoneOTPWhereInput[]
+    NOT?: PhoneOTPWhereInput | PhoneOTPWhereInput[]
+    id?: IntFilter<"PhoneOTP"> | number
+    userId?: IntFilter<"PhoneOTP"> | number
+    phone?: StringFilter<"PhoneOTP"> | string
+    otp?: StringFilter<"PhoneOTP"> | string
+    expiresAt?: DateTimeFilter<"PhoneOTP"> | Date | string
+    verified?: BoolFilter<"PhoneOTP"> | boolean
+    attempts?: IntFilter<"PhoneOTP"> | number
+    createdAt?: DateTimeFilter<"PhoneOTP"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type PhoneOTPOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    verified?: SortOrder
+    attempts?: SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type PhoneOTPWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: PhoneOTPWhereInput | PhoneOTPWhereInput[]
+    OR?: PhoneOTPWhereInput[]
+    NOT?: PhoneOTPWhereInput | PhoneOTPWhereInput[]
+    userId?: IntFilter<"PhoneOTP"> | number
+    phone?: StringFilter<"PhoneOTP"> | string
+    otp?: StringFilter<"PhoneOTP"> | string
+    expiresAt?: DateTimeFilter<"PhoneOTP"> | Date | string
+    verified?: BoolFilter<"PhoneOTP"> | boolean
+    attempts?: IntFilter<"PhoneOTP"> | number
+    createdAt?: DateTimeFilter<"PhoneOTP"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type PhoneOTPOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    verified?: SortOrder
+    attempts?: SortOrder
+    createdAt?: SortOrder
+    _count?: PhoneOTPCountOrderByAggregateInput
+    _avg?: PhoneOTPAvgOrderByAggregateInput
+    _max?: PhoneOTPMaxOrderByAggregateInput
+    _min?: PhoneOTPMinOrderByAggregateInput
+    _sum?: PhoneOTPSumOrderByAggregateInput
+  }
+
+  export type PhoneOTPScalarWhereWithAggregatesInput = {
+    AND?: PhoneOTPScalarWhereWithAggregatesInput | PhoneOTPScalarWhereWithAggregatesInput[]
+    OR?: PhoneOTPScalarWhereWithAggregatesInput[]
+    NOT?: PhoneOTPScalarWhereWithAggregatesInput | PhoneOTPScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PhoneOTP"> | number
+    userId?: IntWithAggregatesFilter<"PhoneOTP"> | number
+    phone?: StringWithAggregatesFilter<"PhoneOTP"> | string
+    otp?: StringWithAggregatesFilter<"PhoneOTP"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"PhoneOTP"> | Date | string
+    verified?: BoolWithAggregatesFilter<"PhoneOTP"> | boolean
+    attempts?: IntWithAggregatesFilter<"PhoneOTP"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"PhoneOTP"> | Date | string
   }
 
   export type RestaurantAdminWhereInput = {
@@ -18441,6 +19871,8 @@ export namespace Prisma {
     id?: IntFilter<"TimeSlot"> | number
     slotStart?: DateTimeFilter<"TimeSlot"> | Date | string
     slotEnd?: DateTimeFilter<"TimeSlot"> | Date | string
+    capacity?: IntFilter<"TimeSlot"> | number
+    bookedCount?: IntFilter<"TimeSlot"> | number
     isAvailable?: BoolFilter<"TimeSlot"> | boolean
     createdAt?: DateTimeFilter<"TimeSlot"> | Date | string
     orders?: OrderListRelationFilter
@@ -18450,6 +19882,8 @@ export namespace Prisma {
     id?: SortOrder
     slotStart?: SortOrder
     slotEnd?: SortOrder
+    capacity?: SortOrder
+    bookedCount?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
     orders?: OrderOrderByRelationAggregateInput
@@ -18462,6 +19896,8 @@ export namespace Prisma {
     NOT?: TimeSlotWhereInput | TimeSlotWhereInput[]
     slotStart?: DateTimeFilter<"TimeSlot"> | Date | string
     slotEnd?: DateTimeFilter<"TimeSlot"> | Date | string
+    capacity?: IntFilter<"TimeSlot"> | number
+    bookedCount?: IntFilter<"TimeSlot"> | number
     isAvailable?: BoolFilter<"TimeSlot"> | boolean
     createdAt?: DateTimeFilter<"TimeSlot"> | Date | string
     orders?: OrderListRelationFilter
@@ -18471,6 +19907,8 @@ export namespace Prisma {
     id?: SortOrder
     slotStart?: SortOrder
     slotEnd?: SortOrder
+    capacity?: SortOrder
+    bookedCount?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
     _count?: TimeSlotCountOrderByAggregateInput
@@ -18487,6 +19925,8 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"TimeSlot"> | number
     slotStart?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
     slotEnd?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
+    capacity?: IntWithAggregatesFilter<"TimeSlot"> | number
+    bookedCount?: IntWithAggregatesFilter<"TimeSlot"> | number
     isAvailable?: BoolWithAggregatesFilter<"TimeSlot"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
   }
@@ -18773,6 +20213,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -18781,6 +20223,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
   }
 
@@ -18793,6 +20236,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -18801,6 +20246,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetUncheckedCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -18812,6 +20258,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18820,6 +20268,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
   }
 
@@ -18832,6 +20281,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18840,6 +20291,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -18852,6 +20304,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -18865,6 +20319,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18879,9 +20335,84 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhoneOTPCreateInput = {
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    verified?: boolean
+    attempts?: number
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutPhoneOTPsInput
+  }
+
+  export type PhoneOTPUncheckedCreateInput = {
+    id?: number
+    userId: number
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    verified?: boolean
+    attempts?: number
+    createdAt?: Date | string
+  }
+
+  export type PhoneOTPUpdateInput = {
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPhoneOTPsNestedInput
+  }
+
+  export type PhoneOTPUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: IntFieldUpdateOperationsInput | number
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhoneOTPCreateManyInput = {
+    id?: number
+    userId: number
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    verified?: boolean
+    attempts?: number
+    createdAt?: Date | string
+  }
+
+  export type PhoneOTPUpdateManyMutationInput = {
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhoneOTPUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: IntFieldUpdateOperationsInput | number
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RestaurantAdminCreateInput = {
@@ -19406,6 +20937,8 @@ export namespace Prisma {
   export type TimeSlotCreateInput = {
     slotStart: Date | string
     slotEnd: Date | string
+    capacity?: number
+    bookedCount?: number
     isAvailable?: boolean
     createdAt?: Date | string
     orders?: OrderCreateNestedManyWithoutTimeSlotInput
@@ -19415,6 +20948,8 @@ export namespace Prisma {
     id?: number
     slotStart: Date | string
     slotEnd: Date | string
+    capacity?: number
+    bookedCount?: number
     isAvailable?: boolean
     createdAt?: Date | string
     orders?: OrderUncheckedCreateNestedManyWithoutTimeSlotInput
@@ -19423,6 +20958,8 @@ export namespace Prisma {
   export type TimeSlotUpdateInput = {
     slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
     slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    bookedCount?: IntFieldUpdateOperationsInput | number
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUpdateManyWithoutTimeSlotNestedInput
@@ -19432,6 +20969,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
     slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    bookedCount?: IntFieldUpdateOperationsInput | number
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUncheckedUpdateManyWithoutTimeSlotNestedInput
@@ -19441,6 +20980,8 @@ export namespace Prisma {
     id?: number
     slotStart: Date | string
     slotEnd: Date | string
+    capacity?: number
+    bookedCount?: number
     isAvailable?: boolean
     createdAt?: Date | string
   }
@@ -19448,6 +20989,8 @@ export namespace Prisma {
   export type TimeSlotUpdateManyMutationInput = {
     slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
     slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    bookedCount?: IntFieldUpdateOperationsInput | number
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19456,6 +20999,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
     slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    bookedCount?: IntFieldUpdateOperationsInput | number
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19876,6 +21421,12 @@ export namespace Prisma {
     none?: PasswordResetWhereInput
   }
 
+  export type PhoneOTPListRelationFilter = {
+    every?: PhoneOTPWhereInput
+    some?: PhoneOTPWhereInput
+    none?: PhoneOTPWhereInput
+  }
+
   export type CartNullableScalarRelationFilter = {
     is?: CartWhereInput | null
     isNot?: CartWhereInput | null
@@ -19893,6 +21444,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type PhoneOTPOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
@@ -19902,6 +21457,8 @@ export namespace Prisma {
     phone?: SortOrder
     emailVerified?: SortOrder
     emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19920,6 +21477,8 @@ export namespace Prisma {
     phone?: SortOrder
     emailVerified?: SortOrder
     emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19934,6 +21493,8 @@ export namespace Prisma {
     phone?: SortOrder
     emailVerified?: SortOrder
     emailVerifiedAt?: SortOrder
+    phoneVerified?: SortOrder
+    phoneVerifiedAt?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19970,6 +21531,51 @@ export namespace Prisma {
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
+  }
+
+  export type PhoneOTPCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    verified?: SortOrder
+    attempts?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PhoneOTPAvgOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    attempts?: SortOrder
+  }
+
+  export type PhoneOTPMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    verified?: SortOrder
+    attempts?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PhoneOTPMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    verified?: SortOrder
+    attempts?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PhoneOTPSumOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    attempts?: SortOrder
   }
 
   export type RestaurantScalarRelationFilter = {
@@ -20453,18 +22059,24 @@ export namespace Prisma {
     id?: SortOrder
     slotStart?: SortOrder
     slotEnd?: SortOrder
+    capacity?: SortOrder
+    bookedCount?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
   }
 
   export type TimeSlotAvgOrderByAggregateInput = {
     id?: SortOrder
+    capacity?: SortOrder
+    bookedCount?: SortOrder
   }
 
   export type TimeSlotMaxOrderByAggregateInput = {
     id?: SortOrder
     slotStart?: SortOrder
     slotEnd?: SortOrder
+    capacity?: SortOrder
+    bookedCount?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
   }
@@ -20473,12 +22085,16 @@ export namespace Prisma {
     id?: SortOrder
     slotStart?: SortOrder
     slotEnd?: SortOrder
+    capacity?: SortOrder
+    bookedCount?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
   }
 
   export type TimeSlotSumOrderByAggregateInput = {
     id?: SortOrder
+    capacity?: SortOrder
+    bookedCount?: SortOrder
   }
 
   export type RefreshTokenCountOrderByAggregateInput = {
@@ -20774,6 +22390,13 @@ export namespace Prisma {
     connect?: PasswordResetWhereUniqueInput | PasswordResetWhereUniqueInput[]
   }
 
+  export type PhoneOTPCreateNestedManyWithoutUserInput = {
+    create?: XOR<PhoneOTPCreateWithoutUserInput, PhoneOTPUncheckedCreateWithoutUserInput> | PhoneOTPCreateWithoutUserInput[] | PhoneOTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhoneOTPCreateOrConnectWithoutUserInput | PhoneOTPCreateOrConnectWithoutUserInput[]
+    createMany?: PhoneOTPCreateManyUserInputEnvelope
+    connect?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+  }
+
   export type CartCreateNestedOneWithoutUserInput = {
     create?: XOR<CartCreateWithoutUserInput, CartUncheckedCreateWithoutUserInput>
     connectOrCreate?: CartCreateOrConnectWithoutUserInput
@@ -20813,6 +22436,13 @@ export namespace Prisma {
     connectOrCreate?: PasswordResetCreateOrConnectWithoutUserInput | PasswordResetCreateOrConnectWithoutUserInput[]
     createMany?: PasswordResetCreateManyUserInputEnvelope
     connect?: PasswordResetWhereUniqueInput | PasswordResetWhereUniqueInput[]
+  }
+
+  export type PhoneOTPUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PhoneOTPCreateWithoutUserInput, PhoneOTPUncheckedCreateWithoutUserInput> | PhoneOTPCreateWithoutUserInput[] | PhoneOTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhoneOTPCreateOrConnectWithoutUserInput | PhoneOTPCreateOrConnectWithoutUserInput[]
+    createMany?: PhoneOTPCreateManyUserInputEnvelope
+    connect?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
   }
 
   export type CartUncheckedCreateNestedOneWithoutUserInput = {
@@ -20899,6 +22529,20 @@ export namespace Prisma {
     deleteMany?: PasswordResetScalarWhereInput | PasswordResetScalarWhereInput[]
   }
 
+  export type PhoneOTPUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PhoneOTPCreateWithoutUserInput, PhoneOTPUncheckedCreateWithoutUserInput> | PhoneOTPCreateWithoutUserInput[] | PhoneOTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhoneOTPCreateOrConnectWithoutUserInput | PhoneOTPCreateOrConnectWithoutUserInput[]
+    upsert?: PhoneOTPUpsertWithWhereUniqueWithoutUserInput | PhoneOTPUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PhoneOTPCreateManyUserInputEnvelope
+    set?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    disconnect?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    delete?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    connect?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    update?: PhoneOTPUpdateWithWhereUniqueWithoutUserInput | PhoneOTPUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PhoneOTPUpdateManyWithWhereWithoutUserInput | PhoneOTPUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PhoneOTPScalarWhereInput | PhoneOTPScalarWhereInput[]
+  }
+
   export type CartUpdateOneWithoutUserNestedInput = {
     create?: XOR<CartCreateWithoutUserInput, CartUncheckedCreateWithoutUserInput>
     connectOrCreate?: CartCreateOrConnectWithoutUserInput
@@ -20979,6 +22623,20 @@ export namespace Prisma {
     deleteMany?: PasswordResetScalarWhereInput | PasswordResetScalarWhereInput[]
   }
 
+  export type PhoneOTPUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PhoneOTPCreateWithoutUserInput, PhoneOTPUncheckedCreateWithoutUserInput> | PhoneOTPCreateWithoutUserInput[] | PhoneOTPUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhoneOTPCreateOrConnectWithoutUserInput | PhoneOTPCreateOrConnectWithoutUserInput[]
+    upsert?: PhoneOTPUpsertWithWhereUniqueWithoutUserInput | PhoneOTPUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PhoneOTPCreateManyUserInputEnvelope
+    set?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    disconnect?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    delete?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    connect?: PhoneOTPWhereUniqueInput | PhoneOTPWhereUniqueInput[]
+    update?: PhoneOTPUpdateWithWhereUniqueWithoutUserInput | PhoneOTPUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PhoneOTPUpdateManyWithWhereWithoutUserInput | PhoneOTPUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PhoneOTPScalarWhereInput | PhoneOTPScalarWhereInput[]
+  }
+
   export type CartUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<CartCreateWithoutUserInput, CartUncheckedCreateWithoutUserInput>
     connectOrCreate?: CartCreateOrConnectWithoutUserInput
@@ -20987,6 +22645,20 @@ export namespace Prisma {
     delete?: CartWhereInput | boolean
     connect?: CartWhereUniqueInput
     update?: XOR<XOR<CartUpdateToOneWithWhereWithoutUserInput, CartUpdateWithoutUserInput>, CartUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserCreateNestedOneWithoutPhoneOTPsInput = {
+    create?: XOR<UserCreateWithoutPhoneOTPsInput, UserUncheckedCreateWithoutPhoneOTPsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPhoneOTPsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutPhoneOTPsNestedInput = {
+    create?: XOR<UserCreateWithoutPhoneOTPsInput, UserUncheckedCreateWithoutPhoneOTPsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPhoneOTPsInput
+    upsert?: UserUpsertWithoutPhoneOTPsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPhoneOTPsInput, UserUpdateWithoutPhoneOTPsInput>, UserUncheckedUpdateWithoutPhoneOTPsInput>
   }
 
   export type UserCreateNestedOneWithoutAdminOfInput = {
@@ -22073,6 +23745,35 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PhoneOTPCreateWithoutUserInput = {
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    verified?: boolean
+    attempts?: number
+    createdAt?: Date | string
+  }
+
+  export type PhoneOTPUncheckedCreateWithoutUserInput = {
+    id?: number
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    verified?: boolean
+    attempts?: number
+    createdAt?: Date | string
+  }
+
+  export type PhoneOTPCreateOrConnectWithoutUserInput = {
+    where: PhoneOTPWhereUniqueInput
+    create: XOR<PhoneOTPCreateWithoutUserInput, PhoneOTPUncheckedCreateWithoutUserInput>
+  }
+
+  export type PhoneOTPCreateManyUserInputEnvelope = {
+    data: PhoneOTPCreateManyUserInput | PhoneOTPCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type CartCreateWithoutUserInput = {
     restaurantId: number
     createdAt?: Date | string
@@ -22208,6 +23909,36 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"PasswordReset"> | Date | string
   }
 
+  export type PhoneOTPUpsertWithWhereUniqueWithoutUserInput = {
+    where: PhoneOTPWhereUniqueInput
+    update: XOR<PhoneOTPUpdateWithoutUserInput, PhoneOTPUncheckedUpdateWithoutUserInput>
+    create: XOR<PhoneOTPCreateWithoutUserInput, PhoneOTPUncheckedCreateWithoutUserInput>
+  }
+
+  export type PhoneOTPUpdateWithWhereUniqueWithoutUserInput = {
+    where: PhoneOTPWhereUniqueInput
+    data: XOR<PhoneOTPUpdateWithoutUserInput, PhoneOTPUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PhoneOTPUpdateManyWithWhereWithoutUserInput = {
+    where: PhoneOTPScalarWhereInput
+    data: XOR<PhoneOTPUpdateManyMutationInput, PhoneOTPUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PhoneOTPScalarWhereInput = {
+    AND?: PhoneOTPScalarWhereInput | PhoneOTPScalarWhereInput[]
+    OR?: PhoneOTPScalarWhereInput[]
+    NOT?: PhoneOTPScalarWhereInput | PhoneOTPScalarWhereInput[]
+    id?: IntFilter<"PhoneOTP"> | number
+    userId?: IntFilter<"PhoneOTP"> | number
+    phone?: StringFilter<"PhoneOTP"> | string
+    otp?: StringFilter<"PhoneOTP"> | string
+    expiresAt?: DateTimeFilter<"PhoneOTP"> | Date | string
+    verified?: BoolFilter<"PhoneOTP"> | boolean
+    attempts?: IntFilter<"PhoneOTP"> | number
+    createdAt?: DateTimeFilter<"PhoneOTP"> | Date | string
+  }
+
   export type CartUpsertWithoutUserInput = {
     update: XOR<CartUpdateWithoutUserInput, CartUncheckedUpdateWithoutUserInput>
     create: XOR<CartCreateWithoutUserInput, CartUncheckedCreateWithoutUserInput>
@@ -22234,6 +23965,108 @@ export namespace Prisma {
     items?: CartItemUncheckedUpdateManyWithoutCartNestedInput
   }
 
+  export type UserCreateWithoutPhoneOTPsInput = {
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    name?: string | null
+    phone?: string | null
+    emailVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    adminOf?: RestaurantAdminCreateNestedManyWithoutUserInput
+    orders?: OrderCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    emailVerifications?: EmailVerificationCreateNestedManyWithoutUserInput
+    passwordResets?: PasswordResetCreateNestedManyWithoutUserInput
+    cart?: CartCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPhoneOTPsInput = {
+    id?: number
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    name?: string | null
+    phone?: string | null
+    emailVerified?: boolean
+    emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    adminOf?: RestaurantAdminUncheckedCreateNestedManyWithoutUserInput
+    orders?: OrderUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    emailVerifications?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
+    passwordResets?: PasswordResetUncheckedCreateNestedManyWithoutUserInput
+    cart?: CartUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPhoneOTPsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPhoneOTPsInput, UserUncheckedCreateWithoutPhoneOTPsInput>
+  }
+
+  export type UserUpsertWithoutPhoneOTPsInput = {
+    update: XOR<UserUpdateWithoutPhoneOTPsInput, UserUncheckedUpdateWithoutPhoneOTPsInput>
+    create: XOR<UserCreateWithoutPhoneOTPsInput, UserUncheckedCreateWithoutPhoneOTPsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPhoneOTPsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPhoneOTPsInput, UserUncheckedUpdateWithoutPhoneOTPsInput>
+  }
+
+  export type UserUpdateWithoutPhoneOTPsInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    adminOf?: RestaurantAdminUpdateManyWithoutUserNestedInput
+    orders?: OrderUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    emailVerifications?: EmailVerificationUpdateManyWithoutUserNestedInput
+    passwordResets?: PasswordResetUpdateManyWithoutUserNestedInput
+    cart?: CartUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPhoneOTPsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    adminOf?: RestaurantAdminUncheckedUpdateManyWithoutUserNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    emailVerifications?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
+    passwordResets?: PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+    cart?: CartUncheckedUpdateOneWithoutUserNestedInput
+  }
+
   export type UserCreateWithoutAdminOfInput = {
     email: string
     passwordHash: string
@@ -22242,6 +24075,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22249,6 +24084,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
   }
 
@@ -22261,6 +24097,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22268,6 +24106,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetUncheckedCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -22327,6 +24166,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22334,6 +24175,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
   }
 
@@ -22346,6 +24188,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22353,6 +24197,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -22578,6 +24423,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22586,6 +24433,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCartInput = {
@@ -22597,6 +24445,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22605,6 +24455,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetUncheckedCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCartInput = {
@@ -22658,6 +24509,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22666,6 +24519,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCartInput = {
@@ -22677,6 +24531,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22685,6 +24541,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CartItemUpsertWithWhereUniqueWithoutCartInput = {
@@ -22835,6 +24692,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22842,6 +24701,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
   }
 
@@ -22854,6 +24714,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22861,6 +24723,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetUncheckedCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -22904,6 +24767,8 @@ export namespace Prisma {
   export type TimeSlotCreateWithoutOrdersInput = {
     slotStart: Date | string
     slotEnd: Date | string
+    capacity?: number
+    bookedCount?: number
     isAvailable?: boolean
     createdAt?: Date | string
   }
@@ -22912,6 +24777,8 @@ export namespace Prisma {
     id?: number
     slotStart: Date | string
     slotEnd: Date | string
+    capacity?: number
+    bookedCount?: number
     isAvailable?: boolean
     createdAt?: Date | string
   }
@@ -22993,6 +24860,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23000,6 +24869,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
   }
 
@@ -23012,6 +24882,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23019,6 +24891,7 @@ export namespace Prisma {
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -23074,6 +24947,8 @@ export namespace Prisma {
   export type TimeSlotUpdateWithoutOrdersInput = {
     slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
     slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    bookedCount?: IntFieldUpdateOperationsInput | number
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -23082,6 +24957,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
     slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    bookedCount?: IntFieldUpdateOperationsInput | number
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -23427,6 +25304,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23434,6 +25313,7 @@ export namespace Prisma {
     orders?: OrderCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
   }
 
@@ -23446,6 +25326,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23453,6 +25335,7 @@ export namespace Prisma {
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetUncheckedCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -23480,6 +25363,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23487,6 +25372,7 @@ export namespace Prisma {
     orders?: OrderUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
   }
 
@@ -23499,6 +25385,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23506,6 +25394,7 @@ export namespace Prisma {
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -23517,6 +25406,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23524,6 +25415,7 @@ export namespace Prisma {
     orders?: OrderCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
   }
 
@@ -23536,6 +25428,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23543,6 +25437,7 @@ export namespace Prisma {
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     passwordResets?: PasswordResetUncheckedCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -23570,6 +25465,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23577,6 +25474,7 @@ export namespace Prisma {
     orders?: OrderUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
   }
 
@@ -23589,6 +25487,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23596,6 +25496,7 @@ export namespace Prisma {
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     passwordResets?: PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -23607,6 +25508,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23614,6 +25517,7 @@ export namespace Prisma {
     orders?: OrderCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPCreateNestedManyWithoutUserInput
     cart?: CartCreateNestedOneWithoutUserInput
   }
 
@@ -23626,6 +25530,8 @@ export namespace Prisma {
     phone?: string | null
     emailVerified?: boolean
     emailVerifiedAt?: Date | string | null
+    phoneVerified?: boolean
+    phoneVerifiedAt?: Date | string | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23633,6 +25539,7 @@ export namespace Prisma {
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     emailVerifications?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
+    phoneOTPs?: PhoneOTPUncheckedCreateNestedManyWithoutUserInput
     cart?: CartUncheckedCreateNestedOneWithoutUserInput
   }
 
@@ -23660,6 +25567,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23667,6 +25576,7 @@ export namespace Prisma {
     orders?: OrderUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUpdateManyWithoutUserNestedInput
     cart?: CartUpdateOneWithoutUserNestedInput
   }
 
@@ -23679,6 +25589,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    phoneVerified?: BoolFieldUpdateOperationsInput | boolean
+    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23686,6 +25598,7 @@ export namespace Prisma {
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     emailVerifications?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
+    phoneOTPs?: PhoneOTPUncheckedUpdateManyWithoutUserNestedInput
     cart?: CartUncheckedUpdateOneWithoutUserNestedInput
   }
 
@@ -23868,6 +25781,16 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type PhoneOTPCreateManyUserInput = {
+    id?: number
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    verified?: boolean
+    attempts?: number
+    createdAt?: Date | string
+  }
+
   export type RestaurantAdminUpdateWithoutUserInput = {
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     restaurant?: RestaurantUpdateOneRequiredWithoutAdminsNestedInput
@@ -23990,6 +25913,35 @@ export namespace Prisma {
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     used?: BoolFieldUpdateOperationsInput | boolean
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhoneOTPUpdateWithoutUserInput = {
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhoneOTPUncheckedUpdateWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhoneOTPUncheckedUpdateManyWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

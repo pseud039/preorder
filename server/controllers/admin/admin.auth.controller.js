@@ -7,6 +7,7 @@ import { transporter } from "../../utils/email/emailConfig.js";
 import { emailTemplates } from "../../utils/email/emailTemplates.js";
 import { generateAccessToken } from "../user.controller.js";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 const SignUpAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -163,7 +164,37 @@ const LoginAdmin = asyncHandler(async (req, res) => {
   if (!existingUser) {
     throw new ApiError(404, "User not found");
   }
-  return res.status(200).json(new ApiResponse(200, "Login successfull"));
+  const HashedPassword = existingUser.passwordHash;
+  const isPasswordValid = await bcrypt.compare(password, HashedPassword);
+  if (!isPasswordValid) {
+    throw new ApiError(400, "Invalid password");
+  }
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: existingUser.id, 
+        email: existingUser.email, 
+        role: existingUser.role 
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '7d' }
+    );
+  
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+  
+    return res.status(200).json(
+      new ApiResponse(200, {
+        id: existingUser.id,
+        email: existingUser.email,
+        token: token
+      }, "Login successful")
+    );
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -192,17 +223,20 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-  await prisma.passwordReset.create({
+   const result = await prisma.passwordReset.create({
     data: {
       userId: existingUser.id,
       token: hashedToken,
       expiresAt,
     },
   });
-  const confirmationLink = `${process.env.API_LINK}/client/password/${resetToken}`;
+  const confirmationLink = `${process.env.API_LINK}/admin/password/${resetToken}`;
   console.log(confirmationLink);
   try {
-    const mailTemp = emailTemplates.ForgotPassword(email, confirmationLink);
+    const mailTemp = emailTemplates.ForgotPassword(
+      result.email,
+      confirmationLink
+    );
     const info = await transporter.sendMail({
       ...mailTemp,
       to: email,

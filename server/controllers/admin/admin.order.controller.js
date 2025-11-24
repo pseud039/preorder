@@ -4,7 +4,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
 
 const getAllOrders = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.userId;
   const {
     status,
     paymentStatus,
@@ -15,6 +15,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
     search,
   } = req.query;
 
+  // Get admin's restaurants
   const adminRestaurants = await prisma.restaurantAdmin.findMany({
     where: { userId },
     select: { restaurantId: true },
@@ -26,6 +27,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
 
   const restaurantIds = adminRestaurants.map((ra) => ra.restaurantId);
 
+  // Build where clause
   const where = {
     restaurantId: { in: restaurantIds },
   };
@@ -45,14 +47,22 @@ const getAllOrders = asyncHandler(async (req, res) => {
   }
 
   if (search) {
-    where.OR = [
-      { id: isNaN(search) ? undefined : parseInt(search) },
+    where.OR = [];
+    
+    if (!isNaN(search)) {
+      where.OR.push({ id: parseInt(search) });
+    }
+    
+    where.OR.push(
       { user: { name: { contains: search, mode: "insensitive" } } },
-      { user: { email: { contains: search, mode: "insensitive" } } },
-    ].filter((condition) => condition.id !== undefined || condition.user);
+      { user: { email: { contains: search, mode: "insensitive" } } }
+    );
   }
 
-  const skip = (page - 1) * limit;
+  // Parse pagination params
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
 
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
@@ -96,31 +106,30 @@ const getAllOrders = asyncHandler(async (req, res) => {
         },
       },
       orderBy: { createdAt: "desc" },
-      skip: parseInt(skip),
-      take: parseInt(limit),
+      skip: skip,
+      take: limitNum,
     }),
     prisma.order.count({ where }),
   ]);
 
   res.json(
     new ApiResponse(200, "Orders fetched successfully", {
-      data: {
-        orders,
-        pagination: {
-          total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(total / limit),
-        },
+      orders,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
       },
     })
   );
 });
 
 const getOrderDetails = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.userId;
   const { orderId } = req.params;
-
+console.log(userId);
+console.log({orderId});
   // Verify admin has access to this order's restaurant
   const order = await prisma.order.findUnique({
     where: { id: parseInt(orderId) },
@@ -164,7 +173,7 @@ const getOrderDetails = asyncHandler(async (req, res) => {
 });
 
 const updateOrderStatus = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.userId;
   const { orderId } = req.params;
   const { status } = req.body;
 
@@ -242,7 +251,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 });
 
 const cancelOrder = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.userId;
   const { orderId } = req.params;
   const { reason } = req.body;
 

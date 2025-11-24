@@ -1,3 +1,5 @@
+import OrdersTable from "@/components/orders";
+
 export default function OrdersAdminPage() {
-  return <div>Orders Admin Page</div>;
+  return <div><OrdersTable/></div>;
 }

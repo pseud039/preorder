@@ -74,6 +74,28 @@ const getMenu = asyncHandler(async (req, res) => {
       },"Menu items fetched successfully"));
   });
 
+  const getCategories = asyncHandler(async (req, res) => {
+  const categories = await prisma.menuItem.findMany({
+    where: { 
+      isActive: true,
+      isAvailable: true 
+    },
+    select: { 
+      category: true 
+    },
+    distinct: ['category']
+  });
+
+  const categoryList = categories
+    .map(item => item.category)
+    .filter(Boolean)
+    .sort(); // Sort alphabetically
+
+  res.status(200).json(
+    new ApiResponse(200, categoryList, "Categories fetched successfully")
+  );
+});
+
 
 //   const { id } = req.params;
 //   try {
@@ -143,4 +165,4 @@ const getMostPopular = asyncHandler(async(req,res)=>{
 
 });
 
-export {getMenu,getItemDetails,getMostPopular};
+export {getMenu,getItemDetails,getMostPopular, getCategories};

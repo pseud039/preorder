@@ -7,7 +7,7 @@ export default function GetStartedPage() {
   const router = useRouter();
 
   return (
-    <div className="relative min-h-screen max-w-md mx-auto bg-secondary flex flex-col justify-center items-center px-6 py-8 gap-6">
+    <div className="relative min-h-screen max-w-md mx-auto flex flex-col justify-center items-center px-6 py-8 gap-6">
       <Image
         height={250}
         width={250}
@@ -31,13 +31,13 @@ export default function GetStartedPage() {
           className="btn-secondary "
           onClick={() => router.push("/auth/login")}
         >
-          Log In
+          LogIn
         </button>
         <button
           className="btn-secondary"
           onClick={() => router.push("/auth/signup")}
         >
-          Sign Up
+          SignUp
         </button>
       </div>
     </div>

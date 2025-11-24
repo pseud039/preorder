@@ -10,29 +10,29 @@ import { ModeToggle } from "./switch";
 export default function Navbar() {
   const [username, setUsername] = useState("");
 const [theme, setTheme] = useState("light");
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setUsername(data.name);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user", err);
-      }
-    };
-    fetchUser();
-  }, []);
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const res = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/admin`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           credentials: "include",
+  //         }
+  //       );
+  //       if (res.ok) {
+  //         const data = await res.json();
+  //         setUsername(data.name);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch user", err);
+  //     }
+  //   };
+  //   fetchUser();
+  // }, []);
 
   return (
     <nav className="flex w-full justify-between px-6 py-4 bg-white items-start">

@@ -76,7 +76,6 @@ export default function RootLayout({
   // const pathname = usePathname();
   // const isHome = pathname ==="/";
   // const[isLoading, setIsLoading] = useState();
-
   return (
     <html lang="en">
       <body

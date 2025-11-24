@@ -125,7 +125,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 flex flex-col justify-center items-center px-6 py-8">
+    <div className="relative min-h-screen max-w-md mx-auto flex flex-col justify-center items-center px-6 py-8">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex justify-center">
           <Image

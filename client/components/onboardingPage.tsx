@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -8,6 +8,28 @@ export default function OnboardingSlides() {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const router = useRouter();
+
+  // Check if user has seen onboarding before
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    
+    if (hasSeenOnboarding === 'true') {
+      // Skip carousel, go directly to login
+      router.replace('/auth/login');
+    }
+  }, [router]);
+
+  // Auto-advance carousel every 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentSlide < slides.length - 1) {
+        setCurrentSlide(currentSlide + 1);
+      }
+    }, 4000); // Change slide every 3 seconds
+
+    // Cleanup timer on unmount or when currentSlide changes
+    return () => clearTimeout(timer);
+  }, [currentSlide]);
 
   const slides = [
     {
@@ -47,8 +69,9 @@ export default function OnboardingSlides() {
   };
 
   const handleGetStarted = () => {
-    // window.location.href = "/login";
-    router.push("/auth/get-started");
+    // Mark onboarding as complete
+    // localStorage.setItem('hasSeenOnboarding', 'true');
+    router.push("/auth/login");
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -69,7 +92,7 @@ export default function OnboardingSlides() {
   };
 
   return (
-    <div className="relative min-h-screen max-w-md  mx-auto bg-orange-50 overflow-hidden">
+    <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 transition-opacity duration-700">
         <img
@@ -94,7 +117,7 @@ export default function OnboardingSlides() {
 
       {/* Main Content */}
       <div
-        className="relative z-10 min-h-screen flex flex-col justify-end "
+        className="relative z-10 min-h-screen flex flex-col justify-end"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -131,7 +154,6 @@ export default function OnboardingSlides() {
           {currentSlide === slides.length - 1 ? (
             <button
               onClick={handleGetStarted}
-              //   className="w-full bg-primary hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
               className="btn-primary"
             >
               Get Started

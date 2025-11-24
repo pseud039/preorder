@@ -5,16 +5,37 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export default function SignUpPage() {
-  const [formData, setFormData] = useState({
+interface FormData {
+  email: string;
+  password: string;
+}
+
+interface FormErrors {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  data: {
+    id: number;
+    email: string;
+    name?: string;
+    token: string;
+  };
+  message: string;
+}
+
+export default function LoginPage() {
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
-  const [errors, setErrors] = useState({
+  const [errors, setErrors] = useState<FormErrors>({
     email: "",
     password: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,8 +53,8 @@ export default function SignUpPage() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {
       email: "",
       password: "",
     };
@@ -50,6 +71,9 @@ export default function SignUpPage() {
     if (!formData.password) {
       newErrors.password = "Password is required";
       isValid = false;
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+      isValid = false;
     }
 
     setErrors(newErrors);
@@ -64,34 +88,55 @@ export default function SignUpPage() {
     }
 
     setIsSubmitting(true);
-    try {
+    try {      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json" 
+        },
+        credentials: "include", // Include cookies
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
         }),
       });
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
 
       if (!response.ok) {
         if (response.status === 409) {
           toast.error("Email already exists");
+        } else if (response.status === 401) {
+          toast.error("Invalid email or password");
+        } else if (response.status === 404) {
+          toast.error("User not found. Please sign up first.");
         } else {
           toast.error(data.message || "Something went wrong");
         }
         return;
       }
 
-      toast.success("Logged In successfully!");
+      // Store token in localStorage
+      if (data.data?.token) {
+        localStorage.setItem('auth_token', data.data.token);
+        
+        // Verify storage
+        const storedToken = localStorage.getItem('auth_token');
+      } else {
+        console.error(" No token in response!");
+        console.error("Response structure:", JSON.stringify(data, null, 2));
+        toast.error("Login succeeded but no token received");
+        return;
+      }
+
+      toast.success("Logged in successfully!");
 
       setTimeout(() => {
         router.push("/dashboard");
       }, 1000);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("=== Login Error ===");
+      console.error("Error:", error);
       toast.error("Network error. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -99,7 +144,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 flex flex-col justify-center items-center px-6 py-8">
+    <div className="relative min-h-screen max-w-md mx-auto flex flex-col justify-center items-center px-6 py-8">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex justify-center">
           <Image
@@ -156,11 +201,12 @@ export default function SignUpPage() {
             disabled={isSubmitting}
             className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "LogIn" : "LogIn"}
+            {isSubmitting ? "Logging in..." : "Login"}
           </button>
+          
           <div className="flex flex-row justify-center items-center gap-1">
             <span className="text-center text-sm text-primary-text/60">
-              Donot have an account?
+              Don't have an account?
             </span>
             <button
               type="button"
@@ -168,7 +214,7 @@ export default function SignUpPage() {
               className="text-orange-500 font-semibold hover:underline cursor-pointer"
               disabled={isSubmitting}
             >
-              SignUp
+              Sign Up
             </button>
           </div>
         </form>

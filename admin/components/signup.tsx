@@ -32,15 +32,19 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
       );
       const data = await response.json().catch(() => ({}));
 
-      if (response.ok) {
+      if (response.status==200) {
         window.location.href = "/admin/emailVerification";
         return;
       }
-
+      if(response.status==409){
+        toast.error("User already exists. Please login.", {
+          duration: 4000,
+        });
+      }
       toast.error(data?.message || "Signup failed. Please try again.");
     } catch (error) {
       console.error("An unexpected error occurred:", error);
-      toast.error("An unexpected error occurred. Check console for details.");
+      toast.error("An unexpected error occurred. Please try again later.");
     }
   };
 
@@ -107,11 +111,11 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
               className="h-12 px-6 placeholder:text-muted-foreground"
             />
           </div>
-          <p className="text-right text-sm text-muted-foreground">Already have an account?{" "}
-          <a href="/admin/login" className="text-black hover:text-[#ff5c00] hover:underline">Login</a></p>
           <Button type="submit" className="w-full cursor-pointer bg-[#ff5c00] hover:bg-[#ff5c00] h-12 w-15/16 mx-auto text-white">
             SignUp
           </Button>
+          <p className="mx-auto text-sm text-muted-foreground">Already have an account?{" "}
+          <a href="/admin/login" className="text-black hover:text-[#ff5c00] hover:underline">Login</a></p>
         </div>
       </form>
     </div>

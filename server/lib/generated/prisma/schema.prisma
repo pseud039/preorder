@@ -17,7 +17,7 @@ model Restaurant {
   imageUrl      String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime @default(now()) @updatedAt
 
   // Relations
   admins    RestaurantAdmin[]
@@ -38,9 +38,14 @@ model User {
   // Email verification
   emailVerified   Boolean   @default(false)
   emailVerifiedAt DateTime?
-  isActive        Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+
+  // Phone verification (NEW)
+  phoneVerified   Boolean   @default(false)
+  phoneVerifiedAt DateTime?
+
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   adminOf            RestaurantAdmin[]
@@ -48,9 +53,32 @@ model User {
   refreshTokens      RefreshToken[]
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
+  phoneOTPs          PhoneOTP[] // NEW
+  cart               Cart? // One active cart per user
 
   @@index([email])
   @@index([role])
+  @@index([phone]) // NEW - for quick OTP lookup
+}
+
+// NEW MODEL - Phone OTP Verification
+model PhoneOTP {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  phone     String
+  otp       String // Store hashed OTP (use bcrypt)
+  expiresAt DateTime // OTP valid for 10 minutes
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0) // Track failed attempts (max 3-5)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([phone])
+  @@index([expiresAt])
+  @@index([verified])
 }
 
 model RestaurantAdmin {
@@ -76,6 +104,7 @@ model MenuItem {
   price        Decimal  @db.Decimal(10, 2)
   imageUrl     String?
   category     String?
+  isVeg        Boolean  @default(true)
   isAvailable  Boolean  @default(true)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
@@ -84,11 +113,44 @@ model MenuItem {
   // Relations
   restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
+  cartItems  CartItem[]
 
   @@unique([restaurantId, name])
   @@index([restaurantId])
   @@index([category])
   @@index([isAvailable, isActive])
+}
+
+model Cart {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  restaurantId Int // Lock cart to one restaurant
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([userId])
+}
+
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  cartId     Int
+  menuItemId Int
+  quantity   Int
+  price      Decimal  @db.Decimal(10, 2) // Store price at time of adding
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  cart     Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, menuItemId]) // One item only once per cart
+  @@index([cartId])
+  @@index([menuItemId])
 }
 
 model Order {
@@ -100,8 +162,12 @@ model Order {
   timeSlotId    Int?
   paymentStatus PaymentStatus @default(pending)
   notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+
+  // Razorpay Integration
+  razorpayOrderId String? @unique // Razorpay order_id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   user       User        @relation(fields: [userId], references: [id], onDelete: Restrict)
@@ -115,6 +181,7 @@ model Order {
   @@index([status])
   @@index([paymentStatus])
   @@index([createdAt])
+  @@index([razorpayOrderId])
 }
 
 model OrderItem {
@@ -133,26 +200,36 @@ model OrderItem {
 }
 
 model Payment {
-  id               Int           @id @default(autoincrement())
-  orderId          Int           @unique
-  paymentGateway   String?
-  paymentReference String?
-  amount           Decimal       @db.Decimal(10, 2)
-  status           PaymentStatus
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id             Int     @id @default(autoincrement())
+  orderId        Int     @unique
+  paymentGateway String? @default("razorpay")
+
+  // Razorpay specific fields
+  razorpayPaymentId String? @unique
+  razorpayOrderId   String?
+  razorpaySignature String?
+
+  amount        Decimal       @db.Decimal(10, 2)
+  status        PaymentStatus
+  failureReason String? // Store failure reason
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   // Relations
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([status])
-  @@index([paymentReference])
+  @@index([razorpayPaymentId])
+  @@index([razorpayOrderId])
 }
 
+// IMPROVED TimeSlot Model
 model TimeSlot {
   id          Int      @id @default(autoincrement())
-  slotStart   DateTime
-  slotEnd     DateTime
+  slotStart   DateTime // Full datetime: 2025-11-24 12:00:00
+  slotEnd     DateTime // Full datetime: 2025-11-24 12:30:00
+  capacity    Int      @default(10) // NEW - Max orders per slot
+  bookedCount Int      @default(0) // NEW - Current bookings
   isAvailable Boolean  @default(true)
   createdAt   DateTime @default(now())
 
@@ -161,6 +238,7 @@ model TimeSlot {
 
   @@index([slotStart, slotEnd])
   @@index([isAvailable])
+  @@index([slotStart, isAvailable]) // NEW - for availability queries
 }
 
 model RefreshToken {
@@ -178,7 +256,6 @@ model RefreshToken {
   @@index([expiresAt])
 }
 
-// Email Verification Table
 model EmailVerification {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -194,7 +271,6 @@ model EmailVerification {
   @@index([expiresAt])
 }
 
-// Password Reset Table 
 model PasswordReset {
   id        Int       @id @default(autoincrement())
   userId    Int
@@ -228,4 +304,5 @@ enum PaymentStatus {
   pending
   paid
   failed
+  refunded
 }
