@@ -203,14 +203,14 @@ export default function FoodOrderPage() {
         {/* Search Bar */}
         <div
           className="relative mb-6 flex flex-row gap-2 items-center"
-          onClick={() => {
-            router.push("/search");
-          }}
+      
         >
           <input
             type="text"
             placeholder="Search here.."
             value={searchQuery}
+             onClick={() => {
+            router.push("/search");}}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white/80 backdrop-blur-sm rounded-2xl px-12 py-4 pr-14 text-gray-700 placeholder-gray-400 outline-none shadow-sm hover:outline-1 focus:outline-1"
           />
@@ -267,7 +267,7 @@ export default function FoodOrderPage() {
             </a>
           </div>
 
-          <div className="flex justify-between gap-3 overflow-x-auto">
+          <div className="flex justify-between gap-3 overflow-x-auto p-2">
             {categories.map((cat, idx) => (
               <button
                 key={idx}
@@ -278,13 +278,12 @@ export default function FoodOrderPage() {
                 className="flex flex-col items-center flex-shrink-0"
               >
                 <div
-                  className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-2 transition-all ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-3xl mb-2 transition-all ${
                     selectedCategory === cat.name
                       ? "bg-primary shadow-lg scale-110"
-                      : "bg-white shadow-sm"
+                      : "bg-accent shadow-sm"
                   }`}
                 >
-                  {/* {cat.emoji} */}
                 </div>
                 <span
                   className={`text-xs font-medium ${
