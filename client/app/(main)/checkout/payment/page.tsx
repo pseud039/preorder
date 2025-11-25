@@ -1,13 +1,20 @@
 import PaymentPage from "@/components/paymentPage";
-export default async function SearchPage({
+
+interface SearchParams {
+  orderId: string;
+}
+
+export default async function PaymentPageWrapper({
   searchParams,
 }: {
-  searchParams: { orderId: string };
+  searchParams: Promise<SearchParams>;
 }) {
-  const query = searchParams.orderId;
+  // Await the searchParams promise in Next.js 15
+  const params = await searchParams;
+  
   return (
-    <div className="">
-      <PaymentPage query={query} />
+    <div>
+      <PaymentPage query={params} />
     </div>
   );
 }

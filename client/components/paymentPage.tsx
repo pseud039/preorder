@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect, Suspense, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Loader2,
   ShoppingBag,
@@ -92,10 +92,15 @@ interface RazorpayOrder {
   currency: string;
 }
 
-function PaymentPageContent() {
+interface PaymentPageProps {
+  query: {
+    orderId: string;
+  };
+}
+
+export default function PaymentPage({ query }: PaymentPageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const orderId = searchParams.get("orderId");
+  const orderId = query.orderId;
 
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -118,7 +123,9 @@ function PaymentPageContent() {
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
@@ -154,7 +161,8 @@ function PaymentPageContent() {
         });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load order details";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load order details";
       console.error("Error fetching order:", err);
       setError(errorMessage);
       toast.error(errorMessage);
@@ -218,7 +226,8 @@ function PaymentPageContent() {
       toast.success("Payment successful!");
       router.push(`/orders/${orderDetails?.id}?payment=success`);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Payment verification failed";
+      const errorMessage =
+        err instanceof Error ? err.message : "Payment verification failed";
       console.error("Verification error:", err);
       toast.error(errorMessage);
       setProcessing(false);
@@ -283,7 +292,8 @@ function PaymentPageContent() {
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to initiate payment";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to initiate payment";
       console.error("Payment error:", err);
       toast.error(errorMessage);
       setProcessing(false);
@@ -344,7 +354,7 @@ function PaymentPageContent() {
           Back
         </Button>
 
-        <Card className="border-orange-200 shadow-lg flex ">
+        <Card className="border-orange-200 shadow-lg">
           <CardHeader className="text-orange-500 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -363,7 +373,7 @@ function PaymentPageContent() {
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="">
+          <CardContent>
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
               <p className="text-orange-700 text-sm font-medium mb-2">
                 Amount to Pay
@@ -511,14 +521,6 @@ function PaymentPageContent() {
                 </>
               )}
             </Button>
-
-            <Alert className="mt-4 border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-sm text-green-800">
-                🔒 Your payment is secured with 256-bit SSL encryption
-              </AlertDescription>
-            </Alert>
-
             <p className="text-xs text-gray-500 text-center mt-3">
               By proceeding, you agree to our terms and conditions
             </p>
@@ -526,19 +528,5 @@ function PaymentPageContent() {
         </Card>
       </div>
     </div>
-  );
-}
-
-export default function PaymentPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
-        </div>
-      }
-    >
-      <PaymentPageContent />
-    </Suspense>
   );
 }
