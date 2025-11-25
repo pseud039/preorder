@@ -32,5 +32,8 @@
   "devDependencies": {
     "@types/node": "^24.9.1",
     "nodemon": "^3.1.10"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.ts"
   }
 }
