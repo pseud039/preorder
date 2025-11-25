@@ -26,7 +26,6 @@ export default function SignUpPage() {
       [name]: value,
     }));
 
-    // Clear error when user starts typing
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({
         ...prev,
@@ -77,14 +76,12 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate form
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // API call here
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/client/signUp`,
         {
@@ -100,7 +97,6 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Show toast for API errors
         if (response.status === 409) {
           toast.error("Email already exists");
         } else {
@@ -109,10 +105,8 @@ export default function SignUpPage() {
         return;
       }
 
-      // Success toast
       toast.success("Account created successfully!");
 
-      // Redirect after successful signup
       setTimeout(() => {
         router.push("/login");
       }, 1000);

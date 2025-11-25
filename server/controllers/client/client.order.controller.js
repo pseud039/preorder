@@ -159,7 +159,6 @@ const updateCartItem = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid cart item or quantity");
   }
 
-  // Verify cart item belongs to user
   const cartItem = await prisma.cartItem.findFirst({
     where: {
       id: cartItemId,
@@ -171,7 +170,6 @@ const updateCartItem = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Cart item not found");
   }
 
-  // If quantity is 0, delete the item
   if (quantity === 0) {
     await prisma.cartItem.delete({
       where: { id: cartItemId },
@@ -180,7 +178,6 @@ const updateCartItem = asyncHandler(async (req, res) => {
     return res.json(new ApiResponse(200, "Item removed from cart"));
   }
 
-  // Update quantity
   const updatedItem = await prisma.cartItem.update({
     where: { id: cartItemId },
     data: { quantity },
@@ -236,7 +233,6 @@ const createOrder = asyncHandler(async (req, res) => {
 
   console.log("Creating order:", { userId, timeSlotId, notes });
 
-  // Check user profile
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -249,7 +245,6 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Please verify your phone number");
   }
 
-  // Get cart with items
   const cart = await prisma.cart.findUnique({
     where: { userId },
     include: {
@@ -268,7 +263,6 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Cart is empty");
   }
 
-  // Verify all items are available
   for (const item of cart.items) {
     if (!item.menuItem.isAvailable || !item.menuItem.isActive) {
       throw new ApiError(400, `${item.menuItem.name} is no longer available`);
@@ -288,17 +282,14 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Selected time slot is not available");
   }
 
-  // Check slot capacity
   if (timeSlot.bookedCount >= timeSlot.capacity) {
     throw new ApiError(400, "Selected time slot is fully booked");
   }
 
-  // Check if slot is in the future
   if (new Date() > timeSlot.slotStart) {
     throw new ApiError(400, "Cannot book past time slots");
   }
 
-  // Calculate total
   const totalAmount = cart.items.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
     0
@@ -420,7 +411,6 @@ const verifyPayment = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Order not found");
   }
 
-  // Verify Razorpay signature
   const body = razorpayOrderId + "|" + razorpayPaymentId;
   const expectedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -430,7 +420,6 @@ const verifyPayment = asyncHandler(async (req, res) => {
   const isAuthentic = expectedSignature === razorpaySignature;
 
   if (!isAuthentic) {
-    // Update order as payment failed
     await prisma.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: order.id },
@@ -451,7 +440,6 @@ const verifyPayment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid payment signature");
   }
 
-  // Payment is valid, update order and payment status
   const updatedOrder = await prisma.$transaction(async (tx) => {
     const updated = await tx.order.update({
       where: { id: order.id },
@@ -606,7 +594,7 @@ const getOrderById = asyncHandler(async (req, res) => {
   });
   console.log(order);
 
-  res.json(new ApiResponse(200,order, "Order fetched successfully"));
+  res.json(new ApiResponse(200, order, "Order fetched successfully"));
 });
 
 export {

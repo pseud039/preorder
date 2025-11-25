@@ -1,6 +1,6 @@
 "use client";
-import { Search,Heart,Plus } from "lucide-react"
-import { useEffect,useState } from "react";
+import { Search, Heart, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface MenuItem {
@@ -27,8 +27,8 @@ interface ApiResponse<T> {
     };
   };
 }
-export default function SearchPage(){
-const[searchQuery,setSearchQuery] = useState<string>("");
+export default function SearchPage() {
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [cartCount, setCartCount] = useState<number>(0);
   const [isVegOnly, setIsVegOnly] = useState<boolean>(false);
@@ -48,7 +48,8 @@ const[searchQuery,setSearchQuery] = useState<string>("");
           isAvailable: "true",
         });
 
-        if (selectedCategory !== "All") params.append("category", selectedCategory);
+        if (selectedCategory !== "All")
+          params.append("category", selectedCategory);
         if (isVegOnly) params.append("isVeg", "true");
         if (searchQuery.trim()) params.append("search", searchQuery.trim());
 
@@ -65,7 +66,7 @@ const[searchQuery,setSearchQuery] = useState<string>("");
         console.error("Error fetching menu:", error);
         setMenuItems([]);
         setTotalPages(1);
-        } finally {
+      } finally {
         setLoading(false);
       }
     };
@@ -73,128 +74,133 @@ const[searchQuery,setSearchQuery] = useState<string>("");
     fetchMenuItems();
   }, [selectedCategory, page]);
 
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        const doFetch = async (usePage: number) => {
-          setLoading(true);
-          try {
-            const params = new URLSearchParams({
-              page: usePage.toString(),
-              limit: "10",
-              isAvailable: "true",
-            });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const doFetch = async (usePage: number) => {
+        setLoading(true);
+        try {
+          const params = new URLSearchParams({
+            page: usePage.toString(),
+            limit: "10",
+            isAvailable: "true",
+          });
 
-            if (selectedCategory !== "All") params.append("category", selectedCategory);
-            if (isVegOnly) params.append("isVeg", "true");
-            if (searchQuery.trim()) params.append("search", searchQuery.trim());
+          if (selectedCategory !== "All")
+            params.append("category", selectedCategory);
+          if (isVegOnly) params.append("isVeg", "true");
+          if (searchQuery.trim()) params.append("search", searchQuery.trim());
 
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/home/menu?${params}`
-            );
-            const data: ApiResponse<MenuItem> = await response.json();
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/home/menu?${params}`
+          );
+          const data: ApiResponse<MenuItem> = await response.json();
 
-            if (data.success) {
-              setMenuItems(data.data.items);
-              setTotalPages(data.data.pagination.totalPages);
-            } else {
-              setMenuItems([]);
-              setTotalPages(1);
-            }
-          } catch (error) {
-            console.error("Error fetching menu:", error);
+          if (data.success) {
+            setMenuItems(data.data.items);
+            setTotalPages(data.data.pagination.totalPages);
+          } else {
             setMenuItems([]);
             setTotalPages(1);
-          } finally {
-            setLoading(false);
           }
-        };
-
-
-        if (searchQuery.trim()) {
-          if (page !== 1) {
-            setPage(1); // this will trigger the existing fetch effect
-          } else {
-            doFetch(1);
-          }
-        } else {
-          // empty query: reset to page 1 and fetch
-          if (page !== 1) {
-            setPage(1);
-          } else {
-            doFetch(1);
-          }
+        } catch (error) {
+          console.error("Error fetching menu:", error);
+          setMenuItems([]);
+          setTotalPages(1);
+        } finally {
+          setLoading(false);
         }
-      }, 500);
+      };
 
-      return () => clearTimeout(timer);
-    }, [searchQuery, selectedCategory, isVegOnly, page]);
-     const addToCart = async (item: MenuItem): Promise<void>  => {
+      if (searchQuery.trim()) {
+        if (page !== 1) {
+          setPage(1);
+        } else {
+          doFetch(1);
+        }
+      } else {
+        if (page !== 1) {
+          setPage(1);
+        } else {
+          doFetch(1);
+        }
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedCategory, isVegOnly, page]);
+  const addToCart = async (item: MenuItem): Promise<void> => {
     try {
       console.log("Attempting to add to cart...");
-      
+
       // Get token from localStorage
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
       console.log("Token from localStorage:", token ? "Found" : "Not found");
-      
+
       if (!token) {
         alert("Please login first");
         window.location.href = "/auth/login";
         return;
       }
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/add`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Send token in Authorization header
-        },
-        credentials: 'include', // Still include for same-origin scenarios
-        body: JSON.stringify({
-          menuItemId: item.id,
-        }),
-      });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/add`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            menuItemId: item.id,
+          }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        // Handle specific error messages
         if (response.status === 401) {
           console.error("Authentication required. Please log in.");
           alert("Please log in to add items to cart");
           return;
         }
-        console.error("Failed to add to cart:", data.message || response.statusText);
-        alert(`Failed to add to cart: ${data.message || 'Unknown error'}`);
+        console.error(
+          "Failed to add to cart:",
+          data.message || response.statusText
+        );
+        alert(`Failed to add to cart: ${data.message || "Unknown error"}`);
         return;
       }
 
-      // Only increment cart count if the request was successful
       setCartCount((prev) => prev + 1);
       console.log("Added to cart:", item.id);
-      
-      // Optional: Show success message
-      // You could add a toast notification here
-      
     } catch (error) {
       console.error("Error adding to cart:", error);
       alert("Network error. Please check your connection and try again.");
     }
   };
-    return (
+  return (
     <div className="max-w-md mx-auto min-h-screen relative overflow-hidden font-[inter] px-2 lg:px-8 py-10">
-           <div className="flex flex-row justify-center py-4"><div className="font-bold text-2xl"><div>Search for the </div>food you want</div></div>
-                  <div className="relative mb-6 flex flex-row gap-2 items-center w-5/6 mx-auto">
-                  <input
-            type="text"
-            placeholder="Search here.."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/80 backdrop-blur-sm rounded-2xl px-12 py-4 pr-14 text-gray-700 placeholder-gray-400 outline-none shadow-sm hover:outline-1 focus:outline-1"
-          />
-          <button className="absolute left-1 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-            <Search className="w-5 h-5 text-primary border-white" />
-          </button></div>
-          <div className="">{!loading && menuItems.length > 0 && (
+      <div className="flex flex-row justify-center py-4">
+        <div className="font-bold text-2xl">
+          <div>Search for the </div>food you want
+        </div>
+      </div>
+      <div className="relative mb-6 flex flex-row gap-2 items-center w-5/6 mx-auto">
+        <input
+          type="text"
+          placeholder="Search here.."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-white/80 backdrop-blur-sm rounded-2xl px-12 py-4 pr-14 text-gray-700 placeholder-gray-400 outline-none shadow-sm hover:outline-1 focus:outline-1"
+        />
+        <button className="absolute left-1 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+          <Search className="w-5 h-5 text-primary border-white" />
+        </button>
+      </div>
+      <div className="">
+        {!loading && menuItems.length > 0 && (
           <div className="grid grid-cols-2 gap-4">
             {menuItems.map((item) => (
               <div key={item.id} className="bg-white rounded-3xl shadow-sm">
@@ -242,12 +248,12 @@ const[searchQuery,setSearchQuery] = useState<string>("");
             ))}
           </div>
         )}
-
         {!loading && menuItems.length === 0 && (
           <div className="text-center py-8">
             <p className="text-gray-500">No items found</p>
           </div>
-        )}        {totalPages > 1 && (
+        )}{" "}
+        {totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-6">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -267,7 +273,8 @@ const[searchQuery,setSearchQuery] = useState<string>("");
               Next
             </button>
           </div>
-        )}</div>
-        </div>
-    )
+        )}
+      </div>
+    </div>
+  );
 }

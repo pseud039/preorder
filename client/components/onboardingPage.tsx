@@ -9,25 +9,21 @@ export default function OnboardingSlides() {
   const [touchEnd, setTouchEnd] = useState(0);
   const router = useRouter();
 
-  // Check if user has seen onboarding before
   useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    
-    if (hasSeenOnboarding === 'true') {
-      // Skip carousel, go directly to login
-      router.replace('/auth/login');
+    const hasSeenOnboarding = localStorage.getItem("hasSeenOnboarding");
+
+    if (hasSeenOnboarding === "true") {
+      router.replace("/auth/login");
     }
   }, [router]);
 
-  // Auto-advance carousel every 3 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentSlide < slides.length - 1) {
         setCurrentSlide(currentSlide + 1);
       }
-    }, 4000); // Change slide every 3 seconds
+    }, 4000);
 
-    // Cleanup timer on unmount or when currentSlide changes
     return () => clearTimeout(timer);
   }, [currentSlide]);
 
@@ -69,8 +65,6 @@ export default function OnboardingSlides() {
   };
 
   const handleGetStarted = () => {
-    // Mark onboarding as complete
-    // localStorage.setItem('hasSeenOnboarding', 'true');
     router.push("/auth/login");
   };
 
@@ -152,10 +146,7 @@ export default function OnboardingSlides() {
 
           {/* Navigation Button */}
           {currentSlide === slides.length - 1 ? (
-            <button
-              onClick={handleGetStarted}
-              className="btn-primary"
-            >
+            <button onClick={handleGetStarted} className="btn-primary">
               Get Started
               <ChevronRight size={20} />
             </button>

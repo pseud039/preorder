@@ -1,11 +1,18 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import UserDetailsModal from '@/components/detailsModal';
-import OTPVerificationModal from '@/components/verificationModal';
-import TimeSlotModal from '@/components/slotBookingModal';
+import { useState, useEffect } from "react";
+import {
+  Trash2,
+  Plus,
+  Minus,
+  ShoppingBag,
+  ArrowLeft,
+  Loader2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import UserDetailsModal from "@/components/detailsModal";
+import OTPVerificationModal from "@/components/verificationModal";
+import TimeSlotModal from "@/components/slotBookingModal";
 
 interface MenuItem {
   id: number;
@@ -63,10 +70,9 @@ export default function CartPage() {
   const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showTimeSlotModal, setShowTimeSlotModal] = useState(false);
-  const [tempPhone, setTempPhone] = useState('');
+  const [tempPhone, setTempPhone] = useState("");
   const [selectedSlotId, setSelectedSlotId] = useState<number | null>(null);
 
-  // Fetch cart and user details on mount
   useEffect(() => {
     fetchCart();
     checkUserDetails();
@@ -74,71 +80,75 @@ export default function CartPage() {
 
   const checkUserDetails = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      
+      const token = localStorage.getItem("auth_token");
+
       if (!token) {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/details`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/details`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        console.log('User details not found');
+        console.log("User details not found");
         return;
       }
 
       const data = await response.json();
-      
-      // Extract user details from response
-      // Adjust based on your actual API response structure
+
       if (data.data) {
         setUserDetails({
-          name: data.data.name || '',
-          phone: data.data.phone || ''
+          name: data.data.name || "",
+          phone: data.data.phone || "",
         });
       }
     } catch (error) {
-      console.error('Error fetching user details:', error);
+      console.error("Error fetching user details:", error);
     }
   };
 
-   const fetchCart = async () => {
+  const fetchCart = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
 
       if (!token) {
         toast.error("Please login first");
-        router.push('/auth/login');
+        router.push("/auth/login");
         return;
       }
 
       console.log("Token present:", !!token);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/order`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/order`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       console.log("Response status:", response.status);
-      
+
       const data = await response.json();
 
       if (!response.ok) {
         if (response.status === 401) {
           toast.error("Session expired. Please login again");
-          localStorage.removeItem('auth_token');
-          router.push('/auth/login');
+          localStorage.removeItem("auth_token");
+          router.push("/auth/login");
           return;
         }
         if (response.status === 404) {
@@ -146,11 +156,11 @@ export default function CartPage() {
           setCart(null);
           return;
         }
-        throw new Error(data.message || 'Failed to fetch cart');
+        throw new Error(data.message || "Failed to fetch cart");
       }
 
-     let cartData = null;
-      
+      let cartData = null;
+
       console.log("Trying to extract cart from:", {
         hasDataCart: !!(data.data && data.data.cart),
         hasMessageCart: !!(data.message && data.message.cart),
@@ -158,7 +168,11 @@ export default function CartPage() {
         dataKeys: Object.keys(data),
       });
 
-      if (data.message && typeof data.message === 'object' && data.message.cart) {
+      if (
+        data.message &&
+        typeof data.message === "object" &&
+        data.message.cart
+      ) {
         cartData = data.message.cart;
       } else if (data.data && data.data.cart) {
         cartData = data.data.cart;
@@ -171,10 +185,10 @@ export default function CartPage() {
       console.log("Extracted cart data:", cartData);
       setCart(cartData);
     } catch (error: any) {
-      console.error('Error:', error);
-      console.error('Error message:', error.message);
-      if (error.message !== 'Cart not found') {
-        toast.error(error.message || 'Failed to load cart');
+      console.error("Error:", error);
+      console.error("Error message:", error.message);
+      if (error.message !== "Cart not found") {
+        toast.error(error.message || "Failed to load cart");
       }
     } finally {
       setLoading(false);
@@ -183,38 +197,41 @@ export default function CartPage() {
   const updateQuantity = async (cartItemId: number, newQuantity: number) => {
     try {
       setUpdating(cartItemId);
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
 
       if (!token) {
         toast.error("Please login first");
-        router.push('/auth/login');
+        router.push("/auth/login");
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/update`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          cartItemId,
-          quantity: newQuantity,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/update`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            cartItemId,
+            quantity: newQuantity,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to update cart');
+        throw new Error(data.message || "Failed to update cart");
       }
 
       await fetchCart();
-      toast.success(newQuantity === 0 ? 'Item removed' : 'Quantity updated');
+      toast.success(newQuantity === 0 ? "Item removed" : "Quantity updated");
     } catch (error: any) {
-      console.error('Error updating cart:', error);
-      toast.error(error.message || 'Failed to update cart');
+      console.error("Error updating cart:", error);
+      toast.error(error.message || "Failed to update cart");
     } finally {
       setUpdating(null);
     }
@@ -223,37 +240,40 @@ export default function CartPage() {
   const removeItem = async (cartItemId: number) => {
     try {
       setUpdating(cartItemId);
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
 
       if (!token) {
         toast.error("Please login first");
-        router.push('/auth/login');
+        router.push("/auth/login");
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/delete`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          cartItemId,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/delete`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            cartItemId,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to remove item');
+        throw new Error(data.message || "Failed to remove item");
       }
 
       await fetchCart();
-      toast.success('Item removed from cart');
+      toast.success("Item removed from cart");
     } catch (error: any) {
-      console.error('Error removing item:', error);
-      toast.error(error.message || 'Failed to remove item');
+      console.error("Error removing item:", error);
+      toast.error(error.message || "Failed to remove item");
     } finally {
       setUpdating(null);
     }
@@ -261,103 +281,103 @@ export default function CartPage() {
 
   const clearCart = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
 
       if (!token) {
         toast.error("Please login first");
-        router.push('/auth/login');
+        router.push("/auth/login");
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/remove`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/remove`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to clear cart');
+        throw new Error(data.message || "Failed to clear cart");
       }
 
       setCart(null);
-      toast.success('Cart cleared');
+      toast.success("Cart cleared");
     } catch (error: any) {
-      console.error('Error clearing cart:', error);
-      toast.error(error.message || 'Failed to clear cart');
+      console.error("Error clearing cart:", error);
+      toast.error(error.message || "Failed to clear cart");
     }
   };
 
   const handleCheckout = () => {
     if (!cart || cart.items.length === 0) {
-      toast.error('Cart is empty');
+      toast.error("Cart is empty");
       return;
     }
 
-    // Check if user has name and phone
     if (!userDetails?.name || !userDetails?.phone) {
       setShowUserDetailsModal(true);
       return;
     }
 
-    // All checks passed - proceed to time slot selection
     setShowTimeSlotModal(true);
   };
 
-  // FIX: This is where the error was - you were passing the entire object
   const handleUserDetailsSuccess = (data: { name: string; phone: string }) => {
     setShowUserDetailsModal(false);
     setTempPhone(data.phone);
     setShowOTPModal(true);
-    checkUserDetails(); // Refresh user details
+    checkUserDetails();
   };
 
   const handleOTPSuccess = () => {
     setShowOTPModal(false);
-    toast.success('Phone verified successfully!');
-    checkUserDetails(); // Refresh user details
-    // Show time slot selection
+    toast.success("Phone verified successfully!");
+    checkUserDetails();
     setShowTimeSlotModal(true);
   };
 
   const handleTimeSlotSelect = async (slotId: number) => {
     setSelectedSlotId(slotId);
     setShowTimeSlotModal(false);
-    
-    // Proceed to create order with selected slot
+
     try {
-      const token = localStorage.getItem('auth_token');
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/create-order`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          timeSlotId: slotId,
-          notes: '' // Optional order notes
-        })
-      });
+      const token = localStorage.getItem("auth_token");
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/create-order`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            timeSlotId: slotId,
+            notes: "",
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create order');
+        throw new Error(data.message || "Failed to create order");
       }
 
-      toast.success('Order created! Proceeding to payment...');
-      
-      // Redirect to payment or checkout page
+      toast.success("Order created! Proceeding to payment...");
+
       router.push(`/checkout/payment?orderId=${data.data.order.id}`);
     } catch (error: any) {
-      console.error('Error creating order:', error);
-      toast.error(error.message || 'Failed to create order');
+      console.error("Error creating order:", error);
+      toast.error(error.message || "Failed to create order");
     }
   };
 
@@ -377,7 +397,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto pb-20 pt-5">
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <button
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push("/dashboard")}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           aria-label="Go back"
         >
@@ -406,7 +426,7 @@ export default function CartPage() {
               Add items from our menu to get started
             </p>
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push("/dashboard")}
               className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-full transition-colors"
             >
               Continue Shopping
@@ -425,11 +445,11 @@ export default function CartPage() {
                   </div>
                 )}
                 <img
-                  src={item.menuItem.imageUrl || '/placeholder-food.jpg'}
+                  src={item.menuItem.imageUrl || "/placeholder-food.jpg"}
                   alt={item.menuItem.name}
                   className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
                   onError={(e) => {
-                    e.currentTarget.src = '/placeholder-food.jpg';
+                    e.currentTarget.src = "/placeholder-food.jpg";
                   }}
                 />
                 <div className="flex-1 min-w-0">
@@ -449,7 +469,9 @@ export default function CartPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
                         className="p-2 hover:bg-gray-100 transition-colors rounded-l-lg disabled:opacity-50"
                         aria-label="Decrease quantity"
                         disabled={updating === item.id}
@@ -460,7 +482,9 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
                         className="p-2 hover:bg-gray-100 transition-colors rounded-r-lg disabled:opacity-50"
                         aria-label="Increase quantity"
                         disabled={updating === item.id}
@@ -508,9 +532,8 @@ export default function CartPage() {
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-full transition-colors shadow-lg active:scale-95"
           >
             {!userDetails?.name || !userDetails?.phone
-              ? 'Add Details to Checkout'
-              : `Checkout - ₹${total.toFixed(2)}`
-            }
+              ? "Add Details to Checkout"
+              : `Checkout - ₹${total.toFixed(2)}`}
           </button>
         </div>
       )}

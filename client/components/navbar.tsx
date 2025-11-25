@@ -1,23 +1,16 @@
 "use client";
-import {
-  House,
-  TextSearch,
-  Soup,
-  UserRoundPen,
-  Home,
-} from "lucide-react";
+import { House, TextSearch, Soup, UserRoundPen, Home } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
-  const pathname = usePathname(); // Get current route
+  const pathname = usePathname();
 
-  // Determine which page is active based on the current pathname
   const getActivePage = () => {
     if (pathname === "/account") return "account";
     if (pathname === "/search") return "search";
     if (pathname === "/orders") return "orders";
-    return "home"; // Default to home for /dashboard or /
+    return "home";
   };
 
   const activePage = getActivePage();
@@ -55,7 +48,7 @@ export default function Navbar() {
       <div className="flex justify-around items-center">
         {Object.entries(Navigations).map(([key, { icon: Icon, title }]) => {
           const isActive = activePage === key;
-          
+
           return (
             <button
               key={key}

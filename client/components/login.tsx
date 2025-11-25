@@ -88,18 +88,21 @@ export default function LoginPage() {
     }
 
     setIsSubmitting(true);
-    try {      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/login`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json" 
-        },
-        credentials: "include", // Include cookies
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
 
       const data: LoginResponse = await response.json();
 
@@ -118,10 +121,10 @@ export default function LoginPage() {
 
       // Store token in localStorage
       if (data.data?.token) {
-        localStorage.setItem('auth_token', data.data.token);
-        
+        localStorage.setItem("auth_token", data.data.token);
+
         // Verify storage
-        const storedToken = localStorage.getItem('auth_token');
+        const storedToken = localStorage.getItem("auth_token");
       } else {
         console.error(" No token in response!");
         console.error("Response structure:", JSON.stringify(data, null, 2));
@@ -203,10 +206,10 @@ export default function LoginPage() {
           >
             {isSubmitting ? "Logging in..." : "Login"}
           </button>
-          
+
           <div className="flex flex-row justify-center items-center gap-1">
             <span className="text-center text-sm text-primary-text/60">
-              Don't have an account?
+                Don&apos;t have an account?
             </span>
             <button
               type="button"

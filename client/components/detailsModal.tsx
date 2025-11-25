@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, User, Phone, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { X, User, Phone, Loader2 } from "lucide-react";
 
 interface UserDetailsModalProps {
   isOpen: boolean;
@@ -7,61 +7,63 @@ interface UserDetailsModalProps {
   onSuccess: (data: { name: string; phone: string }) => void;
 }
 
-export default function UserDetailsModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess 
+export default function UserDetailsModal({
+  isOpen,
+  onClose,
+  onSuccess,
 }: UserDetailsModalProps) {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     // Validation
     if (!name.trim()) {
-      setError('Please enter your name');
+      setError("Please enter your name");
       return;
     }
 
     if (!phone.trim() || phone.length !== 10) {
-      setError('Please enter a valid 10-digit phone number');
+      setError("Please enter a valid 10-digit phone number");
       return;
     }
 
     if (!/^[6-9]\d{9}$/.test(phone)) {
-      setError('Please enter a valid Indian phone number');
+      setError("Please enter a valid Indian phone number");
       return;
     }
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/details`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ name, phone })
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/details`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ name, phone }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to update details');
+        throw new Error(data.message || "Failed to update details");
       }
 
-      // Success - trigger OTP flow with just name and phone strings
       onSuccess({ name: name.trim(), phone: phone.trim() });
     } catch (err: any) {
-      console.error('Error:', err);
-      setError(err.message || 'Failed to save details');
+      console.error("Error:", err);
+      setError(err.message || "Failed to save details");
     } finally {
       setLoading(false);
     }
@@ -72,15 +74,13 @@ export default function UserDetailsModal({
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal - Bottom Sheet */}
-      <div 
-        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-w-md mx-auto shadow-2xl animate-slide-up"
-      >
+      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-w-md mx-auto shadow-2xl animate-slide-up">
         {/* Handle Bar */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1 bg-gray-300 rounded-full" />
@@ -88,7 +88,9 @@ export default function UserDetailsModal({
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">Enter Your Details</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Enter Your Details
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -137,7 +139,7 @@ export default function UserDetailsModal({
                 type="tel"
                 value={phone}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '');
+                  const val = e.target.value.replace(/\D/g, "");
                   if (val.length <= 10) setPhone(val);
                 }}
                 placeholder="9876543210"
@@ -148,7 +150,7 @@ export default function UserDetailsModal({
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              We'll send an OTP to verify your number
+              We&apos;ll send an OTP to verify your number{" "}
             </p>
           </div>
 
@@ -171,7 +173,7 @@ export default function UserDetailsModal({
                 Saving...
               </>
             ) : (
-              'Continue to Verification'
+              "Continue to Verification"
             )}
           </button>
         </form>

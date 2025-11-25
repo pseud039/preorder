@@ -1,18 +1,62 @@
-
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, ShoppingBag, Clock, MapPin, CreditCard, CheckCircle, AlertCircle, Store, Receipt, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  ShoppingBag,
+  Clock,
+  MapPin,
+  CreditCard,
+  CheckCircle,
+  AlertCircle,
+  Store,
+  ArrowLeft,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string | undefined;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => Promise<void>;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  theme: {
+    color: string;
+  };
+  modal: {
+    ondismiss: () => void;
+  };
+}
+
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: new (options: RazorpayOptions) => {
+      open: () => void;
+    };
   }
 }
 
@@ -22,6 +66,7 @@ interface OrderDetails {
   restaurantId: number;
   timeSlotId: number;
   notes?: string;
+  razorpayOrderId?: string;
   restaurant?: {
     name: string;
     address: string;
@@ -55,7 +100,9 @@ function PaymentPageContent() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
-  const [razorpayOrder, setRazorpayOrder] = useState<RazorpayOrder | null>(null);
+  const [razorpayOrder, setRazorpayOrder] = useState<RazorpayOrder | null>(
+    null
+  );
   const [error, setError] = useState("");
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
@@ -75,13 +122,7 @@ function PaymentPageContent() {
     };
   }, []);
 
-  useEffect(() => {
-    if (orderId) {
-      fetchOrderDetails();
-    }
-  }, [orderId]);
-
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("auth_token");
@@ -104,7 +145,7 @@ function PaymentPageContent() {
       }
 
       setOrderDetails(data.data);
-      
+
       if (data.data.razorpayOrderId) {
         setRazorpayOrder({
           id: data.data.razorpayOrderId,
@@ -112,14 +153,21 @@ function PaymentPageContent() {
           currency: "INR",
         });
       }
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load order details";
       console.error("Error fetching order:", err);
-      setError(err.message || "Failed to load order details");
-      toast.error(err.message || "Failed to load order details");
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId]);
+
+  useEffect(() => {
+    if (orderId) {
+      fetchOrderDetails();
+    }
+  }, [orderId, fetchOrderDetails]);
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -139,71 +187,7 @@ function PaymentPageContent() {
     });
   };
 
-  const handlePayment = async () => {
-    if (!razorpayLoaded) {
-      toast.error("Payment gateway not loaded. Please refresh the page.");
-      return;
-    }
-
-    if (!razorpayOrder || !orderDetails) {
-      toast.error("Order details not found");
-      return;
-    }
-
-    setProcessing(true);
-
-    try {
-      const token = localStorage.getItem("auth_token");
-      
-      const userResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/client/profile`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        }
-      );
-
-      const userData = await userResponse.json();
-      const user = userData.data;
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        name: orderDetails.restaurant?.name || "Restaurant",
-        description: `Order #${orderDetails.id}`,
-        order_id: razorpayOrder.id,
-        handler: async function (response: any) {
-          await verifyPayment(response);
-        },
-        prefill: {
-          name: user.name || "",
-          email: user.email || "",
-          contact: user.phone || "",
-        },
-        theme: {
-          color: "#f97316",
-        },
-        modal: {
-          ondismiss: function () {
-            setProcessing(false);
-            toast.info("Payment cancelled");
-          },
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (err: any) {
-      console.error("Payment error:", err);
-      toast.error(err.message || "Failed to initiate payment");
-      setProcessing(false);
-    }
-  };
-
-  const verifyPayment = async (response: any) => {
+  const verifyPayment = async (response: RazorpayResponse) => {
     try {
       const token = localStorage.getItem("auth_token");
 
@@ -233,9 +217,75 @@ function PaymentPageContent() {
 
       toast.success("Payment successful!");
       router.push(`/orders/${orderDetails?.id}?payment=success`);
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Payment verification failed";
       console.error("Verification error:", err);
-      toast.error(err.message || "Payment verification failed");
+      toast.error(errorMessage);
+      setProcessing(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!razorpayLoaded) {
+      toast.error("Payment gateway not loaded. Please refresh the page.");
+      return;
+    }
+
+    if (!razorpayOrder || !orderDetails) {
+      toast.error("Order details not found");
+      return;
+    }
+
+    setProcessing(true);
+
+    try {
+      const token = localStorage.getItem("auth_token");
+
+      const userResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      const userData = await userResponse.json();
+      const user = userData.data;
+
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: orderDetails.restaurant?.name || "Restaurant",
+        description: `Order #${orderDetails.id}`,
+        order_id: razorpayOrder.id,
+        handler: async function (response: RazorpayResponse) {
+          await verifyPayment(response);
+        },
+        prefill: {
+          name: user.name || "",
+          email: user.email || "",
+          contact: user.phone || "",
+        },
+        theme: {
+          color: "#f97316",
+        },
+        modal: {
+          ondismiss: function () {
+            setProcessing(false);
+            toast.info("Payment cancelled");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to initiate payment";
+      console.error("Payment error:", err);
+      toast.error(errorMessage);
       setProcessing(false);
     }
   };
@@ -246,7 +296,9 @@ function PaymentPageContent() {
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="w-12 h-12 text-orange-500 animate-spin mb-4" />
-            <p className="text-gray-600 font-medium">Loading order details...</p>
+            <p className="text-gray-600 font-medium">
+              Loading order details...
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -264,9 +316,11 @@ function PaymentPageContent() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
               Unable to Process Payment
             </h2>
-            <p className="text-gray-600 text-center mb-6">{error || "Order not found"}</p>
-            <Button 
-              onClick={() => router.push("/cart")} 
+            <p className="text-gray-600 text-center mb-6">
+              {error || "Order not found"}
+            </p>
+            <Button
+              onClick={() => router.push("/cart")}
               className="w-full bg-orange-500 hover:bg-orange-600"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -278,15 +332,9 @@ function PaymentPageContent() {
     );
   }
 
-  const itemsTotal = orderDetails.orderItems?.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  ) || 0;
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => router.back()}
@@ -296,14 +344,10 @@ function PaymentPageContent() {
           Back
         </Button>
 
-        {/* Header Card */}
         <Card className="border-orange-200 shadow-lg flex ">
           <CardHeader className="text-orange-500 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {/* <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"> */}
-                  {/* <Receipt className="w-6 h-6" /> */}
-                {/* </div> */}
                 <div>
                   <CardTitle className="text-2xl">Complete Payment</CardTitle>
                   <CardDescription className="text-orange-500">
@@ -311,14 +355,19 @@ function PaymentPageContent() {
                   </CardDescription>
                 </div>
               </div>
-              <Badge variant="secondary" className="bg-orange-20 text-orange border-orange-300">
+              <Badge
+                variant="secondary"
+                className="bg-orange-20 text-orange border-orange-300"
+              >
                 Pending
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="">
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
-              <p className="text-orange-700 text-sm font-medium mb-2">Amount to Pay</p>
+              <p className="text-orange-700 text-sm font-medium mb-2">
+                Amount to Pay
+              </p>
               <p className="text-5xl font-bold text-orange-600">
                 ₹{orderDetails.totalAmount}
               </p>
@@ -326,7 +375,6 @@ function PaymentPageContent() {
           </CardContent>
         </Card>
 
-        {/* Order Details Card */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -335,7 +383,6 @@ function PaymentPageContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Restaurant Info */}
             {orderDetails.restaurant && (
               <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
                 <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -347,13 +394,14 @@ function PaymentPageContent() {
                   </p>
                   <p className="text-sm text-gray-600 flex items-start gap-1">
                     <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                    <span className="line-clamp-2">{orderDetails.restaurant.address}</span>
+                    <span className="line-clamp-2">
+                      {orderDetails.restaurant.address}
+                    </span>
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Pickup Time */}
             {orderDetails.timeSlot && (
               <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
                 <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -365,7 +413,8 @@ function PaymentPageContent() {
                     {formatDate(orderDetails.timeSlot.slotStart)}
                   </p>
                   <p className="text-sm font-medium text-orange-600">
-                    {formatTime(orderDetails.timeSlot.slotStart)} - {formatTime(orderDetails.timeSlot.slotEnd)}
+                    {formatTime(orderDetails.timeSlot.slotStart)} -{" "}
+                    {formatTime(orderDetails.timeSlot.slotEnd)}
                   </p>
                 </div>
               </div>
@@ -373,7 +422,6 @@ function PaymentPageContent() {
 
             <Separator />
 
-            {/* Order Items */}
             {orderDetails.orderItems && orderDetails.orderItems.length > 0 && (
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -382,7 +430,10 @@ function PaymentPageContent() {
                 </h3>
                 <div className="space-y-3">
                   {orderDetails.orderItems.map((item, index) => (
-                    <div key={index} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div
+                      key={index}
+                      className="flex justify-between items-start p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
                       <div className="flex items-start gap-3 flex-1">
                         <div className="w-8 h-8 bg-orange-100 rounded flex items-center justify-center flex-shrink-0 font-semibold text-orange-600 text-sm">
                           {item.quantity}×
@@ -393,12 +444,20 @@ function PaymentPageContent() {
                               {item.menuItem.name}
                             </p>
                             {item.menuItem.isVeg !== undefined && (
-                              <span className={`w-4 h-4 border-2 flex items-center justify-center ${
-                                item.menuItem.isVeg ? 'border-green-600' : 'border-red-600'
-                              }`}>
-                                <span className={`w-2 h-2 rounded-full ${
-                                  item.menuItem.isVeg ? 'bg-green-600' : 'bg-red-600'
-                                }`} />
+                              <span
+                                className={`w-4 h-4 border-2 flex items-center justify-center ${
+                                  item.menuItem.isVeg
+                                    ? "border-green-600"
+                                    : "border-red-600"
+                                }`}
+                              >
+                                <span
+                                  className={`w-2 h-2 rounded-full ${
+                                    item.menuItem.isVeg
+                                      ? "bg-green-600"
+                                      : "bg-red-600"
+                                  }`}
+                                />
                               </span>
                             )}
                           </div>
@@ -408,7 +467,7 @@ function PaymentPageContent() {
                         </div>
                       </div>
                       <p className="font-semibold text-gray-900 ml-4">
-                        ₹{(item.price * item.quantity)}
+                        ₹{item.price * item.quantity}
                       </p>
                     </div>
                   ))}
@@ -416,7 +475,6 @@ function PaymentPageContent() {
 
                 <Separator className="my-4" />
 
-                {/* Total */}
                 <div className="flex justify-between items-center text-lg">
                   <span className="font-semibold text-gray-900">Total</span>
                   <span className="font-bold text-orange-600">
@@ -428,7 +486,6 @@ function PaymentPageContent() {
           </CardContent>
         </Card>
 
-        {/* Payment Button */}
         <Card className="shadow-lg border-orange-200">
           <CardContent className="pt-6">
             <Button
@@ -455,7 +512,6 @@ function PaymentPageContent() {
               )}
             </Button>
 
-            {/* Security Info */}
             <Alert className="mt-4 border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-sm text-green-800">
@@ -475,11 +531,13 @@ function PaymentPageContent() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
+        </div>
+      }
+    >
       <PaymentPageContent />
     </Suspense>
   );

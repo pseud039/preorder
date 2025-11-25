@@ -48,11 +48,11 @@ const getAllOrders = asyncHandler(async (req, res) => {
 
   if (search) {
     where.OR = [];
-    
+
     if (!isNaN(search)) {
       where.OR.push({ id: parseInt(search) });
     }
-    
+
     where.OR.push(
       { user: { name: { contains: search, mode: "insensitive" } } },
       { user: { email: { contains: search, mode: "insensitive" } } }
@@ -128,9 +128,8 @@ const getAllOrders = asyncHandler(async (req, res) => {
 const getOrderDetails = asyncHandler(async (req, res) => {
   const userId = req.userId;
   const { orderId } = req.params;
-console.log(userId);
-console.log({orderId});
-  // Verify admin has access to this order's restaurant
+  console.log(userId);
+  console.log({ orderId });
   const order = await prisma.order.findUnique({
     where: { id: parseInt(orderId) },
     include: {
@@ -157,7 +156,6 @@ console.log({orderId});
     throw new ApiError(404, "Order not found");
   }
 
-  // Check if user is admin of this restaurant
   const isAdmin = await prisma.restaurantAdmin.findFirst({
     where: {
       userId,

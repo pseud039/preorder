@@ -1,6 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, ShoppingCart, Heart, User, Loader2, Plus, Circle } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Heart,
+  User,
+  Loader2,
+  Plus,
+  Circle,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface MenuItem {
@@ -40,23 +48,19 @@ export default function FoodOrderPage() {
   const [totalPages, setTotalPages] = useState<number>(1);
   const router = useRouter();
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/client/categories`
         );
         const data = await response.json();
-        
+
         console.log("Categories API Response:", data);
-        
-        
+
         const uniqueCategories = data.data;
 
-        const categoriesWithAll = [
-          { name: "All",
-          ...uniqueCategories}
-        ];
+        const categoriesWithAll = [{ name: "All", ...uniqueCategories }];
 
         setCategories(categoriesWithAll);
         console.log("Fetched Categories:", uniqueCategories);
@@ -68,21 +72,6 @@ export default function FoodOrderPage() {
     fetchCategories();
   }, []);
 
-  // // Helper function to get emoji for category
-  // const getCategoryEmoji = (category: string): string => {
-  //   const emojiMap: Record<string, string> = {
-  // //     pizza: "🍕",
-  // //     burger: "🍔",
-  // //     pasta: "🍝",
-  // //     dessert: "🍰",
-  // //     drinks: "🥤",
-  // //     salad: "🥗",
-  // //     indian: "🍛",
-  // //     chinese: "🥡",
-  //   };
-  //   return emojiMap[category.toLowerCase()] || "🍴";
-  // };
-
   useEffect(() => {
     const fetchMenuItems = async () => {
       setLoading(true);
@@ -93,7 +82,8 @@ export default function FoodOrderPage() {
           isAvailable: "true",
         });
 
-        if (selectedCategory !== "All") params.append("category", selectedCategory);
+        if (selectedCategory !== "All")
+          params.append("category", selectedCategory);
         if (isVegOnly) params.append("isVeg", "true");
         if (searchQuery.trim()) params.append("search", searchQuery.trim());
 
@@ -125,53 +115,52 @@ export default function FoodOrderPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
- const addToCart = async (item: MenuItem): Promise<void>  => {
+  const addToCart = async (item: MenuItem): Promise<void> => {
     try {
       console.log("Attempting to add to cart...");
-      
-      // Get token from localStorage
-      const token = localStorage.getItem('auth_token');
+
+      const token = localStorage.getItem("auth_token");
       console.log("Token from localStorage:", token ? "Found" : "Not found");
-      
+
       if (!token) {
         alert("Please login first");
         window.location.href = "/auth/login";
         return;
       }
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/add`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Send token in Authorization header
-        },
-        credentials: 'include', // Still include for same-origin scenarios
-        body: JSON.stringify({
-          menuItemId: item.id,
-        }),
-      });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/add`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            menuItemId: item.id,
+          }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        // Handle specific error messages
         if (response.status === 401) {
           console.error("Authentication required. Please log in.");
           alert("Please log in to add items to cart");
           return;
         }
-        console.error("Failed to add to cart:", data.message || response.statusText);
-        alert(`Failed to add to cart: ${data.message || 'Unknown error'}`);
+        console.error(
+          "Failed to add to cart:",
+          data.message || response.statusText
+        );
+        alert(`Failed to add to cart: ${data.message || "Unknown error"}`);
         return;
       }
 
-      // Only increment cart count if the request was successful
       setCartCount((prev) => prev + 1);
       console.log("Added to cart:", item.id);
-      
-      // Optional: Show success message
-      // You could add a toast notification here
-      
     } catch (error) {
       console.error("Error adding to cart:", error);
       alert("Network error. Please check your connection and try again.");
@@ -200,19 +189,24 @@ export default function FoodOrderPage() {
               <ShoppingCart fill="#f1623a" className="w-5 h-5 text-primary" />
             </div>
             {cartCount > 0 && (
-              <span className="absolute top-1 -right-[2px] w-3 h-3 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-            
-              </span>
+              <span className="absolute top-1 -right-[2px] w-3 h-3 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"></span>
             )}
           </button>
         </div>
 
         <h1 className="text-2xl font-bold text-primary-text/80 mb-6 leading-tight">
-          What are you going<br />to eat today??
+          What are you going
+          <br />
+          to eat today??
         </h1>
 
         {/* Search Bar */}
-        <div className="relative mb-6 flex flex-row gap-2 items-center" onClick={()=>{router.push("/search")}}>
+        <div
+          className="relative mb-6 flex flex-row gap-2 items-center"
+          onClick={() => {
+            router.push("/search");
+          }}
+        >
           <input
             type="text"
             placeholder="Search here.."
@@ -234,12 +228,16 @@ export default function FoodOrderPage() {
             </span>
             <div
               className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                isVegOnly ? "border-white bg-green-800" : "border-white bg-primary"
+                isVegOnly
+                  ? "border-white bg-green-800"
+                  : "border-white bg-primary"
               }`}
             >
               <div
                 className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
-                  isVegOnly ? "border-white bg-green-800" : "border-white bg-primary"
+                  isVegOnly
+                    ? "border-white bg-green-800"
+                    : "border-white bg-primary"
                 }`}
               >
                 <div className="w-[6px] h-[6px] rounded-full bg-white"></div>
@@ -261,7 +259,10 @@ export default function FoodOrderPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900">Categories</h3>
-            <a href="/search" className="text-primary font-medium text-sm hover:cursor-pointer">
+            <a
+              href="/search"
+              className="text-primary font-medium text-sm hover:cursor-pointer"
+            >
               See More
             </a>
           </div>
@@ -287,7 +288,9 @@ export default function FoodOrderPage() {
                 </div>
                 <span
                   className={`text-xs font-medium ${
-                    selectedCategory === cat.name ? "text-primary" : "text-gray-700"
+                    selectedCategory === cat.name
+                      ? "text-primary"
+                      : "text-gray-700"
                   }`}
                 >
                   {cat.name}

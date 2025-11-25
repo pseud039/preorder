@@ -46,16 +46,16 @@ const SignUpAdmin = asyncHandler(async (req, res) => {
     // Create user
     const admin = await tx.user.create({
       data: {
-      email,
-      passwordHash,
-      emailVerified: false,
-      role: "admin",
+        email,
+        passwordHash,
+        emailVerified: false,
+        role: "admin",
       },
       select: {
-      id: true,
-      email: true,
-      role: true,
-      createdAt: true,
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
       },
     });
 
@@ -63,7 +63,6 @@ const SignUpAdmin = asyncHandler(async (req, res) => {
       ? parseInt(req.body.restaurantId, 10)
       : 3;
 
-    // Ensure restaurant exists within the same transaction
     const restaurant = await tx.restaurant.findUnique({
       where: { id: restaurantId },
     });
@@ -73,8 +72,8 @@ const SignUpAdmin = asyncHandler(async (req, res) => {
 
     await tx.restaurantAdmin.create({
       data: {
-      userId: admin.id,
-      restaurantId,
+        userId: admin.id,
+        restaurantId,
       },
     });
 
@@ -123,7 +122,6 @@ const SignUpAdmin = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Bad Request");
   }
 
-  // Set refresh token as httpOnly cookie
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -169,32 +167,36 @@ const LoginAdmin = asyncHandler(async (req, res) => {
   if (!isPasswordValid) {
     throw new ApiError(400, "Invalid password");
   }
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        userId: existingUser.id, 
-        email: existingUser.email, 
-        role: existingUser.role 
-      },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: '7d' }
-    );
-  
-    res.cookie('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/',
-    });
-  
-    return res.status(200).json(
-      new ApiResponse(200, {
+  // Generate JWT token
+  const token = jwt.sign(
+    {
+      userId: existingUser.id,
+      email: existingUser.email,
+      role: existingUser.role,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  res.cookie("auth_token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
         id: existingUser.id,
         email: existingUser.email,
-        token: token
-      }, "Login successful")
-    );
+        token: token,
+      },
+      "Login successful"
+    )
+  );
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -223,7 +225,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-   const result = await prisma.passwordReset.create({
+  const result = await prisma.passwordReset.create({
     data: {
       userId: existingUser.id,
       token: hashedToken,

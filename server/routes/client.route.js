@@ -29,31 +29,50 @@ import {
   verifyOTP,
   resendOTP,
   getAvailableSlots,
-  selectTimeSlot
+  selectTimeSlot,
 } from "../controllers/client/client.details.contoller.js";
 
 const router = express.Router();
 
-router.post("/signUp", SignUpClient);
+// Auth Routes
+router.post("/signup", SignUpClient);
 router.post("/login", LoginClient);
 router.post("/password", forgotPassword);
 router.post("/password/:token", resetpass);
-router.get("/logout", logoutClient);
+
+// Authentication
+router.get("/logout", verifyJWT, logoutClient);
+router.get("/profile", verifyJWT, getProfile);
+
+// User Profile & Details
+router.get("/details", verifyJWT, getDetails);
+router.put("/details", verifyJWT, updateDetails);
+
+//OTP Management
+router.post("/send-otp", verifyJWT, sendOTP);
+router.post("/verify-otp", verifyJWT, verifyOTP);
+router.post("/resend-otp", verifyJWT, resendOTP);
+
+//Menu & Categories
+router.get("/categories", verifyJWT, getCategories);
+
+// Cart Management
 router.get("/order", verifyJWT, getCart);
 router.post("/add", verifyJWT, addToCart);
 router.post("/update", verifyJWT, updateCartItem);
 router.post("/delete", verifyJWT, removeFromCart);
 router.post("/remove", verifyJWT, clearCart);
-router.get("/categories", verifyJWT, getCategories);
-router.get("/details", verifyJWT, getDetails);
-router.put("/details", verifyJWT, updateDetails);
-router.post("/send-otp", verifyJWT, sendOTP);
-router.post("/verify-otp", verifyJWT, verifyOTP);
-router.post("/resend-otp", verifyJWT, resendOTP);
-router.get('/available', verifyJWT, getAvailableSlots);
-router.post('/select', verifyJWT, selectTimeSlot);
-router.post("/create-order",verifyJWT, createOrder);
-router.post('/verify-payment', verifyJWT, verifyPayment);
-router.get("/orders/:orderId",verifyJWT,getOrderById);
-router.get("/profile",verifyJWT,getProfile);
+
+// Time Slot Management
+router.get("/available", verifyJWT, getAvailableSlots);
+router.post("/select", verifyJWT, selectTimeSlot);
+
+// Order Management
+router.post("/create-order", verifyJWT, createOrder);
+// router.get("/orders", verifyJWT, getMyOrders);
+router.get("/orders/:orderId", verifyJWT, getOrderById);
+
+// Payment
+router.post("/payment/verify", verifyJWT, verifyPayment);
+
 export default router;

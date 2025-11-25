@@ -125,53 +125,6 @@ const SignUpClient = asyncHandler(async (req, res) => {
   );
 });
 
-// const LoginClient = asyncHandler(async (req, res) => {
-//   const { email, password } = req.body;
-
-//   if (!email || !password || email.trim() === "" || password.trim() === "") {
-//     throw new ApiError(400, "All fields are required");
-//   }
-
-//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   if (!emailRegex.test(email)) {
-//     throw new ApiError(400, "Invalid email format");
-//   }
-
-//   if (password.length < 8) {
-//     throw new ApiError(400, "Password must be at least 8 characters long");
-//   }
-//   const existingUser = await prisma.user.findUnique({
-//     where: { email, role: "customer" },
-//   });
-//   if (!existingUser) {
-//     throw new ApiError(404, "User not found");
-//   }
-//   const isPasswordValid = await bcrypt.compare(password, existingUser.passwordHash);
-// if (!isPasswordValid) {
-//   throw new ApiError(401, "Invalid credentials");
-// }
-//    const token = jwt.sign(
-//     { userId: existingUser.id, email: existingUser.email, role: existingUser.role },
-//     process.env.REFRESH_TOKEN_SECRET,
-//     { expiresIn: '7d' }
-//   );
-// console.log(token);
-// try{
-//     res.cookie('auth_token', token, {
-//     httpOnly: true,
-//     secure: process.env.NODE_ENV === 'production',
-//     sameSite: 'lax',
-//     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-//   });}catch(error){
-//     throw new ApiError(500, "Internal error");
-//   }
-// console.log(existingUser.id);
-// console.log()
-//   return res.status(200).json(new ApiResponse(200,{
-//         id: existingUser.id,
-//   }, "Login successfull"));
-// });
-
 const LoginClient = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -189,9 +142,9 @@ const LoginClient = asyncHandler(async (req, res) => {
   }
 
   const existingUser = await prisma.user.findFirst({
-    where: { 
+    where: {
       email,
-      role: "customer"
+      role: "customer",
     },
   });
 
@@ -200,37 +153,44 @@ const LoginClient = asyncHandler(async (req, res) => {
   }
 
   // Verify password
-  const isPasswordValid = await bcrypt.compare(password, existingUser.passwordHash);
+  const isPasswordValid = await bcrypt.compare(
+    password,
+    existingUser.passwordHash
+  );
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid credentials");
   }
 
   // Generate JWT token
   const token = jwt.sign(
-    { 
-      userId: existingUser.id, 
-      email: existingUser.email, 
-      role: existingUser.role 
+    {
+      userId: existingUser.id,
+      email: existingUser.email,
+      role: existingUser.role,
     },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: "7d" }
   );
 
-  res.cookie('auth_token', token, {
+  res.cookie("auth_token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/',
+    path: "/",
   });
 
   return res.status(200).json(
-    new ApiResponse(200, {
-      id: existingUser.id,
-      email: existingUser.email,
-      name: existingUser.name,
-      token: token
-    }, "Login successful")
+    new ApiResponse(
+      200,
+      {
+        id: existingUser.id,
+        email: existingUser.email,
+        name: existingUser.name,
+        token: token,
+      },
+      "Login successful"
+    )
   );
 });
 
@@ -345,8 +305,7 @@ const resetpass = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Password has been reset successfully"));
 });
 //@todo: add email verification and logout logic
-const emailVerify= asyncHandler(async(req,res)=>{
-});
+const emailVerify = asyncHandler(async (req, res) => {});
 
 const getProfile = asyncHandler(async (req, res) => {
   const userId = req.userId;
@@ -356,8 +315,8 @@ const getProfile = asyncHandler(async (req, res) => {
   }
 
   const user = await prisma.user.findUnique({
-    where: { 
-      id: userId 
+    where: {
+      id: userId,
     },
     select: {
       id: true,
@@ -369,20 +328,25 @@ const getProfile = asyncHandler(async (req, res) => {
       isActive: true,
       createdAt: true,
       updatedAt: true,
-      // Exclude sensitive fields like password
-      // password: false (don't include this)
-    }
+
+    },
   });
 
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  return res.json(
-    new ApiResponse(200, user, "Profile fetched successfully")
-  );
+  return res.json(new ApiResponse(200, user, "Profile fetched successfully"));
 });
 
 const logoutClient = asyncHandler(async (req, res) => {});
 
-export { SignUpClient, LoginClient, forgotPassword, resetpass, logoutClient, emailVerify, getProfile };
+export {
+  SignUpClient,
+  LoginClient,
+  forgotPassword,
+  resetpass,
+  logoutClient,
+  emailVerify,
+  getProfile,
+};

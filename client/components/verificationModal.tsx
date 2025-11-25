@@ -1,44 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, Shield, Loader2, RefreshCw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { X, Shield, Loader2, RefreshCw } from "lucide-react";
 
 interface OTPVerificationModalProps {
   isOpen: boolean;
-  phone: string | { name: string; phone: string }; // Can be either string or object
+  phone: string | { name: string; phone: string };
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function OTPVerificationModal({ 
-  isOpen, 
-  phone, 
-  onClose, 
-  onSuccess 
+export default function OTPVerificationModal({
+  isOpen,
+  phone,
+  onClose,
+  onSuccess,
 }: OTPVerificationModalProps) {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Extract phone number (handle both string and object)
-  const phoneNumber = typeof phone === 'string' ? phone : phone?.phone || '';
+  const phoneNumber = typeof phone === "string" ? phone : phone?.phone || "";
 
-  // Start cooldown timer
   useEffect(() => {
     if (isOpen && resendCooldown === 0) {
       setResendCooldown(60);
     }
   }, [isOpen]);
 
-  // Cooldown countdown
   useEffect(() => {
     if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      const timer = setTimeout(
+        () => setResendCooldown(resendCooldown - 1),
+        1000
+      );
       return () => clearTimeout(timer);
     }
   }, [resendCooldown]);
 
-  // Auto-send OTP when modal opens
   useEffect(() => {
     if (isOpen && phoneNumber) {
       sendOTP();
@@ -47,50 +46,49 @@ export default function OTPVerificationModal({
 
   const sendOTP = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ phone: phoneNumber })
-      });
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/send-otp`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ phone: phoneNumber }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to send OTP');
+        throw new Error(data.message || "Failed to send OTP");
       }
 
-      // In dev mode, show OTP in console
       if (data.data?.otp) {
-        console.log('DEV MODE OTP:', data.data.otp);
+        console.log("DEV MODE OTP:", data.data.otp);
       }
     } catch (err: any) {
-      console.error('Error sending OTP:', err);
-      setError(err.message || 'Failed to send OTP');
+      console.error("Error sending OTP:", err);
+      setError(err.message || "Failed to send OTP");
     }
   };
 
   const handleChange = (index: number, value: string) => {
-    // Only allow digits
     if (value && !/^\d$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    setError('');
+    setError("");
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all 6 digits entered
     if (index === 5 && value) {
-      const fullOtp = [...newOtp.slice(0, 5), value].join('');
+      const fullOtp = [...newOtp.slice(0, 5), value].join("");
       if (fullOtp.length === 6) {
         setTimeout(() => handleVerify(fullOtp), 100);
       }
@@ -98,56 +96,63 @@ export default function OTPVerificationModal({
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    const newOtp = pastedData.split('').concat(Array(6 - pastedData.length).fill(''));
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+    const newOtp = pastedData
+      .split("")
+      .concat(Array(6 - pastedData.length).fill(""));
     setOtp(newOtp);
-    
+
     if (pastedData.length === 6) {
       inputRefs.current[5]?.focus();
       setTimeout(() => handleVerify(pastedData), 100);
     }
   };
 
-  const handleVerify = async (otpValue = otp.join('')) => {
+  const handleVerify = async (otpValue = otp.join("")) => {
     if (otpValue.length !== 6) {
-      setError('Please enter all 6 digits');
+      setError("Please enter all 6 digits");
       return;
     }
 
     try {
       setLoading(true);
-      setError('');
-      const token = localStorage.getItem('auth_token');
+      setError("");
+      const token = localStorage.getItem("auth_token");
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ otp: otpValue })
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/verify-otp`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ otp: otpValue }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Invalid OTP');
+        throw new Error(data.message || "Invalid OTP");
       }
 
-      // Success
       onSuccess();
     } catch (err: any) {
-      console.error('Error verifying OTP:', err);
-      setError(err.message || 'Failed to verify OTP');
-      setOtp(['', '', '', '', '', '']);
+      console.error("Error verifying OTP:", err);
+      setError(err.message || "Failed to verify OTP");
+      setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
       setLoading(false);
@@ -158,34 +163,36 @@ export default function OTPVerificationModal({
     if (resendCooldown > 0) return;
 
     try {
-      setError('');
-      const token = localStorage.getItem('auth_token');
+      setError("");
+      const token = localStorage.getItem("auth_token");
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/resend-otp`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/resend-otp`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to resend OTP');
+        throw new Error(data.message || "Failed to resend OTP");
       }
 
       setResendCooldown(60);
-      setOtp(['', '', '', '', '', '']);
+      setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
 
-      // In dev mode, show OTP in console
       if (data.data?.otp) {
-        console.log('DEV MODE OTP:', data.data.otp);
+        console.log("DEV MODE OTP:", data.data.otp);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to resend OTP');
+      setError(err.message || "Failed to resend OTP");
     }
   };
 
@@ -194,15 +201,13 @@ export default function OTPVerificationModal({
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal - Bottom Sheet */}
-      <div 
-        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-w-md mx-auto shadow-2xl animate-slide-up"
-      >
+      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-w-md mx-auto shadow-2xl animate-slide-up">
         {/* Handle Bar */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1 bg-gray-300 rounded-full" />
@@ -210,7 +215,9 @@ export default function OTPVerificationModal({
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">Verify Phone Number</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Verify Phone Number
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -231,12 +238,8 @@ export default function OTPVerificationModal({
 
           {/* Message */}
           <div className="text-center">
-            <p className="text-gray-600 mb-1">
-              We've sent a 6-digit code to
-            </p>
-            <p className="text-gray-900 font-semibold">
-              +91 {phoneNumber}
-            </p>
+            <p className="text-gray-600 mb-1">We&apos;ve sent a 6-digit code to</p>
+            <p className="text-gray-900 font-semibold">+91 {phoneNumber}</p>
           </div>
 
           {/* OTP Input */}
@@ -268,7 +271,7 @@ export default function OTPVerificationModal({
           {/* Resend Button */}
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">
-              Didn't receive the code?
+              Didn&apos;t receive the code?
             </p>
             <button
               onClick={handleResend}
@@ -276,14 +279,16 @@ export default function OTPVerificationModal({
               className="text-orange-500 hover:text-orange-600 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
             >
               <RefreshCw className="w-4 h-4" />
-              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
+              {resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : "Resend OTP"}
             </button>
           </div>
 
           {/* Verify Button */}
           <button
             onClick={() => handleVerify()}
-            disabled={loading || otp.join('').length !== 6}
+            disabled={loading || otp.join("").length !== 6}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
@@ -292,7 +297,7 @@ export default function OTPVerificationModal({
                 Verifying...
               </>
             ) : (
-              'Verify & Continue'
+              "Verify & Continue"
             )}
           </button>
         </div>
