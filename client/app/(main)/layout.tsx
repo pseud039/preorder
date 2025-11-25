@@ -74,19 +74,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const pathname = usePathname();
-  // const isHome = pathname ==="/";
-  // const[isLoading, setIsLoading] = useState();
-
   return (
-    <html lang="en">
-      <body
-        className={`${poppins.variable}  antialiased`}
-      >
-        {/* <Onboardingpage1 /> */}
-       <main className="pb-24"> {children}</main>
-        <Navbar/>
-      </body>
-    </html>
+    <>
+      <main className="pb-24"> {children}</main>
+      <Navbar />
+    </>
   );
 }

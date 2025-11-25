@@ -79,6 +79,7 @@ const getMenu = asyncHandler(async (req, res) => {
 });
 
 const getCategories = asyncHandler(async (req, res) => {
+  
   const categories = await prisma.menuItem.findMany({
     where: {
       isActive: true,

@@ -54,7 +54,7 @@ router.post("/verify-otp", verifyJWT, verifyOTP);
 router.post("/resend-otp", verifyJWT, resendOTP);
 
 //Menu & Categories
-router.get("/categories", verifyJWT, getCategories);
+router.get("/categories", getCategories);
 
 // Cart Management
 router.get("/order", verifyJWT, getCart);
