@@ -23,6 +23,7 @@ import {
   generateTimeSlots,
 } from "../controllers/client/client.details.contoller.js";
 import {
+    getAllOrders,
   getOrderDetails,
   updateOrderStatus,
 } from "../controllers/admin/admin.order.controller.js";
@@ -42,17 +43,18 @@ router.get("/menu/:id", getItemDetails);
 router.post("/restaurant", verifyJWTAdmin, addRestraunt);
 
 //    Menu Management
-router.get("/menu", verifyJWTAdmin, getMenu);
-router.post("/menu", verifyJWTAdmin, upload.single("imageUrl"), addMenuItems);
-router.put("/menu/:id", verifyJWTAdmin, upload.single("imageUrl"), updateItem);
-router.delete("/menu/:id", verifyJWTAdmin, deleteItem);
+router.get("/menu", getMenu);
+router.post("/menu", upload.single("imageUrl"), addMenuItems);
+router.put("/menu/:id", upload.single("imageUrl"), updateItem);
+router.delete("/menu/:id", deleteItem);
 
 //    Time Slot Management
 router.post("/createTimeslot", verifyJWTAdmin, createTimeSlots);
 router.post("/generate", verifyJWTAdmin, generateTimeSlots);
 
 //    Order Management
-router.get("/orders", verifyJWTAdmin, getOrderDetails);
-router.patch("/orders/:orderId/status", verifyJWTAdmin, updateOrderStatus);
+router.get("/orders", getAllOrders);
+router.get("/orders/:orderId",getOrderDetails);
+router.patch("/orders/:orderId", updateOrderStatus);
 
 export default router;

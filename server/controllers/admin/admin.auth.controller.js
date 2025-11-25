@@ -177,6 +177,7 @@ const LoginAdmin = asyncHandler(async (req, res) => {
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: "7d" }
   );
+// console.log(token);
 
   res.cookie("auth_token", token, {
     httpOnly: true,
@@ -185,7 +186,8 @@ const LoginAdmin = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-
+  const tokken = req.cookies?.auth_token;
+  // console.log(tokken);
   return res.status(200).json(
     new ApiResponse(
       200,

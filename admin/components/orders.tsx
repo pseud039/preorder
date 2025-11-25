@@ -125,8 +125,7 @@ export default function OrdersTable() {
         }
       );
       const data: OrdersResponse = await response.json();
-      console.log(data);
-    //   console.log(data.data.orders);
+      console.log(data);    
       if (data.success) {
         setOrders(data.data.orders);
       } else {
@@ -145,7 +144,7 @@ export default function OrdersTable() {
     try {
       setUpdatingOrderId(orderId);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/${orderId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/${orderId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

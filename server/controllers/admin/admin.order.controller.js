@@ -27,7 +27,6 @@ const getAllOrders = asyncHandler(async (req, res) => {
 
   const restaurantIds = adminRestaurants.map((ra) => ra.restaurantId);
 
-  // Build where clause
   const where = {
     restaurantId: { in: restaurantIds },
   };
@@ -59,7 +58,6 @@ const getAllOrders = asyncHandler(async (req, res) => {
     );
   }
 
-  // Parse pagination params
   const pageNum = parseInt(page);
   const limitNum = parseInt(limit);
   const skip = (pageNum - 1) * limitNum;
@@ -113,7 +111,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
   ]);
 
   res.json(
-    new ApiResponse(200, "Orders fetched successfully", {
+    new ApiResponse(200, {
       orders,
       pagination: {
         total,
@@ -121,16 +119,17 @@ const getAllOrders = asyncHandler(async (req, res) => {
         limit: limitNum,
         totalPages: Math.ceil(total / limitNum),
       },
-    })
-  );
+    },"Orders fetched successfully"));
 });
 
 const getOrderDetails = asyncHandler(async (req, res) => {
   const userId = req.userId;
   const { orderId } = req.params;
+
   console.log(userId);
-  console.log({ orderId });
-  const order = await prisma.order.findUnique({
+  console.log(orderId);
+
+  const order = await prisma.order  .findUnique({
     where: { id: parseInt(orderId) },
     include: {
       user: {
