@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { X, Shield, Loader2, RefreshCw } from "lucide-react";
 
 interface OTPVerificationModalProps {
@@ -22,29 +22,7 @@ export default function OTPVerificationModal({
 
   const phoneNumber = typeof phone === "string" ? phone : phone?.phone || "";
 
-  useEffect(() => {
-    if (isOpen && resendCooldown === 0) {
-      setResendCooldown(60);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(
-        () => setResendCooldown(resendCooldown - 1),
-        1000
-      );
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
-
-  useEffect(() => {
-    if (isOpen && phoneNumber) {
-      sendOTP();
-    }
-  }, [isOpen, phoneNumber]);
-
-  const sendOTP = async () => {
+  const sendOTP = useCallback(async () => {
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(
@@ -69,11 +47,34 @@ export default function OTPVerificationModal({
       if (data.data?.otp) {
         console.log("DEV MODE OTP:", data.data.otp);
       }
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to send OTP";
       console.error("Error sending OTP:", err);
-      setError(err.message || "Failed to send OTP");
+      setError(errorMessage);
     }
-  };
+  }, [phoneNumber]);
+
+  useEffect(() => {
+    if (isOpen && resendCooldown === 0) {
+      setResendCooldown(60);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(
+        () => setResendCooldown(resendCooldown - 1),
+        1000
+      );
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    if (isOpen && phoneNumber) {
+      sendOTP();
+    }
+  }, [isOpen, phoneNumber, sendOTP]);
 
   const handleChange = (index: number, value: string) => {
     if (value && !/^\d$/.test(value)) return;
@@ -149,9 +150,10 @@ export default function OTPVerificationModal({
       }
 
       onSuccess();
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to verify OTP";
       console.error("Error verifying OTP:", err);
-      setError(err.message || "Failed to verify OTP");
+      setError(errorMessage);
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
@@ -191,8 +193,9 @@ export default function OTPVerificationModal({
       if (data.data?.otp) {
         console.log("DEV MODE OTP:", data.data.otp);
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to resend OTP");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to resend OTP";
+      setError(errorMessage);
     }
   };
 
@@ -200,20 +203,16 @@ export default function OTPVerificationModal({
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal - Bottom Sheet */}
       <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-w-md mx-auto shadow-2xl animate-slide-up">
-        {/* Handle Bar */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        {/* Header */}
         <div className="flex items-center justify-between px-6 pb-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-900">
             Verify Phone Number
@@ -227,27 +226,25 @@ export default function OTPVerificationModal({
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Icon */}
           <div className="flex justify-center">
             <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
               <Shield className="w-8 h-8 text-orange-500" />
             </div>
           </div>
 
-          {/* Message */}
           <div className="text-center">
             <p className="text-gray-600 mb-1">We&apos;ve sent a 6-digit code to</p>
             <p className="text-gray-900 font-semibold">+91 {phoneNumber}</p>
           </div>
 
-          {/* OTP Input */}
           <div className="flex justify-center gap-2">
             {otp.map((digit, index) => (
               <input
                 key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -261,14 +258,12 @@ export default function OTPVerificationModal({
             ))}
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm text-center">
               {error}
             </div>
           )}
 
-          {/* Resend Button */}
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">
               Didn&apos;t receive the code?
@@ -285,7 +280,6 @@ export default function OTPVerificationModal({
             </button>
           </div>
 
-          {/* Verify Button */}
           <button
             onClick={() => handleVerify()}
             disabled={loading || otp.join("").length !== 6}
