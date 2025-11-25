@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+
 interface MenuItem {
   id: string | number;
   name: string;
@@ -23,7 +24,6 @@ interface MenuItem {
 
 interface Category {
   name: string;
-  emoji: string;
 }
 
 interface ApiResponse<T> {
@@ -60,8 +60,10 @@ export default function FoodOrderPage() {
 
         const uniqueCategories = data.data;
 
-        const categoriesWithAll = [{ name: "All", ...uniqueCategories }];
-
+const categoriesWithAll: Category[] = [
+  { name: "All" }, 
+  ...uniqueCategories.map((category: Category) => ({ name: category }))
+];
         setCategories(categoriesWithAll);
         console.log("Fetched Categories:", uniqueCategories);
       } catch (error) {
@@ -267,7 +269,7 @@ export default function FoodOrderPage() {
             </a>
           </div>
 
-          <div className="flex justify-between gap-3 overflow-x-auto p-2">
+          <div className="flex gap-5 overflow-x-auto p-2">
             {categories.map((cat, idx) => (
               <button
                 key={idx}
@@ -289,7 +291,7 @@ export default function FoodOrderPage() {
                   className={`text-xs font-medium ${
                     selectedCategory === cat.name
                       ? "text-primary"
-                      : "text-gray-700"
+                      : "text-black-700"
                   }`}
                 >
                   {cat.name}
