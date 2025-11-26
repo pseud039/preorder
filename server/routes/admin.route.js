@@ -49,8 +49,8 @@ router.put("/menu/:id", upload.single("imageUrl"), updateItem);
 router.delete("/menu/:id", deleteItem);
 
 //    Time Slot Management
-router.post("/createTimeslot", verifyJWTAdmin, createTimeSlots);
-router.post("/generate", verifyJWTAdmin, generateTimeSlots);
+router.post("/createTimeslot", createTimeSlots);
+router.post("/generate", generateTimeSlots);
 
 //    Order Management
 router.get("/orders", getAllOrders);
