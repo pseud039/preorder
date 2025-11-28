@@ -9,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin:process.env.CORS_ORIGIN.split(",").map(e => e.trim()),
+    origin:"*",
     sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     credentials: true,
   })
