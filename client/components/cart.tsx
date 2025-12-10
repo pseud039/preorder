@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import UserDetailsModal from "@/components/detailsModal";
 import OTPVerificationModal from "@/components/verificationModal";
 import TimeSlotModal from "@/components/slotBookingModal";
+import { fetchWithAuth } from "@/lib/auth";
 
 interface MenuItem {
   id: number;
@@ -80,13 +81,13 @@ export default function CartPage() {
 
   const checkUserDetails = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         return;
       }
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/details`,
         {
           headers: {
@@ -118,17 +119,17 @@ export default function CartPage() {
   const fetchCart = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         toast.error("Please login first");
-        router.push("/auth/login");
+        router.push("/login");
         return;
       }
 
       console.log("Token present:", !!token);
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/order`,
         {
           method: "GET",
@@ -148,7 +149,7 @@ export default function CartPage() {
         if (response.status === 401) {
           toast.error("Session expired. Please login again");
           localStorage.removeItem("auth_token");
-          router.push("/auth/login");
+          router.push("/login");
           return;
         }
         if (response.status === 404) {
@@ -197,15 +198,15 @@ export default function CartPage() {
   const updateQuantity = async (cartItemId: number, newQuantity: number) => {
     try {
       setUpdating(cartItemId);
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         toast.error("Please login first");
-        router.push("/auth/login");
+        router.push("/login");
         return;
       }
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/update`,
         {
           method: "POST",
@@ -240,15 +241,15 @@ export default function CartPage() {
   const removeItem = async (cartItemId: number) => {
     try {
       setUpdating(cartItemId);
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         toast.error("Please login first");
-        router.push("/auth/login");
+        router.push("/login");
         return;
       }
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/delete`,
         {
           method: "POST",
@@ -281,15 +282,15 @@ export default function CartPage() {
 
   const clearCart = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         toast.error("Please login first");
-        router.push("/auth/login");
+        router.push("/login");
         return;
       }
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/remove`,
         {
           method: "POST",
@@ -348,9 +349,9 @@ export default function CartPage() {
     setShowTimeSlotModal(false);
 
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("accessToken");
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/create-order`,
         {
           method: "POST",
@@ -533,12 +534,13 @@ export default function CartPage() {
           >
             {!userDetails?.name || !userDetails?.phone
               ? "Add Details to Checkout"
-              : `Checkout - ₹${total.toFixed(2)}`}
+              : `Checkout - ₹${total}`}
           </button>
         </div>
       )}
 
       {/* Modals */}
+      <div className="">
       <UserDetailsModal
         isOpen={showUserDetailsModal}
         onClose={() => setShowUserDetailsModal(false)}
@@ -556,7 +558,7 @@ export default function CartPage() {
         isOpen={showTimeSlotModal}
         onClose={() => setShowTimeSlotModal(false)}
         onSlotSelect={handleTimeSlotSelect}
-      />
+      /></div>
     </div>
   );
 }

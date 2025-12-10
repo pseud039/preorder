@@ -9,21 +9,35 @@ datasource db {
 }
 
 model Restaurant {
-  id            Int           @id @default(autoincrement())
-  name          String
-  description   String?
-  address       String?
-  contactNumber String?
-  imageUrl      String?
-  isActive      Boolean       @default(true)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now()) @updatedAt
+  id                          Int           @id @default(autoincrement())
+  name                        String
+  description                 String?
+  address                     String?
+  contactNumber               String?
+  imageUrl                    String?
+  isActive                    Boolean       @default(true)
+  
+  // Commission Settings
+  commissionRate              Decimal       @default(15.00) @db.Decimal(5, 2)
+  
+ // Primary: Multiplier for proportional scaling (1.0 = normal, 1.5 = 50% slower)
+  baseWaitingTimeMultiplier   Decimal       @default(1.0) @db.Decimal(3, 2)
+  
+ // Optional: Fixed additional time for packaging/delivery (in minutes)
+  fixedAdditionalTime         Int           @default(0)
+  
+  // Formula: actualTime = (menuItem.waitingTime * multiplier) + fixedTime
+  
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @updatedAt
 
   // Relations
-  admins        RestaurantAdmin[]
-  menuItems     MenuItem[]
-  orders        Order[]
-  
+  admins                      RestaurantAdmin[]
+  chefs                       RestaurantChef[]   
+  menuItems                   MenuItem[]
+  orders                      Order[]
+  categories                  Category[]        
+  commissions                 Commission[]       
   @@index([isActive])
 }
 
@@ -32,14 +46,14 @@ model User {
   email               String                @unique
   passwordHash        String
   role                Role                  @default(customer)
-  name                String?               // optional until first order
-  phone               String?               // required only when ordering
+  name                String?
+  phone               String?
   
   // Email verification
   emailVerified       Boolean               @default(false)
   emailVerifiedAt     DateTime?
   
-  // Phone verification (NEW)
+  // Phone verification
   phoneVerified       Boolean               @default(false)
   phoneVerifiedAt     DateTime?
   
@@ -47,32 +61,32 @@ model User {
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 
-  // Relations
-  adminOf             RestaurantAdmin[]
+  adminOf             RestaurantAdmin?      
+  chefOf              RestaurantChef?       
   orders              Order[]
   refreshTokens       RefreshToken[]
   emailVerifications  EmailVerification[]   
   passwordResets      PasswordReset[]
-  phoneOTPs           PhoneOTP[]            // NEW
-  cart                Cart?                 // One active cart per user
+  phoneOTPs           PhoneOTP[]
+  cart                Cart?
+  notifications       Notification[]       
+  pushSubscriptions   PushSubscription[]
   
   @@index([email])
   @@index([role])
-  @@index([phone])                          // NEW - for quick OTP lookup
+  @@index([phone])
 }
 
-// NEW MODEL - Phone OTP Verification
 model PhoneOTP {
   id          Int        @id @default(autoincrement())
   userId      Int
   phone       String
-  otp         String     // Store hashed OTP (use bcrypt)
-  expiresAt   DateTime   // OTP valid for 10 minutes
+  otp         String
+  expiresAt   DateTime
   verified    Boolean    @default(false)
-  attempts    Int        @default(0)  // Track failed attempts (max 3-5)
+  attempts    Int        @default(0)
   createdAt   DateTime   @default(now())
 
-  // Relations
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
@@ -83,52 +97,94 @@ model PhoneOTP {
 
 model RestaurantAdmin {
   id            Int         @id @default(autoincrement())
-  userId        Int
+  userId        Int         @unique  // ENFORCED: One user = One restaurant admin
   restaurantId  Int
   assignedAt    DateTime    @default(now())
+  isActive      Boolean     @default(true)
 
-  // Relations
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, restaurantId])
   @@index([userId])
   @@index([restaurantId])
+  @@index([isActive])
+}
+
+model RestaurantChef {
+  id            Int         @id @default(autoincrement())
+  userId        Int         @unique  // One user = One restaurant chef
+  restaurantId  Int
+  assignedAt    DateTime    @default(now())
+  isActive      Boolean     @default(true)
+  
+  // Optional: Chef-specific fields
+  specialization String?    // e.g., "North Indian", "Chinese", "Bakery"
+  shiftStart     String?    // e.g., "09:00"
+  shiftEnd       String?    // e.g., "18:00"
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([restaurantId])
+  @@index([isActive])
+}
+
+model Category {
+  id            Int         @id @default(autoincrement())
+  restaurantId  Int
+  name          String
+  description   String?
+  imageUrl      String?    
+  displayOrder  Int         @default(0)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItems     MenuItem[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId])
+  @@index([isActive])
+  @@index([displayOrder])
 }
 
 model MenuItem {
   id            Int         @id @default(autoincrement())
   restaurantId  Int
+  categoryId    Int?        
   name          String
   description   String?
-  price         Decimal      @db.Decimal(10, 2)
+  price         Decimal     @db.Decimal(10, 2)
   imageUrl      String?
-  category      String?
-  isVeg         Boolean      @default(true)
-  isAvailable   Boolean      @default(true)
-  isActive      Boolean      @default(true)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  isVeg         Boolean     @default(true)
+  isAvailable   Boolean     @default(true)
+  isActive      Boolean     @default(true)
+  
+  waitingTime   Int         @default(15)  // In minutes
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  // Relations
-  restaurant    Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category      Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   orderItems    OrderItem[]
   cartItems     CartItem[]
 
   @@unique([restaurantId, name])
   @@index([restaurantId])
-  @@index([category])
+  @@index([categoryId])
   @@index([isAvailable, isActive])
 }
 
 model Cart {
   id            Int          @id @default(autoincrement())
   userId        Int          @unique
-  restaurantId  Int          // Lock cart to one restaurant
+  restaurantId  Int
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  // Relations
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         CartItem[]
 
@@ -140,48 +196,60 @@ model CartItem {
   cartId      Int
   menuItemId  Int
   quantity    Int
-  price       Decimal   @db.Decimal(10, 2)  // Store price at time of adding
+  price       Decimal   @db.Decimal(10, 2)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  // Relations
   cart        Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
   menuItem    MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
 
-  @@unique([cartId, menuItemId])  // One item only once per cart
+  @@unique([cartId, menuItemId])
   @@index([cartId])
   @@index([menuItemId])
 }
 
 model Order {
-  id                Int           @id @default(autoincrement())
-  userId            Int
-  restaurantId      Int
-  status            OrderStatus   @default(Waiting)
-  totalAmount       Decimal       @db.Decimal(10, 2)
-  timeSlotId        Int?
-  paymentStatus     PaymentStatus @default(pending)
-  notes             String?
+  id                    Int                       @id @default(autoincrement())
+  userId                Int
+  restaurantId          Int
+  status                OrderStatus               @default(Waiting)
+  totalAmount           Decimal                   @db.Decimal(10, 2)
+  timeSlotId            Int?
+  paymentStatus         PaymentStatus             @default(pending)
+  notes                 String?
   
-  // Razorpay Integration
-  razorpayOrderId   String?       @unique  // Razorpay order_id
+  restaurantStatus      RestaurantOrderStatus     @default(Pending)
+  expiresAt             DateTime?                 // Auto-reject after 2 minutes
+  acceptedAt            DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?
   
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  paymentExpiresAt      DateTime?                 // User has 10 minutes to pay
+  
+  estimatedWaitingTime  Int?                      // Max waiting time from items (in minutes)
+  estimatedReadyTime    DateTime?                 // When order will be ready
+  actualPickupTime      DateTime?
+  
+  paymentOrderId       String?                   @unique
+  
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
 
-  // Relations
-  user              User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-  restaurant        Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
-  timeSlot          TimeSlot?     @relation(fields: [timeSlotId], references: [id], onDelete: SetNull)
-  orderItems        OrderItem[]
-  payment           Payment?
+  user                  User                      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  restaurant            Restaurant                @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  timeSlot              TimeSlot?                 @relation(fields: [timeSlotId], references: [id], onDelete: SetNull)
+  orderItems            OrderItem[]
+  payment               Payment?
+  commission            Commission?             
 
   @@index([userId])
   @@index([restaurantId])
   @@index([status])
+  @@index([restaurantStatus])
   @@index([paymentStatus])
   @@index([createdAt])
-  @@index([razorpayOrderId])
+  @@index([paymentOrderId])
+  @@index([expiresAt])
 }
 
 model OrderItem {
@@ -190,8 +258,10 @@ model OrderItem {
   menuItemId  Int
   quantity    Int
   price       Decimal   @db.Decimal(10, 2)
+  
+  // NEW: Store waiting time at order time
+  waitingTime Int       @default(15)// In minutes
 
-  // Relations
   order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItem    MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
   
@@ -204,41 +274,39 @@ model Payment {
   orderId               Int           @unique
   paymentGateway        String?       @default("razorpay")
   
-  // Razorpay specific fields
-  razorpayPaymentId     String?       @unique
-  razorpayOrderId       String?
-  razorpaySignature     String?
+  gatewayPaymentId     String?       @unique
+  gatewayOrderId       String?
+  gatewaySignature     String?
   
   amount                Decimal       @db.Decimal(10, 2)
   status                PaymentStatus
-  failureReason         String?       // Store failure reason
+  failureReason         String?
+  gatewayResponse       Json?  
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  // Relations
   order                 Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   
   @@index([status])
-  @@index([razorpayPaymentId])
-  @@index([razorpayOrderId])
+  @@index([gatewayPaymentId])
+  @@index([gatewayOrderId])
 }
 
-// IMPROVED TimeSlot Model
 model TimeSlot {
   id              Int        @id @default(autoincrement())
-  slotStart       DateTime   // Full datetime: 2025-11-24 12:00:00
-  slotEnd         DateTime   // Full datetime: 2025-11-24 12:30:00
-  capacity        Int        @default(10)      // NEW - Max orders per slot
-  bookedCount     Int        @default(0)       // NEW - Current bookings
+  dayOfWeek       Int        @default(0)// NEW: 0=Sunday, 1=Monday ... 6=Saturday
+  slotStart       DateTime
+  slotEnd         DateTime
+  bookedCount     Int        @default(0)
   isAvailable     Boolean    @default(true)
   createdAt       DateTime   @default(now())
 
-  // Relations
   orders          Order[]
   
+  @@index([dayOfWeek])
   @@index([slotStart, slotEnd])
   @@index([isAvailable])
-  @@index([slotStart, isAvailable])  // NEW - for availability queries
+  @@index([dayOfWeek, isAvailable])
 }
 
 model RefreshToken {
@@ -248,7 +316,6 @@ model RefreshToken {
   expiresAt   DateTime
   createdAt   DateTime   @default(now())
 
-  // Relations
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
@@ -260,10 +327,9 @@ model EmailVerification {
   id          Int        @id @default(autoincrement())
   userId      Int
   token       String     @unique
-  expiresAt   DateTime
+  expiresAt   DateTime   
   createdAt   DateTime   @default(now())
 
-  // Relations
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
@@ -280,7 +346,6 @@ model PasswordReset {
   usedAt      DateTime?
   createdAt   DateTime   @default(now())
 
-  // Relations
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
@@ -288,8 +353,71 @@ model PasswordReset {
   @@index([expiresAt])
 }
 
+// NEW: Commission System
+model Commission {
+  id                Int                 @id @default(autoincrement())
+  restaurantId      Int
+  orderId           Int                 @unique
+  orderAmount       Decimal             @db.Decimal(10, 2)
+  commissionRate    Decimal             @db.Decimal(5, 2)  // Store rate at time of order
+  commissionAmount  Decimal             @db.Decimal(10, 2)
+  restaurantAmount  Decimal             @db.Decimal(10, 2)
+  status            CommissionStatus    @default(pending)
+  settledAt         DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  restaurant        Restaurant          @relation(fields: [restaurantId], references: [id])
+  order             Order               @relation(fields: [orderId], references: [id])
+  
+  @@index([restaurantId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// NEW: Notification System
+model Notification {
+  id          Int              @id @default(autoincrement())
+  userId      Int
+  type        NotificationType
+  title       String
+  message     String
+  data        Json?            // Store additional data (orderId, etc.)
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([userId, isRead])
+}
+
+model PushSubscription {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  endpoint    String    @unique
+  p256dh      String    // Public key for encryption
+  auth        String    // Auth secret for encryption
+  userAgent   String?   // Browser/device info
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([endpoint])
+  @@index([isActive])
+  @@index([userId, isActive])
+}
+
+// Enums
 enum Role {
+  superadmin
   admin
+  chef
   customer
 }
 
@@ -300,9 +428,37 @@ enum OrderStatus {
   Cancelled
 }
 
+enum RestaurantOrderStatus {
+  Pending      
+  Accepted     
+  Rejected     
+  Preparing    
+  Ready        
+  Completed   
+}
+
 enum PaymentStatus {
   pending
   paid
   failed
   refunded
+}
+
+enum CommissionStatus {
+  pending
+  settled
+  failed
+}
+
+enum NotificationType {
+  ORDER_PLACED          
+  ORDER_ACCEPTED        
+  ORDER_REJECTED        
+  PAYMENT_REQUIRED      
+  PAYMENT_RECEIVED      
+  ORDER_PREPARING       
+  ORDER_READY           
+  ORDER_COMPLETED      
+  ORDER_EXPIRED         
+  PAYMENT_EXPIRED       
 }

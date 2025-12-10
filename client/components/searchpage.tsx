@@ -2,6 +2,7 @@
 import { Search, Heart, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchWithAuth } from "@/lib/auth";
 
 interface MenuItem {
   id: string | number;
@@ -53,7 +54,7 @@ export default function SearchPage() {
         if (isVegOnly) params.append("isVeg", "true");
         if (searchQuery.trim()) params.append("search", searchQuery.trim());
 
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/home/menu?${params}`
         );
         const data: ApiResponse<MenuItem> = await response.json();
@@ -90,7 +91,7 @@ export default function SearchPage() {
           if (isVegOnly) params.append("isVeg", "true");
           if (searchQuery.trim()) params.append("search", searchQuery.trim());
 
-          const response = await fetch(
+          const response = await fetchWithAuth(
             `${process.env.NEXT_PUBLIC_API_URL}/home/menu?${params}`
           );
           const data: ApiResponse<MenuItem> = await response.json();
@@ -132,17 +133,16 @@ export default function SearchPage() {
     try {
       console.log("Attempting to add to cart...");
 
-      // Get token from localStorage
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("accessToken");
       console.log("Token from localStorage:", token ? "Found" : "Not found");
 
       if (!token) {
         alert("Please login first");
-        window.location.href = "/auth/login";
+        window.location.href = "/login";
         return;
       }
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/add`,
         {
           method: "POST",

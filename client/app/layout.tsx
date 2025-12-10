@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Roboto, Poppins } from "next/font/google";
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import Onboardingpage1 from "@/components/splashScreen";
+// import Onboardingpage1 from "@/components/splashScreen";
+import  AppWrapper  from "@/components/wrapper";
 
 // import LoadWS from "./loadws";
 const APP_NAME = "Predine";
@@ -73,16 +74,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const pathname = usePathname();
-  // const isHome = pathname ==="/";
-  // const[isLoading, setIsLoading] = useState();
   return (
     <html lang="en">
       <body
         className={`${poppins.variable}  antialiased`}
       >
         {/* <Onboardingpage1 /> */}
-        {children}
+              <AppWrapper>
+          {children}
+        </AppWrapper>
       </body>
     </html>
   );

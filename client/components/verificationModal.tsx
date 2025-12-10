@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { X, Shield, Loader2, RefreshCw } from "lucide-react";
+import { fetchWithAuth } from "@/lib/auth";
 
 interface OTPVerificationModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export default function OTPVerificationModal({
   const sendOTP = useCallback(async () => {
     try {
       const token = localStorage.getItem("auth_token");
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/send-otp`,
         {
           method: "POST",
@@ -130,7 +131,7 @@ export default function OTPVerificationModal({
       setError("");
       const token = localStorage.getItem("auth_token");
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/verify-otp`,
         {
           method: "POST",
@@ -168,7 +169,7 @@ export default function OTPVerificationModal({
       setError("");
       const token = localStorage.getItem("auth_token");
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/resend-otp`,
         {
           method: "POST",

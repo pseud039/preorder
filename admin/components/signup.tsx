@@ -33,7 +33,7 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
       const data = await response.json().catch(() => ({}));
 
       if (response.status==200) {
-        window.location.href = "/admin/emailVerification";
+        window.location.href = "/emailVerification";
         return;
       }
       if(response.status==409){
@@ -115,7 +115,7 @@ export function SignupForm({ className, ...props }: LoginFormProps) {
             SignUp
           </Button>
           <p className="mx-auto text-sm text-muted-foreground">Already have an account?{" "}
-          <a href="/admin/login" className="text-black hover:text-[#ff5c00] hover:underline">Login</a></p>
+          <a href="/login" className="text-black hover:text-[#ff5c00] hover:underline">Login</a></p>
         </div>
       </form>
     </div>

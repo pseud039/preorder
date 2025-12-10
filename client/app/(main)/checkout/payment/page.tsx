@@ -9,12 +9,11 @@ export default async function PaymentPageWrapper({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  // Await the searchParams promise in Next.js 15
   const params = await searchParams;
   
   return (
     <div>
-      <PaymentPage query={params} />
+      <PaymentPage/>
     </div>
   );
 }

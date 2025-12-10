@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Clock, Calendar, Users, Loader2, CheckCircle, X } from "lucide-react";
 import { toast } from "sonner";
+import { fetchWithAuth } from "@/lib/auth";
 
 interface TimeSlot {
   id: number;
@@ -47,7 +48,7 @@ export default function TimeSlotModal({
       setError("");
       const token = localStorage.getItem("auth_token");
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/available`,
         {
           headers: {
@@ -63,9 +64,26 @@ export default function TimeSlotModal({
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch slots");
       }
+    const flatSlots = data.data?.slots || [];
 
-      setSlots(data.data || []);
-    } catch (err) {
+ const groupedByDay = flatSlots.reduce((acc: any, slot: any) => {
+      const slotDate = new Date(slot.slotStart);
+      const dateKey = slotDate.toISOString().split('T')[0];
+      
+      if (!acc[dateKey]) {
+        acc[dateKey] = {
+          date: dateKey,
+          dayLabel: slotDate.toLocaleDateString('en-US', { weekday: 'long' }),
+          slots: [],
+        };
+      }
+      
+      acc[dateKey].slots.push(slot);
+      return acc;
+    }, {});
+
+    setSlots(Object.values(groupedByDay));
+      } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load time slots";
       console.error("Error fetching slots:", err);
       setError(errorMessage);

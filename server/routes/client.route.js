@@ -1,13 +1,12 @@
-import jsonwebtoken from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import express from "express";
 import {
   forgotPassword,
-  LoginClient,
-  logoutClient,
-  resetpass,
-  SignUpClient,
-  getProfile,
+  login,
+  resetPassword,
+  signup,
+  logout,
+  verifyEmail,
+  updateProfile,
 } from "../controllers/client/client.auth.controller.js";
 import {
   getCart,
@@ -20,59 +19,84 @@ import {
   getOrderById,
   verifyPayment,
 } from "../controllers/client/client.order.controller.js";
-import { verifyJWT } from "../middlewares/client.middleware.js";
-import { getCategories } from "../controllers/client/client.menu.controller.js";
+import{ createPaymentOrder, handlePaymentCallback, verifyPaymentStatus, getPaymentStatus } from "../utils/paymentgateway/payment.js";
+import { getCategories } from "../controllers/admin/admin.restraunt.controller.js";
 import {
   getDetails,
-  updateDetails,
   sendOTP,
   verifyOTP,
   resendOTP,
-  getAvailableSlots,
   selectTimeSlot,
+  getAvailableTimeSlots,
 } from "../controllers/client/client.details.contoller.js";
-
+import { isCustomer,verifyJWT } from "../middlewares/middleware.js";
+import { refreshToken } from "../controllers/user.controller.js";
 const router = express.Router();
 
 // Auth Routes
-router.post("/signup", SignUpClient);
-router.post("/login", LoginClient);
+router.post("/signup", signup);
+router.get("/verify-email/:token",verifyEmail);
+router.post("/login", login);
 router.post("/password", forgotPassword);
-router.post("/password/:token", resetpass);
+router.post("/password/:token", resetPassword);
+router.post('/auth/refresh', refreshToken)
 
 // Authentication
-router.get("/logout", verifyJWT, logoutClient);
-router.get("/profile", verifyJWT, getProfile);
+router.get("/logout", verifyJWT,isCustomer, logout);
+// router.get("/profile", verifyJWT, getProfile);
 
 // User Profile & Details
-router.get("/details", verifyJWT, getDetails);
-router.put("/details", verifyJWT, updateDetails);
+router.get("/details", verifyJWT,isCustomer, getDetails);
+router.put("/details", verifyJWT,isCustomer, updateProfile);
 
 //OTP Management
-router.post("/send-otp", verifyJWT, sendOTP);
-router.post("/verify-otp", verifyJWT, verifyOTP);
-router.post("/resend-otp", verifyJWT, resendOTP);
+router.post("/send-otp", verifyJWT,isCustomer, sendOTP);
+router.post("/verify-otp", verifyJWT,isCustomer, verifyOTP);
+router.post("/resend-otp", verifyJWT,isCustomer, resendOTP);
 
 //Menu & Categories
-router.get("/categories", getCategories);
+router.get("/categories", verifyJWT,isCustomer,getCategories);
 
 // Cart Management
-router.get("/order", verifyJWT, getCart);
-router.post("/add", verifyJWT, addToCart);
-router.post("/update", verifyJWT, updateCartItem);
-router.post("/delete", verifyJWT, removeFromCart);
-router.post("/remove", verifyJWT, clearCart);
-
+router.get("/order", verifyJWT,isCustomer, getCart);
+router.post("/add", verifyJWT,isCustomer,addToCart);
+router.post("/update", verifyJWT,isCustomer, updateCartItem);
+router.post("/delete", verifyJWT,isCustomer, removeFromCart);
+router.post("/remove", verifyJWT,isCustomer, clearCart);
 // Time Slot Management
-router.get("/available", verifyJWT, getAvailableSlots);
+router.get("/available", verifyJWT, isCustomer,getAvailableTimeSlots);
 router.post("/select", verifyJWT, selectTimeSlot);
 
 // Order Management
-router.post("/create-order", verifyJWT, createOrder);
+router.post("/create-order", verifyJWT, isCustomer, createOrder);
 // router.get("/orders", verifyJWT, getMyOrders);
-router.get("/orders/:orderId", verifyJWT, getOrderById);
+router.get("/orders/:orderId", verifyJWT, isCustomer,getOrderById);
 
 // Payment
-router.post("/payment/verify", verifyJWT, verifyPayment);
+// router.post("/payment/verify", verifyJWT, verifyPayment);
+router.post("/payment/create", verifyJWT, isCustomer, createPaymentOrder);
+router.post("/payment/callback", handlePaymentCallback);
+router.post("/payment/verify", verifyJWT, isCustomer, verifyPaymentStatus);
+router.get("/payment/status/:orderId", verifyJWT, isCustomer, getPaymentStatus);
+
+// router.get("/notifications", getMyNotifications);
+
+// // Mark notification as read
+// router.put("/notifications/:id/read", markAsRead);
+
+// // Mark all notifications as read
+// router.put("/notifications/read-all", markAllAsRead);
+
+// // Push notification subscription
+// router.post("/notifications/subscribe", subscribeToPush);
+// router.post("/notifications/unsubscribe", unsubscribeFromPush);
+
+// // Get VAPID public key (needed for frontend)
+// router.get("/notifications/vapid-public-key", getVapidPublicKey);
+
+// // Test notification (development only)
+// if (process.env.NODE_ENV !== 'production') {
+//   router.post("/notifications/test", testNotification);
+// }
 
 export default router;

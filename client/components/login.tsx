@@ -4,6 +4,7 @@ import login from "@/public/login.png";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { fetchWithAuth } from "@/lib/auth";
 
 interface FormData {
   email: string;
@@ -18,13 +19,17 @@ interface FormErrors {
 interface LoginResponse {
   success: boolean;
   data: {
-    id: number;
-    email: string;
-    name?: string;
-    token: string;
+    user:{
+       id: number;
+      email: string;
+      name?: string;
+    }
+    accessToken: string;
+    refreshToken: string;
   };
   message: string;
 }
+
 
 export default function LoginPage() {
   const [formData, setFormData] = useState<FormData>({
@@ -109,8 +114,8 @@ export default function LoginPage() {
       if (!response.ok) {
         if (response.status === 409) {
           toast.error("Email already exists");
-        } else if (response.status === 401) {
-          toast.error("Invalid email or password");
+        }else if (response.status === 401){
+          throw new Error("Invalid credentials");
         } else if (response.status === 404) {
           toast.error("User not found. Please sign up first.");
         } else {
@@ -118,13 +123,11 @@ export default function LoginPage() {
         }
         return;
       }
+console.log(data.data.accessToken)
+      if (data.data?.accessToken) {
+        localStorage.setItem("accessToken", data.data.accessToken);
 
-      // Store token in localStorage
-      if (data.data?.token) {
-        localStorage.setItem("auth_token", data.data.token);
-
-        // Verify storage
-        const storedToken = localStorage.getItem("auth_token");
+        const storedToken = localStorage.getItem("accessToken");
       } else {
         console.error(" No token in response!");
         console.error("Response structure:", JSON.stringify(data, null, 2));
@@ -213,7 +216,7 @@ export default function LoginPage() {
             </span>
             <button
               type="button"
-              onClick={() => router.push("/auth/signup")}
+              onClick={() => router.push("/signup")}
               className="text-orange-500 font-semibold hover:underline cursor-pointer"
               disabled={isSubmitting}
             >

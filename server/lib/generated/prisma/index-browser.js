@@ -128,6 +128,9 @@ exports.Prisma.RestaurantScalarFieldEnum = {
   contactNumber: 'contactNumber',
   imageUrl: 'imageUrl',
   isActive: 'isActive',
+  commissionRate: 'commissionRate',
+  baseWaitingTimeMultiplier: 'baseWaitingTimeMultiplier',
+  fixedAdditionalTime: 'fixedAdditionalTime',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -163,20 +166,45 @@ exports.Prisma.RestaurantAdminScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   restaurantId: 'restaurantId',
-  assignedAt: 'assignedAt'
+  assignedAt: 'assignedAt',
+  isActive: 'isActive'
+};
+
+exports.Prisma.RestaurantChefScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  restaurantId: 'restaurantId',
+  assignedAt: 'assignedAt',
+  isActive: 'isActive',
+  specialization: 'specialization',
+  shiftStart: 'shiftStart',
+  shiftEnd: 'shiftEnd'
+};
+
+exports.Prisma.CategoryScalarFieldEnum = {
+  id: 'id',
+  restaurantId: 'restaurantId',
+  name: 'name',
+  description: 'description',
+  imageUrl: 'imageUrl',
+  displayOrder: 'displayOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.MenuItemScalarFieldEnum = {
   id: 'id',
   restaurantId: 'restaurantId',
+  categoryId: 'categoryId',
   name: 'name',
   description: 'description',
   price: 'price',
   imageUrl: 'imageUrl',
-  category: 'category',
   isVeg: 'isVeg',
   isAvailable: 'isAvailable',
   isActive: 'isActive',
+  waitingTime: 'waitingTime',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -208,7 +236,16 @@ exports.Prisma.OrderScalarFieldEnum = {
   timeSlotId: 'timeSlotId',
   paymentStatus: 'paymentStatus',
   notes: 'notes',
-  razorpayOrderId: 'razorpayOrderId',
+  restaurantStatus: 'restaurantStatus',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  rejectedAt: 'rejectedAt',
+  rejectionReason: 'rejectionReason',
+  paymentExpiresAt: 'paymentExpiresAt',
+  estimatedWaitingTime: 'estimatedWaitingTime',
+  estimatedReadyTime: 'estimatedReadyTime',
+  actualPickupTime: 'actualPickupTime',
+  paymentOrderId: 'paymentOrderId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -218,28 +255,30 @@ exports.Prisma.OrderItemScalarFieldEnum = {
   orderId: 'orderId',
   menuItemId: 'menuItemId',
   quantity: 'quantity',
-  price: 'price'
+  price: 'price',
+  waitingTime: 'waitingTime'
 };
 
 exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   paymentGateway: 'paymentGateway',
-  razorpayPaymentId: 'razorpayPaymentId',
-  razorpayOrderId: 'razorpayOrderId',
-  razorpaySignature: 'razorpaySignature',
+  gatewayPaymentId: 'gatewayPaymentId',
+  gatewayOrderId: 'gatewayOrderId',
+  gatewaySignature: 'gatewaySignature',
   amount: 'amount',
   status: 'status',
   failureReason: 'failureReason',
+  gatewayResponse: 'gatewayResponse',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TimeSlotScalarFieldEnum = {
   id: 'id',
+  dayOfWeek: 'dayOfWeek',
   slotStart: 'slotStart',
   slotEnd: 'slotEnd',
-  capacity: 'capacity',
   bookedCount: 'bookedCount',
   isAvailable: 'isAvailable',
   createdAt: 'createdAt'
@@ -271,9 +310,39 @@ exports.Prisma.PasswordResetScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CommissionScalarFieldEnum = {
+  id: 'id',
+  restaurantId: 'restaurantId',
+  orderId: 'orderId',
+  orderAmount: 'orderAmount',
+  commissionRate: 'commissionRate',
+  commissionAmount: 'commissionAmount',
+  restaurantAmount: 'restaurantAmount',
+  status: 'status',
+  settledAt: 'settledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  title: 'title',
+  message: 'message',
+  data: 'data',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -285,8 +354,16 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
 exports.Role = exports.$Enums.Role = {
+  superadmin: 'superadmin',
   admin: 'admin',
+  chef: 'chef',
   customer: 'customer'
 };
 
@@ -304,11 +381,41 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   refunded: 'refunded'
 };
 
+exports.RestaurantOrderStatus = exports.$Enums.RestaurantOrderStatus = {
+  Pending: 'Pending',
+  Accepted: 'Accepted',
+  Rejected: 'Rejected',
+  Preparing: 'Preparing',
+  Ready: 'Ready',
+  Completed: 'Completed'
+};
+
+exports.CommissionStatus = exports.$Enums.CommissionStatus = {
+  pending: 'pending',
+  settled: 'settled',
+  failed: 'failed'
+};
+
+exports.NotificationType = exports.$Enums.NotificationType = {
+  ORDER_PLACED: 'ORDER_PLACED',
+  ORDER_ACCEPTED: 'ORDER_ACCEPTED',
+  ORDER_REJECTED: 'ORDER_REJECTED',
+  PAYMENT_REQUIRED: 'PAYMENT_REQUIRED',
+  PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
+  ORDER_PREPARING: 'ORDER_PREPARING',
+  ORDER_READY: 'ORDER_READY',
+  ORDER_COMPLETED: 'ORDER_COMPLETED',
+  ORDER_EXPIRED: 'ORDER_EXPIRED',
+  PAYMENT_EXPIRED: 'PAYMENT_EXPIRED'
+};
+
 exports.Prisma.ModelName = {
   Restaurant: 'Restaurant',
   User: 'User',
   PhoneOTP: 'PhoneOTP',
   RestaurantAdmin: 'RestaurantAdmin',
+  RestaurantChef: 'RestaurantChef',
+  Category: 'Category',
   MenuItem: 'MenuItem',
   Cart: 'Cart',
   CartItem: 'CartItem',
@@ -318,7 +425,9 @@ exports.Prisma.ModelName = {
   TimeSlot: 'TimeSlot',
   RefreshToken: 'RefreshToken',
   EmailVerification: 'EmailVerification',
-  PasswordReset: 'PasswordReset'
+  PasswordReset: 'PasswordReset',
+  Commission: 'Commission',
+  Notification: 'Notification'
 };
 
 /**

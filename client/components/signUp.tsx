@@ -204,7 +204,7 @@ export default function SignUpPage() {
             </span>
             <button
               type="button"
-              onClick={() => router.push("/auth/login")}
+              onClick={() => router.push("/login")}
               className="text-orange-500 font-semibold hover:underline cursor-pointer"
               disabled={isSubmitting}
             >

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Open_Sans, Montserrat} from "next/font/google";
 import "../../globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar";
+import { AppSidebar } from "@/components/admin/admin.sidebar";
 import { ThemeProvider } from "@/components/themeSwitch";
 import Navbar from "@/components/header";
 

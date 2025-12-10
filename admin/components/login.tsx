@@ -37,10 +37,11 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/forgotPassword`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/auth/forgot-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             email: formData.email,
           }),
@@ -48,15 +49,14 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
       );
 
       const data = await response.json();
-      console.log(data);
+
       if (data.success) {
-        window.location.href = "/admin/emailVerification";
-        // setIsDialogOpen(false);
-        // toast.success("Password reset email sent successfully!", {
-        //   duration: 4000,
-        // });
+        setIsDialogOpen(false);
+        toast.success("Password reset email sent successfully!", {
+          duration: 4000,
+        });
       } else {
-        toast.error(data.message || "Failed to send authentication mail", {
+        toast.error(data.message || "Failed to send password reset email", {
           duration: 4000,
         });
       }
@@ -76,10 +76,11 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/login`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include", 
           body: JSON.stringify({
             email: email,
             password: password,
@@ -87,46 +88,45 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
         }
       );
 
-      // Success case
-      if (response.status === 200) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         toast.success("Login successful!", {
           duration: 2000,
         });
+
+        const userRole = data.data?.user?.role;
         setTimeout(() => {
-          window.location.href = "/admin/dashboard";
+          if (userRole === "superadmin") {
+            window.location.href = "/superadmin/dashboard";
+          } else if (userRole === "chef") {
+            window.location.href = "/chef/dashboard";
+          } else {
+            window.location.href = "/admin/dashboard";
+          }
         }, 500);
         return;
       }
 
-      // Parse error response for non-200 status
-      const errorData = await response.json();
-
-      // Handle specific error cases
-      if (response.status === 400) {
-        toast.error(
-          errorData.message || "Invalid credentials. Please try again.",
-          {
-            duration: 4000,
-          }
-        );
-      } else if (response.status === 404) {
-        toast.error(
-          errorData.message || "User not found. Please check your email.",
-          {
-            duration: 4000,
-          }
-        );
+      if (response.status === 404) {
+        toast.error("Invalid credentials. Please check your email and password.", {
+          duration: 4000,
+        });
       } else if (response.status === 401) {
-        toast.error(errorData.message || "Unauthorized. Please try again.", {
+        toast.error("Invalid password. Please try again.", {
+          duration: 4000,
+        });
+      } else if (response.status === 403) {
+        toast.error(data.message || "Account is deactivated. Contact support.", {
           duration: 4000,
         });
       } else {
-        toast.error(errorData.message || "Login failed. Please try again.", {
+        toast.error(data.message || "Login failed. Please try again.", {
           duration: 4000,
         });
       }
     } catch (error) {
-      console.error("An unexpected error occurred:", error);
+      console.error("Login error:", error);
       toast.error(
         "Network error. Please check your connection and try again.",
         {
@@ -153,7 +153,6 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
         {...props}
         onSubmit={handleSubmit}
       >
-      {/* <div className="flex justify-center w-3/4 mx-auto flex-col gap-6"> */}
         <div className="flex justify-center items-center gap-10 flex-row">
           <div className="flex items-center justify-center mb-4 flex-col">
             <img
@@ -238,7 +237,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
                       Cancel
                     </Button>
                     <Button
-                      className="bg-orange-600"
+                      className="bg-orange-600 hover:bg-orange-700"
                       type="submit"
                       disabled={isSubmitting}
                     >
@@ -250,25 +249,14 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
             </Dialog>
           </div>
           <Button
-            // onSubmit={handleSubmit}
             type="submit"
             disabled={isLoginLoading}
             className="gap-2 w-full cursor-pointer bg-[#ff5c00] hover:bg-[#ff5c00] h-12 w-15/16 mx-auto text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoginLoading ? "Logging in..." : "Login"}
           </Button>
-          <p className="mx-auto text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <a
-              href="/admin/signup"
-              className="text-black hover:text-[#ff5c00] hover:underline"
-            >
-              SignUp
-            </a>
-          </p>
         </div>
-        </form>
-      {/* </div> */}
+      </form>
     </div>
   );
 }

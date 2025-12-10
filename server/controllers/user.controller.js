@@ -1,27 +1,23 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { PrismaClient } from "../lib/generated/prisma/client.js";
-
-const prisma = new PrismaClient();
+import { asyncHandler } from "../utils/errorHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { prisma } from "../lib/prisma.js";
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY;
-const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY; 
-
+const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY;
 
 function generateAccessToken(userId, email) {
-  return jwt.sign(
-    { userId, email },
-    ACCESS_TOKEN_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRY }
-  );
+  return jwt.sign({ userId, email }, ACCESS_TOKEN_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRY,
+  });
 }
 
 function generateRefreshToken() {
-  return crypto.randomBytes(64).toString('hex');
+  return crypto.randomBytes(64).toString("hex");
 }
-
 
 async function createRefreshToken(userId) {
   const token = generateRefreshToken();
@@ -32,13 +28,12 @@ async function createRefreshToken(userId) {
     data: {
       token,
       userId: parseInt(userId),
-      expiresAt
-    }
+      expiresAt,
+    },
   });
 
   return token;
 }
-
 
 function verifyAccessToken(token) {
   try {
@@ -48,62 +43,112 @@ function verifyAccessToken(token) {
   }
 }
 
-
 async function verifyRefreshToken(token) {
   try {
     const refreshToken = await prisma.refreshToken.findUnique({
       where: { token },
-      include: { user: true }
+      include: { user: true },
     });
 
     if (!refreshToken) {
       return null;
     }
 
-    // Check if token is expired
     if (new Date() > refreshToken.expiresAt) {
       await prisma.refreshToken.delete({
-        where: { id: refreshToken.id }
+        where: { id: refreshToken.id },
       });
       return null;
     }
 
     return refreshToken;
   } catch (error) {
-    console.error('Error verifying refresh token:', error);
+    console.error("Error verifying refresh token:", error);
     return null;
   }
 }
 
-
 async function deleteRefreshToken(token) {
   try {
     await prisma.refreshToken.delete({
-      where: { token }
+      where: { token },
     });
     return true;
   } catch (error) {
-    console.error('Error deleting refresh token:', error);
+    console.error("Error deleting refresh token:", error);
     return false;
   }
 }
-
 
 async function deleteAllUserRefreshTokens(userId) {
   try {
     await prisma.refreshToken.deleteMany({
-      where: { userId: parseInt(userId) }
+      where: { userId: parseInt(userId) },
     });
     return true;
   } catch (error) {
-    console.error('Error deleting user refresh tokens:', error);
+    console.error("Error deleting user refresh tokens:", error);
     return false;
   }
 }
 
+export const refreshToken = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    throw new ApiError(401, "Refresh token required");
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+    const storedToken = await prisma.refreshToken.findFirst({
+      where: {
+        token: refreshToken,
+        userId: decoded.userId,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!storedToken) {
+      throw new ApiError(401, "Invalid or expired refresh token");
+    }
+
+    const newAccessToken = generateAccessToken(decoded.userId);
+
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 1 * 60 * 60 * 1000,
+      path: "/",
+    });
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { accessToken: newAccessToken },
+          "Token refreshed successfully"
+        )
+      );
+  } catch (error) {
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      throw new ApiError(401, "Invalid or expired refresh token");
+    }
+    throw error;
+  }
+});
 
 export {
   generateAccessToken,
+  generateRefreshToken,
   createRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,

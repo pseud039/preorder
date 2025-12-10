@@ -8,7 +8,7 @@ const getMenu = asyncHandler(async (req, res) => {
     page = 1,
     limit = 10,
     restaurantId,
-    category,
+    category, 
     isAvailable,
     search,
     isVeg,
@@ -21,7 +21,16 @@ const getMenu = asyncHandler(async (req, res) => {
   };
 
   if (restaurantId) where.restaurantId = parseInt(restaurantId);
-  if (category) where.category = category;
+  
+  if (category) {
+    where.category = {
+      name: {
+        equals: category,
+        mode: "insensitive"
+      }
+    };
+  }
+  
   if (isAvailable !== undefined) where.isAvailable = isAvailable === "true";
   if (isVeg !== undefined) where.isVeg = isVeg === "true";
 
@@ -45,6 +54,13 @@ const getMenu = asyncHandler(async (req, res) => {
             imageUrl: true,
           },
         },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            imageUrl: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -52,6 +68,7 @@ const getMenu = asyncHandler(async (req, res) => {
     }),
     prisma.menuItem.count({ where }),
   ]);
+  
   console.log({
     items: menuItems,
     pagination: {
@@ -61,6 +78,7 @@ const getMenu = asyncHandler(async (req, res) => {
       totalPages: Math.ceil(total / limit),
     },
   });
+  
   res.status(200).json(
     new ApiResponse(
       200,
@@ -77,9 +95,7 @@ const getMenu = asyncHandler(async (req, res) => {
     )
   );
 });
-
 const getCategories = asyncHandler(async (req, res) => {
-  
   const categories = await prisma.menuItem.findMany({
     where: {
       isActive: true,
@@ -94,7 +110,7 @@ const getCategories = asyncHandler(async (req, res) => {
   const categoryList = categories
     .map((item) => item.category)
     .filter(Boolean)
-    .sort(); 
+    .sort();
 
   res
     .status(200)

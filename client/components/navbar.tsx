@@ -28,7 +28,7 @@ export default function Navbar() {
     },
     orders: {
       icon: Soup,
-      title: "Orders",
+      title: "Cart",
       route: "/orders",
     },
     account: {

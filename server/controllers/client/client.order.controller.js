@@ -2,18 +2,45 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
-import Razorpay from "razorpay";
 import crypto from "crypto";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+async function getCartWithDetails(cartId) {
+  return prisma.cart.findUnique({
+    where: { id: cartId },
+    include: {
+      items: {
+        include: {
+          menuItem: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              imageUrl: true, 
+              price: true,
+              isVeg: true,
+              isAvailable: true,
+              waitingTime: true,
+              restaurant: {
+                select: {
+                  id: true,
+                  name: true,
+                  imageUrl: true,
+                  baseWaitingTimeMultiplier: true,
+                  fixedAdditionalTime: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
 
 const getCart = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user.id;
 
-  const cart = await prisma.cart.findUnique({
+  let cart = await prisma.cart.findFirst({
     where: { userId },
     include: {
       items: {
@@ -23,12 +50,21 @@ const getCart = asyncHandler(async (req, res) => {
               id: true,
               name: true,
               description: true,
-              price: true,
               imageUrl: true,
-              isAvailable: true,
-              isActive: true,
+              price: true,
               isVeg: true,
-              category: true,
+              isAvailable: true,
+              waitingTime: true,
+              restaurant: {
+                select: {
+                  id: true,
+                  name: true,
+                  imageUrl: true,
+                  isActive: true,
+                  baseWaitingTimeMultiplier: true,
+                  fixedAdditionalTime: true,
+                },
+              },
             },
           },
         },
@@ -37,70 +73,133 @@ const getCart = asyncHandler(async (req, res) => {
   });
 
   if (!cart) {
-    throw new ApiError(404, "Cart not found");
+    cart = await prisma.cart.create({
+      data: { userId },
+      include: {
+        items: true,
+      },
+    });
   }
 
-  // Calculate total
+  const restaurant =
+    cart.items.length > 0 ? cart.items[0].menuItem.restaurant : null;
+
+  const unavailableItems = cart.items.filter(
+    (item) => !item.menuItem.isAvailable
+  );
+
   const totalAmount = cart.items.reduce(
-    (sum, item) => sum + Number(item.price) * item.quantity,
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
 
   const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
 
-  res.json(
+  const maxWaitingTime = cart.items.reduce((max, item) => {
+    const actualWaitingTime = restaurant
+      ? item.menuItem.waitingTime *
+          parseFloat(restaurant.baseWaitingTimeMultiplier) +
+        restaurant.fixedAdditionalTime
+      : item.menuItem.waitingTime;
+    return Math.max(max, actualWaitingTime);
+  }, 0);
+
+  const cartWithTotals = {
+    ...cart,
+    totalAmount,
+    itemCount,
+    estimatedWaitingTime: Math.round(maxWaitingTime),
+  };
+
+  res.status(200).json(
     new ApiResponse(
       200,
-      "Cart fetched successfully",
       {
-        cart: {
-          ...cart,
-          totalAmount,
-          itemCount,
-        },
+        cart: cartWithTotals,
+        restaurant,
+        unavailableItems: unavailableItems.map((item) => ({
+          id: item.id,
+          menuItemId: item.menuItemId,
+          name: item.menuItem.name,
+        })),
+        warnings:
+          unavailableItems.length > 0
+            ? ["Some items in your cart are no longer available"]
+            : [],
+        restaurantClosed: restaurant && !restaurant.isActive,
       },
-      "Cart fetched!"
+      "Cart fetched successfully"
     )
   );
 });
 
 const addToCart = asyncHandler(async (req, res) => {
-  const userId = req.userId;
   const { menuItemId, quantity = 1 } = req.body;
+  const userId = req.user.id;
 
-  if (!menuItemId || quantity < 1) {
-    throw new ApiError(400, "Invalid menu item or quantity");
+  if (!menuItemId) {
+    throw new ApiError(400, "Menu item ID is required");
+  }
+
+  if (quantity < 1) {
+    throw new ApiError(400, "Quantity must be at least 1");
   }
 
   const menuItem = await prisma.menuItem.findUnique({
-    where: { id: menuItemId },
-    include: { restaurant: true },
+    where: { id: parseInt(menuItemId) },
+    include: {
+      restaurant: {
+        select: {
+          id: true,
+          name: true,
+          isActive: true,
+        },
+      },
+    },
   });
 
-  if (!menuItem || !menuItem.isActive || !menuItem.isAvailable) {
-    throw new ApiError(404, "Menu item not found or unavailable");
+  if (!menuItem) {
+    throw new ApiError(404, "Menu item not found");
+  }
+
+  if (!menuItem.isAvailable) {
+    throw new ApiError(400, "This item is currently unavailable");
   }
 
   if (!menuItem.restaurant.isActive) {
-    throw new ApiError(400, "Cannot add items from an inactive restaurant");
+    throw new ApiError(400, "Restaurant is currently closed");
   }
 
-  let cart = await prisma.cart.findUnique({
-    where: { userId },
-    include: { items: true },
+  const existingCart = await prisma.cart.findFirst({
+    where: {
+      userId,
+    },
+    include: {
+      items: {
+        include: {
+          menuItem: {
+            include: {
+              restaurant: true,
+            },
+          },
+        },
+      },
+    },
   });
 
-  if (cart && cart.restaurantId !== menuItem.restaurantId) {
-    await prisma.cartItem.deleteMany({
-      where: { cartId: cart.id },
-    });
-    await prisma.cart.update({
-      where: { id: cart.id },
-      data: { restaurantId: menuItem.restaurantId },
-    });
+  if (existingCart && existingCart.restaurantId !== menuItem.restaurantId) {
+    const cartRestaurantName =
+      existingCart.items[0]?.menuItem?.restaurant?.name || "another restaurant";
+    throw new ApiError(
+      400,
+      `You have items from ${cartRestaurantName}. Please clear your cart to order from a different restaurant.`
+    );
   }
 
-  if (!cart) {
+  let cart;
+  if (existingCart) {
+    cart = existingCart;
+  } else {
     cart = await prisma.cart.create({
       data: {
         userId,
@@ -109,301 +208,415 @@ const addToCart = asyncHandler(async (req, res) => {
     });
   }
 
-  const existingItem = await prisma.cartItem.findUnique({
+  const existingCartItem = await prisma.cartItem.findFirst({
     where: {
-      cartId_menuItemId: {
-        cartId: cart.id,
-        menuItemId,
-      },
+      cartId: cart.id,
+      menuItemId: parseInt(menuItemId),
     },
   });
 
-  if (existingItem) {
-    const updatedItem = await prisma.cartItem.update({
-      where: { id: existingItem.id },
-      data: { quantity: existingItem.quantity + quantity },
-      include: { menuItem: true },
+  let cartItem;
+  if (existingCartItem) {
+    cartItem = await prisma.cartItem.update({
+      where: { id: existingCartItem.id },
+      data: {
+        quantity: existingCartItem.quantity + parseInt(quantity),
+        price: menuItem.price,
+      },
     });
-
-    return res.json({
-      success: true,
-      message: "Cart updated",
-      data: updatedItem,
+  } else {
+    cartItem = await prisma.cartItem.create({
+      data: {
+        cartId: cart.id,
+        menuItemId: parseInt(menuItemId),
+        quantity: parseInt(quantity),
+        price: menuItem.price,
+      },
     });
   }
 
-  const cartItem = await prisma.cartItem.create({
-    data: {
-      cartId: cart.id,
-      menuItemId,
-      quantity,
-      price: menuItem.price,
-    },
-    include: { menuItem: true },
-  });
+  const updatedCart = await getCartWithDetails(cart.id);
 
-  res.json(
-    new ApiResponse(200, "Item added to cart", {
-      success: true,
-      message: "Item added to cart",
-      data: cartItem,
-    })
+  const totalAmount = updatedCart.items.reduce(
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
+    0
+  );
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        cart: updatedCart,
+        totalAmount,
+        itemCount: updatedCart.items.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        ),
+      },
+      "Item added to cart successfully"
+    )
   );
 });
 
 const updateCartItem = asyncHandler(async (req, res) => {
-  const userId = req.userId;
   const { cartItemId, quantity } = req.body;
+  const userId = req.user.id;
 
-  if (!cartItemId || quantity < 0) {
-    throw new ApiError(400, "Invalid cart item or quantity");
+  if (!cartItemId || quantity === undefined) {
+    throw new ApiError(400, "Cart item ID and quantity are required");
   }
 
-  const cartItem = await prisma.cartItem.findFirst({
-    where: {
-      id: cartItemId,
-      cart: { userId },
+  if (quantity < 0) {
+    throw new ApiError(400, "Quantity cannot be negative");
+  }
+
+  const cartItem = await prisma.cartItem.findUnique({
+    where: { id: parseInt(cartItemId) },
+    include: {
+      cart: true,
+      menuItem: {
+        select: {
+          isAvailable: true,
+          price: true,
+        },
+      },
     },
   });
 
   if (!cartItem) {
     throw new ApiError(404, "Cart item not found");
+  }
+
+  if (cartItem.cart.userId !== userId) {
+    throw new ApiError(403, "Unauthorized to modify this cart");
   }
 
   if (quantity === 0) {
     await prisma.cartItem.delete({
-      where: { id: cartItemId },
+      where: { id: parseInt(cartItemId) },
     });
 
-    return res.json(new ApiResponse(200, "Item removed from cart"));
+    const remainingItems = await prisma.cartItem.count({
+      where: { cartId: cartItem.cartId },
+    });
+
+    if (remainingItems === 0) {
+      await prisma.cart.update({
+        where: { id: cartItem.cartId },
+        data: { restaurantId: null },
+      });
+    }
+
+    const updatedCart = await getCartWithDetails(cartItem.cartId);
+    const totalAmount = updatedCart.items.reduce(
+      (sum, item) => sum + parseFloat(item.price) * item.quantity,
+      0
+    );
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          cart: updatedCart,
+          totalAmount,
+          itemCount: updatedCart.items.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          ),
+        },
+        "Item removed from cart"
+      )
+    );
   }
 
-  const updatedItem = await prisma.cartItem.update({
-    where: { id: cartItemId },
-    data: { quantity },
-    include: { menuItem: true },
+  await prisma.cartItem.update({
+    where: { id: parseInt(cartItemId) },
+    data: {
+      quantity: parseInt(quantity),
+      price: cartItem.menuItem.price,
+    },
   });
 
-  res.json(new ApiResponse(200, "Cart item updated", updatedItem));
+  const updatedCart = await getCartWithDetails(cartItem.cartId);
+  const totalAmount = updatedCart.items.reduce(
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
+    0
+  );
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        cart: updatedCart,
+        totalAmount,
+        itemCount: updatedCart.items.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        ),
+      },
+      "Cart updated successfully"
+    )
+  );
 });
 
-const removeFromCart = async (req, res) => {
-  const userId = req.userId;
+const removeFromCart = asyncHandler(async (req, res) => {
   const { cartItemId } = req.body;
-
-  const cartItem = await prisma.cartItem.findFirst({
-    where: {
-      id: parseInt(cartItemId),
-      cart: { userId },
+  const userId = req.user.id;
+  const cartItem = await prisma.cartItem.findUnique({
+    where: { id: parseInt(cartItemId) },
+    include: {
+      cart: true,
     },
   });
 
   if (!cartItem) {
     throw new ApiError(404, "Cart item not found");
+  }
+
+  if (cartItem.cart.userId !== userId) {
+    throw new ApiError(403, "Unauthorized to modify this cart");
   }
 
   await prisma.cartItem.delete({
     where: { id: parseInt(cartItemId) },
   });
 
-  res.json(new ApiResponse(200, "Item removed from cart"));
-};
+  const remainingItems = await prisma.cartItem.count({
+    where: { cartId: cartItem.cartId },
+  });
 
-const clearCart = async (req, res) => {
-  const userId = req.userId;
+  if (remainingItems === 0) {
+    await prisma.cart.update({
+      where: { id: cartItem.cartId },
+      data: { restaurantId: null },
+    });
+  }
 
-  const cart = await prisma.cart.findUnique({
+  const updatedCart = await getCartWithDetails(cartItem.cartId);
+  const totalAmount = updatedCart.items.reduce(
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
+    0
+  );
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        cart: updatedCart,
+        totalAmount,
+        itemCount: updatedCart.items.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        ),
+      },
+      "Item removed from cart"
+    )
+  );
+});
+
+const clearCart = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const cart = await prisma.cart.findFirst({
     where: { userId },
   });
 
   if (!cart) {
-    return res.json(new ApiResponse(200, "Cart is already empty"));
+    throw new ApiError(404, "Cart not found");
   }
 
   await prisma.cartItem.deleteMany({
     where: { cartId: cart.id },
   });
 
-  res.json(new ApiResponse(200, "Cart cleared successfully"));
-};
-
-const createOrder = asyncHandler(async (req, res) => {
-  const userId = req.userId;
-  const { timeSlotId, notes } = req.body;
-
-  console.log("Creating order:", { userId, timeSlotId, notes });
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  await prisma.cart.update({
+    where: { id: cart.id },
+    data: { restaurantId: null },
   });
 
-  if (!user.name || !user.phone) {
-    throw new ApiError(400, "Please complete your profile before ordering");
-  }
+  res.status(200).json(new ApiResponse(200, null, "Cart cleared successfully"));
+});
 
-  if (!user.phoneVerified) {
-    throw new ApiError(400, "Please verify your phone number");
-  }
+const createOrder = asyncHandler(async (req, res) => {
+  const { timeSlotId, notes } = req.body;
+  const userId = req.user.id;
 
-  const cart = await prisma.cart.findUnique({
-    where: { userId },
+  const cart = await prisma.cart.findFirst({
+    where: {
+      userId,
+      // restaurantId: { not: null },
+    },
     include: {
       items: {
         include: {
-          menuItem: true,
+          menuItem: {
+            include: {
+              restaurant: true,
+            },
+          },
         },
       },
     },
   });
-
-  console.log("Cart found:", cart);
-  console.log("Cart items count:", cart?.items?.length || 0);
 
   if (!cart || cart.items.length === 0) {
     throw new ApiError(400, "Cart is empty");
   }
 
-  for (const item of cart.items) {
-    if (!item.menuItem.isAvailable || !item.menuItem.isActive) {
-      throw new ApiError(400, `${item.menuItem.name} is no longer available`);
-    }
+  const restaurant = cart.items[0].menuItem.restaurant;
+
+  if (!restaurant.isActive) {
+    throw new ApiError(400, "Restaurant is currently closed");
   }
 
-  // Verify time slot if provided
-  if (!timeSlotId) {
-    throw new ApiError(400, "Please select a pickup time slot");
-  }
+  const unavailableItems = cart.items.filter(
+    (item) => !item.menuItem.isAvailable
+  );
 
-  const timeSlot = await prisma.timeSlot.findUnique({
-    where: { id: parseInt(timeSlotId) },
-  });
-
-  if (!timeSlot || !timeSlot.isAvailable) {
-    throw new ApiError(400, "Selected time slot is not available");
-  }
-
-  if (timeSlot.bookedCount >= timeSlot.capacity) {
-    throw new ApiError(400, "Selected time slot is fully booked");
-  }
-
-  if (new Date() > timeSlot.slotStart) {
-    throw new ApiError(400, "Cannot book past time slots");
+  if (unavailableItems.length > 0) {
+    throw new ApiError(
+      400,
+      `Following items are unavailable: ${unavailableItems
+        .map((i) => i.menuItem.name)
+        .join(", ")}`
+    );
   }
 
   const totalAmount = cart.items.reduce(
-    (sum, item) => sum + Number(item.price) * item.quantity,
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
 
-  console.log("Total amount:", totalAmount);
+  const maxWaitingTime = cart.items.reduce((max, item) => {
+    const actualWaitingTime =
+      item.menuItem.waitingTime *
+        parseFloat(restaurant.baseWaitingTimeMultiplier) +
+      restaurant.fixedAdditionalTime;
+    return Math.max(max, actualWaitingTime);
+  }, 0);
 
-  // Create Razorpay order
-  const razorpayOrder = await razorpay.orders.create({
-    amount: Math.round(totalAmount * 100), // Convert to paise
-    currency: "INR",
-    receipt: `order_${Date.now()}`,
-    notes: {
-      userId: userId.toString(),
-      restaurantId: cart.restaurantId.toString(),
-      timeSlotId: timeSlotId.toString(),
-    },
-  });
+  const estimatedWaitingTime = Math.round(maxWaitingTime);
 
-  console.log("Razorpay order created:", razorpayOrder.id);
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 2 * 60 * 1000); // 2 minutes
 
-  // Create order in transaction
   const order = await prisma.$transaction(async (tx) => {
-    // 1. Create order
     const newOrder = await tx.order.create({
       data: {
         userId,
         restaurantId: cart.restaurantId,
         totalAmount,
-        timeSlotId: parseInt(timeSlotId),
-        notes,
-        razorpayOrderId: razorpayOrder.id,
+        estimatedWaitingTime,
         status: "Waiting",
+        restaurantStatus: "Pending",
         paymentStatus: "pending",
-        orderItems: {
-          create: cart.items.map((item) => ({
-            menuItemId: item.menuItemId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        },
-      },
-      include: {
-        orderItems: {
-          include: {
-            menuItem: true,
-          },
-        },
-        restaurant: true,
-        timeSlot: true,
+        expiresAt,
+        notes: notes || null,
+        timeSlotId: timeSlotId ? parseInt(timeSlotId) : null,
       },
     });
 
-    // 2. Create payment record
-    await tx.payment.create({
-      data: {
-        orderId: newOrder.id,
-        razorpayOrderId: razorpayOrder.id,
-        amount: totalAmount,
-        status: "pending",
-      },
+    const orderItemsData = cart.items.map((item) => ({
+      orderId: newOrder.id,
+      menuItemId: item.menuItemId,
+      quantity: item.quantity,
+      price: item.price,
+      waitingTime: item.menuItem.waitingTime, 
+    }));
+
+    await tx.orderItem.createMany({
+      data: orderItemsData,
     });
 
-    await tx.timeSlot.update({
-      where: { id: parseInt(timeSlotId) },
-      data: {
-        bookedCount: {
-          increment: 1,
-        },
-      },
-    });
-
-    // 4. Clear cart items
     await tx.cartItem.deleteMany({
       where: { cartId: cart.id },
     });
 
-    console.log("Order created successfully:", newOrder.id);
+    await tx.cart.update({
+      where: { id: cart.id },
+      data: { restaurantId: 3 },
+    });
 
     return newOrder;
   });
 
-  return res.json(
-    new ApiResponse(
-      200,
-      {
-        order,
-        razorpayOrder: {
-          id: razorpayOrder.id,
-          amount: razorpayOrder.amount,
-          currency: razorpayOrder.currency,
+  const completeOrder = await prisma.order.findUnique({
+    where: { id: order.id },
+    include: {
+      orderItems: {
+        include: {
+          menuItem: {
+            select: {
+              id: true,
+              name: true,
+              imageUrl: true,
+              isVeg: true,
+            },
+          },
         },
       },
-      "Order created successfully"
-    )
-  );
+      restaurant: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true,
+          contactNumber: true,
+          address: true,
+        },
+      },
+      timeSlot: true,
+    },
+  });
+
+  try {
+    const restaurantAdmin = await prisma.restaurantAdmin.findFirst({
+      where: {
+        restaurantId: cart.restaurantId,
+        isActive: true,
+      },
+    });
+
+    if (restaurantAdmin) {
+      await prisma.notification.create({
+        data: {
+          userId: restaurantAdmin.userId,
+          type: "ORDER_PLACED",
+          title: "New Order Received!",
+          message: `Order #${order.id} for ₹${totalAmount}. Accept within 2 minutes.`,
+          data: {
+            orderId: order.id,
+            restaurantId: cart.restaurantId,
+            totalAmount: totalAmount.toString(),
+            expiresAt: expiresAt.toISOString(),
+          },
+        },
+      });
+    }
+  } catch (notifError) {
+    console.error("Failed to send notification:", notifError);
+  }
+
+  res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        { order: completeOrder },
+        "Order placed successfully. Waiting for restaurant confirmation."
+      )
+    );
 });
 
 const verifyPayment = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user.id;
   const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } =
     req.body;
-
-  console.log("Verifying payment:", {
-    orderId,
-    razorpayOrderId,
-    razorpayPaymentId,
-  });
 
   const order = await prisma.order.findFirst({
     where: {
       id: parseInt(orderId),
       userId,
-      razorpayOrderId,
+      paymentOrderId: razorpayOrderId, 
     },
   });
 
@@ -444,8 +657,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
     const updated = await tx.order.update({
       where: { id: order.id },
       data: {
-        paymentStatus: "completed",
-        status: "Confirmed",
+        paymentStatus: "paid",
+        status: "Finished",
       },
       include: {
         orderItems: {
@@ -461,140 +674,176 @@ const verifyPayment = asyncHandler(async (req, res) => {
     await tx.payment.updateMany({
       where: { orderId: order.id },
       data: {
-        razorpayPaymentId,
-        status: "completed",
-        paidAt: new Date(),
+        gatewayPaymentId: razorpayPaymentId,
+        status: "paid",
       },
     });
 
     return updated;
   });
 
-  console.log("Payment verified successfully for order:", order.id);
-
   return res.json(
     new ApiResponse(200, updatedOrder, "Payment verified successfully")
   );
 });
 
-const handleOrderPaid = async (order) => {
-  console.log("Order paid:", order.id);
-};
-
-const handlePaymentCaptured = async (payment) => {
-  const orderId = payment.notes?.orderId;
-
-  if (!orderId) return;
-
-  await prisma.order.update({
-    where: { id: parseInt(orderId) },
-    data: {
-      paymentStatus: "completed",
-      status: "Confirmed",
-    },
-  });
-
-  await prisma.payment.updateMany({
-    where: { razorpayOrderId: payment.order_id },
-    data: {
-      razorpayPaymentId: payment.id,
-      status: "completed",
-      paidAt: new Date(),
-    },
-  });
-};
-
-const handlePaymentFailed = async (payment) => {
-  await prisma.payment.updateMany({
-    where: { razorpayOrderId: payment.order_id },
-    data: {
-      status: "failed",
-    },
-  });
-
-  const paymentRecord = await prisma.payment.findFirst({
-    where: { razorpayOrderId: payment.order_id },
-  });
-
-  if (paymentRecord) {
-    await prisma.order.update({
-      where: { id: paymentRecord.orderId },
-      data: {
-        paymentStatus: "failed",
-        status: "Cancelled",
-      },
-    });
-  }
-};
-
 const getMyOrders = asyncHandler(async (req, res) => {
-  const userId = req.userId;
-  const { status, page = 1, limit = 10 } = req.query;
+  const {
+    status,
+    restaurantStatus,
+    page = 1,
+    limit = 20,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = req.query;
 
-  const skip = (page - 1) * limit;
+  const userId = req.user.id;
+  const skip = (parseInt(page) - 1) * parseInt(limit);
 
   const where = { userId };
+
   if (status) {
     where.status = status;
+  }
+
+  if (restaurantStatus) {
+    where.restaurantStatus = restaurantStatus;
   }
 
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
+      skip,
+      take: parseInt(limit),
+      orderBy: { [sortBy]: sortOrder },
       include: {
         orderItems: {
           include: {
-            menuItem: true,
+            menuItem: {
+              select: {
+                id: true,
+                name: true,
+                imageUrl: true,
+                isVeg: true,
+              },
+            },
           },
         },
-        restaurant: true,
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            imageUrl: true,
+            contactNumber: true,
+          },
+        },
         timeSlot: true,
-        payment: true,
       },
-      orderBy: { createdAt: "desc" },
-      skip: parseInt(skip),
-      take: parseInt(limit),
     }),
     prisma.order.count({ where }),
   ]);
 
-  res.json(
-    new ApiResponse(200, "Orders fetched successfully", {
-      data: {
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
         orders,
         pagination: {
           total,
           page: parseInt(page),
           limit: parseInt(limit),
-          totalPages: Math.ceil(total / limit),
+          totalPages: Math.ceil(total / parseInt(limit)),
         },
       },
-    })
+      "Orders fetched successfully"
+    )
   );
 });
 
 const getOrderById = asyncHandler(async (req, res) => {
-  const userId = req.userId;
   const { orderId } = req.params;
-  const order = await prisma.order.findFirst({
-    where: {
-      id: parseInt(orderId),
-      userId,
-    },
+  // const {orderrr} = req.params;
+  const userId = req.user.id;
+  console.log(orderId, userId);
+  const order = await prisma.order.findUnique({
+    where: { id: parseInt(orderId) },
     include: {
       orderItems: {
         include: {
-          menuItem: true,
+          menuItem: {
+            select: {
+              id: true,
+              name: true,
+              imageUrl: true,
+              description: true,
+              price: true,
+              isVeg: true,
+            },
+          },
         },
       },
-      restaurant: true,
+      restaurant: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true,
+          description: true,
+          address: true,
+          contactNumber: true,
+        },
+      },
       timeSlot: true,
       payment: true,
+      commission: true,
     },
   });
-  console.log(order);
 
-  res.json(new ApiResponse(200, order, "Order fetched successfully"));
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  if (order.userId !== userId) {
+    throw new ApiError(403, "Unauthorized to view this order");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, { order }, "Order fetched successfully"));
+});
+
+const getOrderStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  const order = await prisma.order.findUnique({
+    where: { id: parseInt(id) },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      restaurantStatus: true,
+      paymentStatus: true,
+      estimatedReadyTime: true,
+      expiresAt: true,
+      paymentExpiresAt: true,
+      rejectionReason: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  if (order.userId !== userId) {
+    throw new ApiError(403, "Unauthorized");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, { status: order }, "Status fetched successfully")
+    );
 });
 
 export {
@@ -607,7 +856,5 @@ export {
   getMyOrders,
   getOrderById,
   verifyPayment,
-  handleOrderPaid,
-  handlePaymentCaptured,
-  handlePaymentFailed,
+  getOrderStatus,
 };

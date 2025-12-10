@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, User, Phone, Loader2 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/auth";
 
 interface UserDetailsModalProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ export default function UserDetailsModal({
       setLoading(true);
       const token = localStorage.getItem("auth_token");
 
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/client/details`,
         {
           method: "PUT",
@@ -80,7 +81,7 @@ export default function UserDetailsModal({
       />
 
       {/* Modal - Bottom Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-w-md mx-auto shadow-2xl animate-slide-up">
+      <div className="fixed bottom-0 pb-20 left-0 right-0 bg-white rounded-t-3xl z-50 max-w-md mx-auto shadow-2xl animate-slide-up">
         {/* Handle Bar */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1 bg-gray-300 rounded-full" />

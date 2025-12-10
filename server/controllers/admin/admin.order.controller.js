@@ -3,10 +3,11 @@ import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
 
-const getAllOrders = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+export const getAllOrders = asyncHandler(async (req, res) => {
+  const restaurantId = req.user.restaurantId;
   const {
     status,
+    restaurantStatus,
     paymentStatus,
     page = 1,
     limit = 20,
@@ -15,24 +16,16 @@ const getAllOrders = asyncHandler(async (req, res) => {
     search,
   } = req.query;
 
-  // Get admin's restaurants
-  const adminRestaurants = await prisma.restaurantAdmin.findMany({
-    where: { userId },
-    select: { restaurantId: true },
-  });
-
-  if (adminRestaurants.length === 0) {
-    throw new ApiError(403, "You are not authorized to view orders");
-  }
-
-  const restaurantIds = adminRestaurants.map((ra) => ra.restaurantId);
-
   const where = {
-    restaurantId: { in: restaurantIds },
+    restaurantId: restaurantId,
   };
 
   if (status) {
     where.status = status;
+  }
+
+  if (restaurantStatus) {
+    where.restaurantStatus = restaurantStatus;
   }
 
   if (paymentStatus) {
@@ -54,7 +47,8 @@ const getAllOrders = asyncHandler(async (req, res) => {
 
     where.OR.push(
       { user: { name: { contains: search, mode: "insensitive" } } },
-      { user: { email: { contains: search, mode: "insensitive" } } }
+      { user: { email: { contains: search, mode: "insensitive" } } },
+      { user: { phone: { contains: search, mode: "insensitive" } } }
     );
   }
 
@@ -65,6 +59,9 @@ const getAllOrders = asyncHandler(async (req, res) => {
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: "desc" },
       include: {
         user: {
           select: {
@@ -82,14 +79,9 @@ const getAllOrders = asyncHandler(async (req, res) => {
                 name: true,
                 price: true,
                 imageUrl: true,
+                isVeg: true,
               },
             },
-          },
-        },
-        restaurant: {
-          select: {
-            id: true,
-            name: true,
           },
         },
         timeSlot: true,
@@ -97,40 +89,42 @@ const getAllOrders = asyncHandler(async (req, res) => {
           select: {
             id: true,
             status: true,
-            razorpayPaymentId: true,
+            gatewayPaymentId: true,
             amount: true,
             createdAt: true,
           },
         },
       },
-      orderBy: { createdAt: "desc" },
-      skip: skip,
-      take: limitNum,
     }),
     prisma.order.count({ where }),
   ]);
 
-  res.json(
-    new ApiResponse(200, {
-      orders,
-      pagination: {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        totalPages: Math.ceil(total / limitNum),
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        orders,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
       },
-    },"Orders fetched successfully"));
+      "Orders fetched successfully"
+    )
+  );
 });
 
-const getOrderDetails = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+export const getOrderDetails = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
+  const restaurantId = req.user.restaurantId;
 
-  console.log(userId);
-  console.log(orderId);
-
-  const order = await prisma.order  .findUnique({
-    where: { id: parseInt(orderId) },
+  const order = await prisma.order.findFirst({
+    where: {
+      id: parseInt(orderId),
+      restaurantId: restaurantId,
+    },
     include: {
       user: {
         select: {
@@ -145,9 +139,9 @@ const getOrderDetails = asyncHandler(async (req, res) => {
           menuItem: true,
         },
       },
-      restaurant: true,
       timeSlot: true,
       payment: true,
+      commission: true,
     },
   });
 
@@ -155,73 +149,119 @@ const getOrderDetails = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Order not found");
   }
 
-  const isAdmin = await prisma.restaurantAdmin.findFirst({
-    where: {
-      userId,
-      restaurantId: order.restaurantId,
-    },
-  });
-
-  if (!isAdmin) {
-    throw new ApiError(403, "You are not authorized to view this order");
-  }
-
-  res.json(new ApiResponse(200, "Order details fetched successfully", order));
+  res
+    .status(200)
+    .json(new ApiResponse(200, order, "Order details fetched successfully"));
 });
 
-const updateOrderStatus = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
-  const { status } = req.body;
+  const { status, restaurantStatus, rejectionReason } = req.body;
+  const restaurantId = req.user.restaurantId;
 
-  // Validate status
-  const validStatuses = ["Waiting", "Finished", "Delivered", "Cancelled"];
-  if (!validStatuses.includes(status)) {
-    throw new ApiError(400, "Invalid order status");
-  }
-
-  // Get order and verify access
-  const order = await prisma.order.findUnique({
-    where: { id: parseInt(orderId) },
-    include: { restaurant: true },
-  });
-
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
-
-  // Check if user is admin of this restaurant
-  const isAdmin = await prisma.restaurantAdmin.findFirst({
-    where: {
-      userId,
-      restaurantId: order.restaurantId,
-    },
-  });
-
-  if (!isAdmin) {
-    throw new ApiError(403, "You are not authorized to update this order");
-  }
-
-  // Business logic validations
-  if (order.paymentStatus !== "paid" && status !== "Cancelled") {
+  if (!status && !restaurantStatus) {
     throw new ApiError(
       400,
-      "Cannot update status of unpaid order except to 'Cancelled'"
+      "Please provide either 'status' or 'restaurantStatus'"
     );
   }
 
-  if (order.status === "Delivered" && status !== "Delivered") {
-    throw new ApiError(400, "Cannot change status of a delivered order");
+  const order = await prisma.order.findFirst({
+    where: {
+      id: parseInt(orderId),
+      restaurantId: restaurantId,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  const validStatuses = ["Waiting", "Finished", "Delivered", "Cancelled"];
+  const validRestaurantStatuses = [
+    "Pending",
+    "Accepted",
+    "Rejected",
+    "Preparing",
+    "Ready",
+    "Completed",
+  ];
+
+  if (status && !validStatuses.includes(status)) {
+    throw new ApiError(400, "Invalid order status");
+  }
+
+  if (restaurantStatus && !validRestaurantStatuses.includes(restaurantStatus)) {
+    throw new ApiError(400, "Invalid restaurant order status");
+  }
+
+  if (
+    order.restaurantStatus === "Completed" &&
+    restaurantStatus !== "Completed"
+  ) {
+    throw new ApiError(400, "Cannot change status of a completed order");
   }
 
   if (order.status === "Cancelled") {
     throw new ApiError(400, "Cannot update a cancelled order");
   }
 
-  // Update order status
+  const updateData = {};
+
+  if (status) {
+    updateData.status = status;
+  }
+
+  if (restaurantStatus) {
+    updateData.restaurantStatus = restaurantStatus;
+
+    if (restaurantStatus === "Rejected") {
+      updateData.rejectedAt = new Date();
+      updateData.rejectionReason = rejectionReason || "No reason provided";
+
+      updateData.status = "Cancelled";
+    }
+
+    if (restaurantStatus === "Accepted") {
+      updateData.acceptedAt = new Date();
+      updateData.expiresAt = null;
+
+      const restaurant = await prisma.restaurant.findUnique({
+        where: { id: restaurantId },
+        select: {
+          baseWaitingTimeMultiplier: true,
+          fixedAdditionalTime: true,
+        },
+      });
+
+      const orderItems = await prisma.orderItem.findMany({
+        where: { orderId: order.id },
+      });
+
+      const maxWaitingTime = Math.max(
+        ...orderItems.map((item) => item.waitingTime)
+      );
+
+      const actualWaitingTime = Math.round(
+        maxWaitingTime * parseFloat(restaurant.baseWaitingTimeMultiplier) +
+          restaurant.fixedAdditionalTime
+      );
+
+      updateData.estimatedWaitingTime = actualWaitingTime;
+      updateData.estimatedReadyTime = new Date(
+        Date.now() + actualWaitingTime * 60 * 1000
+      );
+    }
+
+    if (restaurantStatus === "Completed") {
+      updateData.status = "Delivered";
+      updateData.actualPickupTime = new Date();
+    }
+  }
+
   const updatedOrder = await prisma.order.update({
     where: { id: parseInt(orderId) },
-    data: { status },
+    data: updateData,
     include: {
       user: {
         select: {
@@ -236,25 +276,67 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
           menuItem: true,
         },
       },
-      restaurant: true,
       timeSlot: true,
       payment: true,
     },
   });
 
-  res.json(
-    new ApiResponse(200, "Order status updated successfully", updatedOrder)
-  );
+  let notificationType, notificationTitle, notificationMessage;
+
+  if (restaurantStatus === "Accepted") {
+    notificationType = "ORDER_ACCEPTED";
+    notificationTitle = "Order Accepted!";
+    notificationMessage = `Your order #${order.id} has been accepted and will be ready in ${updateData.estimatedWaitingTime} minutes`;
+  } else if (restaurantStatus === "Rejected") {
+    notificationType = "ORDER_REJECTED";
+    notificationTitle = "Order Rejected";
+    notificationMessage = `Sorry, your order #${order.id} has been rejected. Reason: ${rejectionReason}`;
+  } else if (restaurantStatus === "Preparing") {
+    notificationType = "ORDER_PREPARING";
+    notificationTitle = "Order is being prepared";
+    notificationMessage = `Your order #${order.id} is now being prepared`;
+  } else if (restaurantStatus === "Ready") {
+    notificationType = "ORDER_READY";
+    notificationTitle = "Order Ready!";
+    notificationMessage = `Your order #${order.id} is ready for pickup`;
+  } else if (restaurantStatus === "Completed") {
+    notificationType = "ORDER_COMPLETED";
+    notificationTitle = "Order Completed";
+    notificationMessage = `Thank you! Your order #${order.id} is completed`;
+  }
+
+  if (notificationType) {
+    await prisma.notification.create({
+      data: {
+        userId: order.userId,
+        type: notificationType,
+        title: notificationTitle,
+        message: notificationMessage,
+        data: {
+          orderId: order.id,
+          restaurantStatus: restaurantStatus || order.restaurantStatus,
+        },
+      },
+    });
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedOrder, "Order status updated successfully")
+    );
 });
 
-const cancelOrder = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+export const cancelOrder = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
   const { reason } = req.body;
+  const restaurantId = req.user.restaurantId;
 
-  // Get order and verify access
-  const order = await prisma.order.findUnique({
-    where: { id: parseInt(orderId) },
+  const order = await prisma.order.findFirst({
+    where: {
+      id: parseInt(orderId),
+      restaurantId: restaurantId,
+    },
     include: { payment: true },
   });
 
@@ -262,33 +344,21 @@ const cancelOrder = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Order not found");
   }
 
-  // Check if user is admin of this restaurant
-  const isAdmin = await prisma.restaurantAdmin.findFirst({
-    where: {
-      userId,
-      restaurantId: order.restaurantId,
-    },
-  });
-
-  if (!isAdmin) {
-    throw new ApiError(403, "You are not authorized to cancel this order");
+  if (order.status === "Delivered" || order.restaurantStatus === "Completed") {
+    throw new ApiError(400, "Completed/delivered orders cannot be cancelled");
   }
 
-  // Cannot cancel already delivered orders
-  if (order.status === "Delivered") {
-    throw new ApiError(400, "Delivered orders cannot be cancelled");
-  }
-
-  // Cannot cancel already cancelled orders
   if (order.status === "Cancelled") {
     throw new ApiError(400, "Order is already cancelled");
   }
 
-  // Update order
   const updatedOrder = await prisma.order.update({
     where: { id: parseInt(orderId) },
     data: {
       status: "Cancelled",
+      restaurantStatus: "Rejected",
+      rejectedAt: new Date(),
+      rejectionReason: reason || "Cancelled by admin",
       notes: reason
         ? `${order.notes || ""}\nCancellation reason: ${reason}`
         : order.notes,
@@ -307,130 +377,135 @@ const cancelOrder = asyncHandler(async (req, res) => {
           menuItem: true,
         },
       },
-      restaurant: true,
       payment: true,
+    },
+  });
+
+  await prisma.notification.create({
+    data: {
+      userId: order.userId,
+      type: "ORDER_REJECTED",
+      title: "Order Cancelled",
+      message: `Your order #${order.id} has been cancelled. ${
+        reason ? `Reason: ${reason}` : ""
+      }`,
+      data: {
+        orderId: order.id,
+      },
     },
   });
 
   // TODO: Initiate refund if payment was successful
 
-  res.json(new ApiResponse(200, "Order cancelled successfully", updatedOrder));
+  res
+    .status(200)
+    .json(new ApiResponse(200, updatedOrder, "Order cancelled successfully"));
 });
 
-const getDashboardStats = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+export const getDashboardStats = asyncHandler(async (req, res) => {
+  const restaurantId = req.user.restaurantId;
   const { startDate, endDate } = req.query;
 
-  const adminRestaurants = await prisma.restaurantAdmin.findMany({
-    where: { userId },
-    select: { restaurantId: true },
-  });
-
-  if (adminRestaurants.length === 0) {
-    throw new ApiError(403, "You are not authorized to view dashboard stats");
-  }
-
-  const restaurantIds = adminRestaurants.map((ra) => ra.restaurantId);
-
-  // Build date filter
   const dateFilter = {};
   if (startDate || endDate) {
     if (startDate) dateFilter.gte = new Date(startDate);
     if (endDate) dateFilter.lte = new Date(endDate);
   }
 
+  const whereClause = {
+    restaurantId: restaurantId,
+    ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
+  };
+
   const [
     totalOrders,
     pendingOrders,
+    acceptedOrders,
+    preparingOrders,
+    readyOrders,
     completedOrders,
     cancelledOrders,
     totalRevenue,
     paidRevenue,
+    todayOrders,
   ] = await Promise.all([
-    // Total orders
+    prisma.order.count({ where: whereClause }),
+
     prisma.order.count({
-      where: {
-        restaurantId: { in: restaurantIds },
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
+      where: { ...whereClause, restaurantStatus: "Pending" },
     }),
 
     prisma.order.count({
-      where: {
-        restaurantId: { in: restaurantIds },
-        status: { in: ["Waiting", "Finished"] },
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
+      where: { ...whereClause, restaurantStatus: "Accepted" },
     }),
 
     prisma.order.count({
-      where: {
-        restaurantId: { in: restaurantIds },
-        status: "Delivered",
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
+      where: { ...whereClause, restaurantStatus: "Preparing" },
     }),
 
     prisma.order.count({
-      where: {
-        restaurantId: { in: restaurantIds },
-        status: "Cancelled",
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
+      where: { ...whereClause, restaurantStatus: "Ready" },
+    }),
+
+    prisma.order.count({
+      where: { ...whereClause, restaurantStatus: "Completed" },
+    }),
+
+    prisma.order.count({
+      where: { ...whereClause, status: "Cancelled" },
     }),
 
     prisma.order.aggregate({
-      where: {
-        restaurantId: { in: restaurantIds },
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
+      where: whereClause,
       _sum: { totalAmount: true },
     }),
 
     prisma.order.aggregate({
-      where: {
-        restaurantId: { in: restaurantIds },
-        paymentStatus: "paid",
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
+      where: { ...whereClause, paymentStatus: "paid" },
       _sum: { totalAmount: true },
+    }),
+
+    prisma.order.count({
+      where: {
+        restaurantId,
+        createdAt: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        },
+      },
     }),
   ]);
 
-  res.json(
-    new ApiResponse(200, "Dashboard stats fetched successfully", {
-      data: {
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
         totalOrders,
         pendingOrders,
+        acceptedOrders,
+        preparingOrders,
+        readyOrders,
         completedOrders,
         cancelledOrders,
+        activeOrders:
+          pendingOrders + acceptedOrders + preparingOrders + readyOrders,
+        todayOrders,
         totalRevenue: totalRevenue._sum.totalAmount || 0,
         paidRevenue: paidRevenue._sum.totalAmount || 0,
         pendingRevenue:
           (totalRevenue._sum.totalAmount || 0) -
           (paidRevenue._sum.totalAmount || 0),
       },
-    })
+      "Dashboard stats fetched successfully"
+    )
   );
 });
-const getRevenueReport = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+
+export const getRevenueReport = asyncHandler(async (req, res) => {
+  const restaurantId = req.user.restaurantId;
   const { startDate, endDate, groupBy = "day" } = req.query;
 
-  // Get admin's restaurant(s)
-  const adminRestaurants = await prisma.restaurantAdmin.findMany({
-    where: { userId },
-    select: { restaurantId: true },
-  });
-
-  if (adminRestaurants.length === 0) {
-    throw new ApiError(403, "You are not authorized to view revenue report");
-  }
-
-  const restaurantIds = adminRestaurants.map((ra) => ra.restaurantId);
-
   const where = {
-    restaurantId: { in: restaurantIds },
+    restaurantId: restaurantId,
     paymentStatus: "paid",
   };
 
@@ -449,7 +524,6 @@ const getRevenueReport = asyncHandler(async (req, res) => {
     orderBy: { createdAt: "asc" },
   });
 
-  // Group by date
   const revenueByDate = {};
   orders.forEach((order) => {
     let dateKey;
@@ -478,9 +552,10 @@ const getRevenueReport = asyncHandler(async (req, res) => {
 
   const revenueData = Object.values(revenueByDate);
 
-  res.json(
-    new ApiResponse(200, "Revenue report fetched successfully", {
-      data: {
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
         revenueByDate: revenueData,
         totalRevenue: revenueData.reduce((sum, item) => sum + item.revenue, 0),
         totalOrders: revenueData.reduce(
@@ -488,29 +563,17 @@ const getRevenueReport = asyncHandler(async (req, res) => {
           0
         ),
       },
-    })
+      "Revenue report fetched successfully"
+    )
   );
 });
 
-const getPopularItems = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+export const getPopularItems = asyncHandler(async (req, res) => {
+  const restaurantId = req.user.restaurantId;
   const { startDate, endDate, limit = 10 } = req.query;
 
-  // Get admin's restaurant(s)
-  const adminRestaurants = await prisma.restaurantAdmin.findMany({
-    where: { userId },
-    select: { restaurantId: true },
-  });
-
-  if (adminRestaurants.length === 0) {
-    throw new ApiError(403, "You are not authorized to view popular items");
-  }
-
-  const restaurantIds = adminRestaurants.map((ra) => ra.restaurantId);
-
-  // Build date filter for orders
   const orderWhere = {
-    restaurantId: { in: restaurantIds },
+    restaurantId: restaurantId,
     paymentStatus: "paid",
   };
 
@@ -520,7 +583,6 @@ const getPopularItems = asyncHandler(async (req, res) => {
     if (endDate) orderWhere.createdAt.lte = new Date(endDate);
   }
 
-  // Get order items with aggregation
   const popularItems = await prisma.orderItem.groupBy({
     by: ["menuItemId"],
     where: {
@@ -549,7 +611,13 @@ const getPopularItems = asyncHandler(async (req, res) => {
           name: true,
           price: true,
           imageUrl: true,
-          category: true,
+          isVeg: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
 
@@ -562,19 +630,13 @@ const getPopularItems = asyncHandler(async (req, res) => {
     })
   );
 
-  res.json(
-    new ApiResponse(200, "Popular items fetched successfully", {
-      items: itemsWithDetails,
-    })
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { items: itemsWithDetails },
+        "Popular items fetched successfully"
+      )
+    );
 });
-
-export {
-  getAllOrders,
-  getOrderDetails,
-  updateOrderStatus,
-  cancelOrder,
-  getDashboardStats,
-  getRevenueReport,
-  getPopularItems,
-};

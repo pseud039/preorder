@@ -41,6 +41,7 @@ interface MenuItem {
   name: string;
   price: string;
   imageUrl: string;
+  isVeg: boolean;
 }
 
 interface OrderItem {
@@ -48,13 +49,14 @@ interface OrderItem {
   menuItemId: number;
   quantity: number;
   price: string;
+  waitingTime: number;
   menuItem: MenuItem;
 }
 
 interface Payment {
   id: number;
   status: string;
-  razorpayPaymentId: string;
+  gatewayPaymentId: string;
   amount: string;
   createdAt: string;
 }
@@ -65,24 +67,28 @@ interface TimeSlot {
   slotEnd: string;
 }
 
-interface Restaurant {
-  id: number;
-  name: string;
-}
-
 interface Order {
   id: number;
   userId: number;
   restaurantId: number;
   status: "Waiting" | "Finished" | "Delivered" | "Cancelled";
+  restaurantStatus:
+    | "Pending"
+    | "Accepted"
+    | "Rejected"
+    | "Preparing"
+    | "Ready"
+    | "Completed";
   totalAmount: string;
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
   notes: string;
+  estimatedWaitingTime: number | null;
+  estimatedReadyTime: string | null;
+  rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
   user: User;
   orderItems: OrderItem[];
-  restaurant: Restaurant;
   timeSlot: TimeSlot | null;
   payment: Payment | null;
 }
@@ -108,9 +114,12 @@ export default function OrdersTable() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string>("");
 
   useEffect(() => {
     fetchOrders();
+    const interval = setInterval(fetchOrders, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchOrders = async () => {
@@ -124,8 +133,15 @@ export default function OrdersTable() {
           credentials: "include",
         }
       );
+
+      if (response.status === 401) {
+        toast.error("Session expired. Please login again.");
+        window.location.href = "/login";
+        return;
+      }
+
       const data: OrdersResponse = await response.json();
-      console.log(data);    
+
       if (data.success) {
         setOrders(data.data.orders);
       } else {
@@ -139,17 +155,26 @@ export default function OrdersTable() {
     }
   };
 
-  const updateOrderStatus = async (orderId: number, newStatus: string) => {
-    console.log(orderId,newStatus);
+  const updateOrderStatus = async (
+    orderId: number,
+    restaurantStatus: string
+  ) => {
     try {
       setUpdatingOrderId(orderId);
+
+      const body: any = { restaurantStatus };
+
+      if (restaurantStatus === "Rejected" && rejectionReason) {
+        body.rejectionReason = rejectionReason;
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/${orderId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ status: newStatus }),
+          body: JSON.stringify(body),
         }
       );
 
@@ -160,7 +185,8 @@ export default function OrdersTable() {
       }
 
       toast.success("Order status updated successfully");
-      fetchOrders(); // Refresh the list
+      setRejectionReason("");
+      fetchOrders();
     } catch (error: any) {
       console.error("Error updating order status:", error);
       toast.error(error.message || "Failed to update order status");
@@ -169,12 +195,14 @@ export default function OrdersTable() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getRestaurantStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      Waiting: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      Finished: "bg-blue-100 text-blue-800 border-blue-200",
-      Delivered: "bg-green-100 text-green-800 border-green-200",
-      Cancelled: "bg-red-100 text-red-800 border-red-200",
+      Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      Accepted: "bg-blue-100 text-blue-800 border-blue-200",
+      Rejected: "bg-red-100 text-red-800 border-red-200",
+      Preparing: "bg-purple-100 text-purple-800 border-purple-200",
+      Ready: "bg-green-100 text-green-800 border-green-200",
+      Completed: "bg-gray-100 text-gray-800 border-gray-200",
     };
 
     return (
@@ -221,7 +249,7 @@ export default function OrdersTable() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -236,13 +264,15 @@ export default function OrdersTable() {
           size="sm"
           disabled={loading}
         >
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <div className="border rounded-lg bg-white">
         <Table>
           <TableCaption>A list of all orders from customers.</TableCaption>
           <TableHeader>
@@ -263,7 +293,9 @@ export default function OrdersTable() {
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                  <p className="text-sm text-gray-500 mt-2">Loading orders...</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Loading orders...
+                  </p>
                 </TableCell>
               </TableRow>
             ) : orders.length === 0 ? (
@@ -300,7 +332,7 @@ export default function OrdersTable() {
                     )}
                   </TableCell>
                   <TableCell className="font-semibold">
-                    ₹{Number(order.totalAmount).toFixed(2)}
+                    ₹{Number(order.totalAmount)}
                   </TableCell>
                   <TableCell>{getPaymentBadge(order.paymentStatus)}</TableCell>
                   <TableCell>
@@ -308,23 +340,25 @@ export default function OrdersTable() {
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Select
-                        value={order.status}
+                        value={order.restaurantStatus}
                         onValueChange={(value) =>
                           updateOrderStatus(order.id, value)
                         }
                         disabled={
-                          order.status === "Delivered" ||
-                          order.status === "Cancelled"
+                          order.restaurantStatus === "Completed" ||
+                          order.restaurantStatus === "Rejected"
                         }
                       >
                         <SelectTrigger className="w-32">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Waiting">Waiting</SelectItem>
-                          <SelectItem value="Finished">Finished</SelectItem>
-                          <SelectItem value="Delivered">Delivered</SelectItem>
-                          <SelectItem value="Cancelled">Cancelled</SelectItem>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                          <SelectItem value="Accepted">Accepted</SelectItem>
+                          <SelectItem value="Rejected">Rejected</SelectItem>
+                          <SelectItem value="Preparing">Preparing</SelectItem>
+                          <SelectItem value="Ready">Ready</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -363,21 +397,58 @@ export default function OrdersTable() {
 
           {selectedOrder && (
             <div className="space-y-6">
+              {/* Order Status */}
+              <div>
+                <h3 className="font-semibold mb-2">Order Status</h3>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Restaurant Status:</span>
+                    {getRestaurantStatusBadge(selectedOrder.restaurantStatus)}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Payment Status:</span>
+                    {getPaymentBadge(selectedOrder.paymentStatus)}
+                  </div>
+                  {selectedOrder.estimatedWaitingTime && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Estimated Time:</span>
+                      <span className="font-medium">
+                        {selectedOrder.estimatedWaitingTime} minutes
+                      </span>
+                    </div>
+                  )}
+                  {selectedOrder.rejectionReason && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Rejection Reason:</span>
+                      <span className="font-medium text-red-600">
+                        {selectedOrder.rejectionReason}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Customer Info */}
               <div>
                 <h3 className="font-semibold mb-2">Customer Information</h3>
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Name:</span>
-                    <span className="font-medium">{selectedOrder.user.name}</span>
+                    <span className="font-medium">
+                      {selectedOrder.user.name}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Phone:</span>
-                    <span className="font-medium">{selectedOrder.user.phone}</span>
+                    <span className="font-medium">
+                      {selectedOrder.user.phone}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Email:</span>
-                    <span className="font-medium">{selectedOrder.user.email}</span>
+                    <span className="font-medium">
+                      {selectedOrder.user.email}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -387,7 +458,10 @@ export default function OrdersTable() {
                 <h3 className="font-semibold mb-2">Order Items</h3>
                 <div className="border rounded-lg divide-y">
                   {selectedOrder.orderItems.map((item) => (
-                    <div key={item.id} className="p-3 flex justify-between items-center">
+                    <div
+                      key={item.id}
+                      className="p-3 flex justify-between items-center"
+                    >
                       <div className="flex items-center gap-3">
                         {item.menuItem.imageUrl && (
                           <img
@@ -397,14 +471,25 @@ export default function OrdersTable() {
                           />
                         )}
                         <div>
-                          <p className="font-medium">{item.menuItem.name}</p>
+                          <p className="font-medium flex items-center gap-2">
+                            {item.menuItem.name}
+                            <span
+                              className={`inline-flex px-1.5 py-0.5 rounded text-xs ${
+                                item.menuItem.isVeg
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {item.menuItem.isVeg ? "Veg" : "Non-Veg"}
+                            </span>
+                          </p>
                           <p className="text-sm text-gray-600">
                             Qty: {item.quantity} × ₹{item.price}
                           </p>
                         </div>
                       </div>
                       <span className="font-semibold">
-                        ₹{(Number(item.price) * item.quantity).toFixed(2)}
+                        ₹{(Number(item.price) * item.quantity)}
                       </span>
                     </div>
                   ))}
@@ -421,7 +506,9 @@ export default function OrdersTable() {
                       {formatTime(selectedOrder.timeSlot.slotEnd)}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
-                      {new Date(selectedOrder.timeSlot.slotStart).toLocaleDateString()}
+                      {new Date(
+                        selectedOrder.timeSlot.slotStart
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -438,14 +525,14 @@ export default function OrdersTable() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount:</span>
                     <span className="font-bold text-lg">
-                      ₹{Number(selectedOrder.totalAmount).toFixed(2)}
+                      ₹{Number(selectedOrder.totalAmount)}
                     </span>
                   </div>
-                  {selectedOrder.payment?.razorpayPaymentId && (
+                  {selectedOrder.payment?.gatewayPaymentId && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Payment ID:</span>
                       <span className="font-mono text-sm">
-                        {selectedOrder.payment.razorpayPaymentId}
+                        {selectedOrder.payment.gatewayPaymentId}
                       </span>
                     </div>
                   )}
@@ -465,7 +552,10 @@ export default function OrdersTable() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+            >
               Close
             </Button>
           </DialogFooter>

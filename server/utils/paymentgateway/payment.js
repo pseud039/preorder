@@ -1,342 +1,560 @@
-import { prisma } from '../../lib/prisma.js';
-import Razorpay from 'razorpay';
-import crypto from 'crypto';
-import { asyncHandler } from '../errorHandler.js';
-import { ApiResponse } from '../ApiResponse.js';
-import { ApiError } from '../ApiError.js';
+// import { asyncHandler } from "../../utils/errorHandler.js";
+// import { ApiError } from "../../utils/ApiError.js";
+// import { ApiResponse } from "../../utils/ApiResponse.js";
+// import { PaymentService } from "../../utils/paymentgateway/payment.service.js";
+// import { prisma } from "../../lib/prisma.js";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// // 1. CREATE PAYMENT ORDER
+// export const createPaymentOrder = asyncHandler(async (req, res) => {
+//   const { orderId } = req.body;
+//   const userId = req.user.id;
 
-const verifyPayment = asyncHandler(async (req, res) => {
-  try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body;
+//   if (!orderId) {
+//     throw new ApiError(400, "Order ID is required");
+//   }
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      throw new ApiError(400, 'Missing payment details');
-    }
-
-    // Verify signature
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
-      .digest('hex');
-
-    const isValidSignature = expectedSignature === razorpay_signature;
-
-    if (!isValidSignature) {
-      // Mark payment as failed
-      await prisma.$transaction(async (tx) => {
-        const order = await tx.order.findFirst({
-          where: { razorpayOrderId: razorpay_order_id },
-        });
-
-        if (order) {
-          await tx.order.update({
-            where: { id: order.id },
-            data: { paymentStatus: 'failed' },
-          });
-
-          await tx.payment.update({
-            where: { orderId: order.id },
-            data: {
-              status: 'failed',
-              failureReason: 'Invalid signature',
-            },
-          });
-        }
-      });
-
-    throw new ApiError(400, 'Invalid payment signature');
-    }
-
-    const result = await prisma.$transaction(async (tx) => {
-        const order = await tx.order.findFirst({
-        where: { razorpayOrderId: razorpay_order_id },
-        include: {
-          payment: true,
-          orderItems: {
-            include: { menuItem: true },
-          },
-          restaurant: true,
-        },
-      });
-
-      if (!order) {
-        throw new ApiError(404, 'Order not found');
-      }
-
-      // Update order payment status
-      const updatedOrder = await tx.order.update({
-        where: { id: order.id },
-        data: { paymentStatus: 'paid' },
-        include: {
-          orderItems: {
-            include: { menuItem: true },
-          },
-          restaurant: true,
-          timeSlot: true,
-        },
-      });
-
-      await tx.payment.update({
-        where: { orderId: order.id },
-        data: {
-          status: 'paid',
-          razorpayPaymentId: razorpay_payment_id,
-          razorpaySignature: razorpay_signature,
-        },
-      });
-
-      return updatedOrder;
-    });
-
-    res.json(new ApiResponse(200, 'Payment verified successfully', result));
-  } catch (error) {
-    console.error('Payment verification error:', error);
-    throw new ApiError(500, 'Payment verification failed');
-  }
-});
-
-// const handleWebhook =asyncHandler(async (req, res) => {
-//   try {
-//     // Verify webhook signature
-//     const webhookSignature = req.headers['x-razorpay-signature'];
-//     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
-//     if (!webhookSignature || !webhookSecret) {
-//       throw new ApiError(400, 'Missing webhook signature or secret');
+//   const order = await prisma.order.findUnique({
+//     where: { id: parseInt(orderId) },
+//     include: {
+//       restaurant: { select: { id: true, name: true } },
+//       user: { select: { id: true, name: true, email: true, phone: true } }
 //     }
+//   });
 
-//     const body = JSON.stringify(req.body);
-//     const expectedSignature = crypto
-//       .createHmac('sha256', webhookSecret)
-//       .update(body)
-//       .digest('hex');
+//   if (!order) {
+//     throw new ApiError(404, "Order not found");
+//   }
 
-//     if (expectedSignature !== webhookSignature) {
-//       throw new ApiError(400, 'Invalid webhook signature');
+//   if (order.userId !== userId) {
+//     throw new ApiError(403, "Unauthorized to pay for this order");
+//   }
+
+//   if (order.paymentStatus === "paid") {
+//     throw new ApiError(400, "Order is already paid");
+//   }
+
+//   // Create Paytm payment order
+//   const paytmOrder = await PaymentService.createPaytmOrder({
+//     orderId: order.id,
+//     amount: order.totalAmount,
+//     customerInfo: {
+//       customerId: order.userId.toString(),
+//       customerEmail: order.user.email,
+//       customerPhone: order.user.phone
 //     }
+//   });
 
-//     const event = req.body.event;
-//     const payload = req.body.payload;
-
-//     console.log('Webhook received:', event);
-
-//     switch (event) {
-//       case 'payment.authorized':
-//       case 'payment.captured':
-//         await handlePaymentSuccess(payload.payment.entity);
-//         break;
-
-//       case 'payment.failed':
-//         await handlePaymentFailure(payload.payment.entity);
-//         break;
-
-//       case 'order.paid':
-//         await handleOrderPaid(payload.order.entity);
-//         break;
-
-//       default:
-//         console.log('Unhandled webhook event:', event);
+//   // Create payment record
+//   const payment = await prisma.payment.create({
+//     data: {
+//       orderId: order.id,
+//       userId: order.userId,
+//       restaurantId: order.restaurantId,
+//       gatewayOrderId: paytmOrder.orderId,
+//       gatewayTransactionId: paytmOrder.txnToken,
+//       amount: order.totalAmount,
+//       status: "pending",
+//       paymentMethod: "paytm"
 //     }
+//   });
 
-//     res.json(new ApiResponse(200, 'Webhook processed successfully'));
-//   } catch (error) {
-//     console.error('Webhook error:', error);
-//    throw new ApiError(500, 'Webhook processing failed');
+//   // Update order with payment order ID
+//   await prisma.order.update({
+//     where: { id: order.id },
+//     data: { paymentOrderId: paytmOrder.orderId }
+//   });
+
+//   res.status(200).json(
+//     new ApiResponse(200, {
+//       payment,
+//       paytmConfig: {
+//         orderId: paytmOrder.orderId,
+//         txnToken: paytmOrder.txnToken,
+//         amount: order.totalAmount,
+//         mid: process.env.PAYTM_MID,
+//         callbackUrl: `${process.env.NEXT_PUBLIC_API_URL}/client/payment/callback`
+//       }
+//     }, "Payment order created successfully")
+//   );
+// });
+
+// // 2. PAYMENT CALLBACK (Paytm redirects here)
+// export const handlePaymentCallback = asyncHandler(async (req, res) => {
+//   const { ORDERID, TXNID, STATUS, CHECKSUMHASH } = req.body;
+
+//   console.log("Payment callback received:", { ORDERID, TXNID, STATUS });
+
+//   // Verify checksum
+//   const isValidChecksum = PaymentService.verifyPaytmChecksum(req.body, CHECKSUMHASH);
+
+//   if (!isValidChecksum) {
+//     console.error("Invalid checksum");
+//     return res.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=invalid_checksum`);
+//   }
+
+//   // Find payment
+//   const payment = await prisma.payment.findFirst({
+//     where: { gatewayOrderId: ORDERID },
+//     include: {
+//       order: {
+//         include: { restaurant: { select: { commissionRate: true } } }
+//       }
+//     }
+//   });
+
+//   if (!payment) {
+//     console.error("Payment not found for order:", ORDERID);
+//     return res.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=order_not_found`);
+//   }
+
+//   if (STATUS === "TXN_SUCCESS") {
+//     try {
+//       await prisma.$transaction(async (tx) => {
+//         // Update payment
+//         await tx.payment.update({
+//           where: { id: payment.id },
+//           data: {
+//             status: "paid",
+//             gatewayPaymentId: TXNID,
+//             gatewayResponse: JSON.stringify(req.body),
+//             paidAt: new Date()
+//           }
+//         });
+
+//         // Update order
+//         await tx.order.update({
+//           where: { id: payment.orderId },
+//           data: {
+//             paymentStatus: "paid",
+//             status: "Confirmed",
+//             estimatedReadyTime: new Date(Date.now() + payment.order.estimatedWaitingTime * 60 * 1000)
+//           }
+//         });
+
+//         // Create commission
+//         const commissionAmount = (parseFloat(payment.amount) * payment.order.restaurant.commissionRate) / 100;
+//         const restaurantAmount = parseFloat(payment.amount) - commissionAmount;
+
+//         await tx.commission.create({
+//           data: {
+//             orderId: payment.orderId,
+//             restaurantId: payment.restaurantId,
+//             orderAmount: payment.amount,
+//             commissionRate: payment.order.restaurant.commissionRate,
+//             commissionAmount,
+//             restaurantAmount,
+//             status: "pending"
+//           }
+//         });
+//       });
+
+//       console.log("Payment successful for order:", ORDERID);
+//       return res.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/orders/${payment.orderId}?payment=success`);
+//     } catch (error) {
+//       console.error("Error processing payment:", error);
+//       return res.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=processing_error`);
+//     }
+//   } else {
+//     // Payment failed
+//     await prisma.payment.update({
+//       where: { id: payment.id },
+//       data: {
+//         status: "failed",
+//         gatewayResponse: JSON.stringify(req.body)
+//       }
+//     });
+
+//     console.log("Payment failed for order:", ORDERID);
+//     return res.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=${STATUS}`);
 //   }
 // });
 
-// Helper: Handle successful payment
+// // 3. VERIFY PAYMENT STATUS
+// export const verifyPaymentStatus = asyncHandler(async (req, res) => {
+//   const { orderId } = req.body;
+//   const userId = req.user.id;
 
-async function handlePaymentSuccess(paymentEntity) {
-  try {
-    const razorpayOrderId = paymentEntity.order_id;
-    const razorpayPaymentId = paymentEntity.id;
+//   const payment = await prisma.payment.findFirst({
+//     where: { orderId: parseInt(orderId) },
+//     include: {
+//       order: { select: { userId: true } }
+//     }
+//   });
 
-    await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findFirst({
-        where: { razorpayOrderId },
-      });
+//   if (!payment) {
+//     throw new ApiError(404, "Payment not found");
+//   }
 
-      if (order && order.paymentStatus !== 'paid') {
-        await tx.order.update({
-          where: { id: order.id },
-          data: { paymentStatus: 'paid' },
-        });
+//   if (payment.order.userId !== userId) {
+//     throw new ApiError(403, "Unauthorized");
+//   }
 
-        await tx.payment.update({
-          where: { orderId: order.id },
-          data: {
-            status: 'paid',
-            razorpayPaymentId,
-          },
-        });
+//   // Verify with Paytm
+//   const verificationResult = await PaymentService.verifyPaytmPayment(
+//     payment.gatewayOrderId,
+//     payment.gatewayPaymentId
+//   );
 
-        console.log(`Order ${order.id} marked as paid`);
-      }
-    });
-  } catch (error) {
-    console.error('Handle payment success error:', error);
+//   res.status(200).json(
+//     new ApiResponse(200, {
+//       payment: {
+//         status: payment.status,
+//         amount: payment.amount,
+//         paidAt: payment.paidAt
+//       },
+//       verification: verificationResult
+//     }, "Payment status fetched successfully")
+//   );
+// });
+
+// // 4. GET PAYMENT STATUS
+// export const getPaymentStatus = asyncHandler(async (req, res) => {
+//   const { orderId } = req.params;
+//   const userId = req.user.id;
+
+//   const payment = await prisma.payment.findFirst({
+//     where: { orderId: parseInt(orderId) },
+//     include: {
+//       order: { select: { userId: true, totalAmount: true } }
+//     }
+//   });
+
+//   if (!payment) {
+//     throw new ApiError(404, "Payment not found");
+//   }
+
+//   if (payment.order.userId !== userId) {
+//     throw new ApiError(403, "Unauthorized");
+//   }
+
+//   res.status(200).json(
+//     new ApiResponse(200, {
+//       payment: {
+//         id: payment.id,
+//         status: payment.status,
+//         amount: payment.amount,
+//         paymentMethod: payment.paymentMethod,
+//         paidAt: payment.paidAt,
+//         createdAt: payment.createdAt
+//       }
+//     }, "Payment status fetched successfully")
+//   );
+// });
+import { asyncHandler } from "../../utils/errorHandler.js";
+import { ApiError } from "../../utils/ApiError.js";
+import { ApiResponse } from "../../utils/ApiResponse.js";
+import { PaymentService } from "../../utils/paymentgateway/payment.service.js";
+import { prisma } from "../../lib/prisma.js";
+
+// 1. CREATE PAYMENT ORDER
+export const createPaymentOrder = asyncHandler(async (req, res) => {
+  const { orderId } = req.body;
+  const userId = req.user.id;
+
+  if (!orderId) {
+    throw new ApiError(400, "Order ID is required");
   }
-}
 
-// Helper: Handle failed payment
-async function handlePaymentFailure(paymentEntity) {
-  try {
-    const razorpayOrderId = paymentEntity.order_id;
-    const failureReason = paymentEntity.error_description || 'Payment failed';
-
-    await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findFirst({
-        where: { razorpayOrderId },
-      });
-
-      if (order) {
-        await tx.order.update({
-          where: { id: order.id },
-          data: { paymentStatus: 'failed' },
-        });
-
-        await tx.payment.update({
-          where: { orderId: order.id },
-          data: {
-            status: 'failed',
-            failureReason,
-          },
-        });
-
-        console.log(`Order ${order.id} marked as failed`);
-      }
-    });
-  } catch (error) {
-    console.error('Handle payment failure error:', error);
-  }
-}
-
-// Helper: Handle order paid event
-async function handleOrderPaid(orderEntity) {
-  try {
-    const razorpayOrderId = orderEntity.id;
-
-    await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findFirst({
-        where: { razorpayOrderId },
-      });
-
-      if (order && order.paymentStatus !== 'paid') {
-        await tx.order.update({
-          where: { id: order.id },
-          data: { paymentStatus: 'paid' },
-        });
-
-        await tx.payment.update({
-          where: { orderId: order.id },
-          data: { status: 'paid' },
-        });
-
-        console.log(`Order ${order.id} marked as paid via order.paid event`);
-      }
-    });
-  } catch (error) {
-    console.error('Handle order paid error:', error);
-  }
-}
-
-const getPaymentStatus = asyncHandler(async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const userId = req.user.id;
-
-    const order = await prisma.order.findFirst({
-      where: {
-        id: parseInt(orderId),
-        userId,
-      },
-      include: {
-        payment: true,
-      },
-    });
-
-    if (!order) {
-      throw new ApiError(404, 'Order not found');
+  const order = await prisma.order.findUnique({
+    where: { id: parseInt(orderId) },
+    include: {
+      restaurant: { select: { id: true, name: true, commissionRate: true } },
+      user: { select: { id: true, name: true, email: true, phone: true } }
     }
+  });
 
-    res.json(new ApiResponse(200, 'Payment status fetched successfully', {
-      orderId: order.id,
-      paymentStatus: order.paymentStatus,
-      paymentDetails: order.payment,
-    }));
-  } catch (error) {
-    console.error('Get payment status error:', error);
-    throw new ApiError(500, 'Failed to get payment status');
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  if (order.userId !== userId) {
+    throw new ApiError(403, "Unauthorized to pay for this order");
+  }
+
+  if (order.paymentStatus === "paid") {
+    throw new ApiError(400, "Order is already paid");
+  }
+
+  // Check if payment already exists
+  const existingPayment = await prisma.payment.findUnique({
+    where: { orderId: order.id }
+  });
+
+  if (existingPayment && existingPayment.status === "paid") {
+    throw new ApiError(400, "Payment already completed");
+  }
+
+  // Create Paytm payment order
+  const paytmOrder = await PaymentService.createPaytmOrder({
+    orderId: order.id,
+    amount: parseFloat(order.totalAmount),
+    customerInfo: {
+      customerId: order.userId.toString(),
+      customerEmail: order.user.email || `user${order.userId}@example.com`,
+      customerPhone: order.user.phone || "9999999999"
     }
+  });
+
+  // Create or update payment record
+  const payment = existingPayment
+    ? await prisma.payment.update({
+        where: { id: existingPayment.id },
+        data: {
+          gatewayOrderId: paytmOrder.orderId,
+          status: "pending",
+          paymentGateway: "paytm"
+        }
+      })
+    : await prisma.payment.create({
+        data: {
+          orderId: order.id,
+          gatewayOrderId: paytmOrder.orderId,
+          amount: order.totalAmount,
+          status: "pending",
+          paymentGateway: "paytm"
+        }
+      });
+
+  // Update order with payment order ID
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { 
+      paymentOrderId: paytmOrder.orderId,
+      paymentExpiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+    }
+  });
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      payment,
+      paytmConfig: {
+        orderId: paytmOrder.orderId,
+        txnToken: paytmOrder.txnToken,
+        amount: parseFloat(order.totalAmount),
+        mid: process.env.PAYTM_MID,
+        environment: process.env.NODE_ENV === "production" ? "PROD" : "STAGING"
+      }
+    }, "Payment order created successfully")
+  );
 });
 
-const retryPayment = asyncHandler(async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const userId = req.user.id;
+// 2. PAYMENT CALLBACK (Paytm redirects here)
+export const handlePaymentCallback = asyncHandler(async (req, res) => {
+  const { ORDERID, TXNID, STATUS, CHECKSUMHASH, TXNAMOUNT, RESPCODE, RESPMSG } = req.body;
 
-    const order = await prisma.order.findFirst({
-      where: {
-        id: parseInt(orderId),
-        userId,
-      },
-      include: {
-        payment: true,
-      },
-    });
+  console.log("Payment callback received:", { 
+    ORDERID, 
+    TXNID, 
+    STATUS, 
+    TXNAMOUNT,
+    RESPCODE,
+    RESPMSG 
+  });
 
-    if (!order) {
-     throw new ApiError(404, 'Order not found');
+  // Verify checksum
+  const isValidChecksum = PaymentService.verifyPaytmChecksum(req.body, CHECKSUMHASH);
+
+  if (!isValidChecksum) {
+    console.error("Invalid checksum for order:", ORDERID);
+    return res.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=invalid_checksum`
+    );
+  }
+
+  // Find payment
+  const payment = await prisma.payment.findFirst({
+    where: { gatewayOrderId: ORDERID },
+    include: {
+      order: {
+        include: { 
+          restaurant: { select: { commissionRate: true } }
+        }
+      }
     }
+  });
 
-    if (order.paymentStatus === 'paid') {
-     throw new ApiError(400, 'Order is already paid');
+  if (!payment) {
+    console.error("Payment not found for order:", ORDERID);
+    return res.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=order_not_found`
+    );
+  }
+
+  if (STATUS === "TXN_SUCCESS") {
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Update payment
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: "paid",
+            gatewayPaymentId: TXNID,
+            gatewayResponse: req.body
+          }
+        });
+
+        // Update order
+        const estimatedReadyTime = payment.order.estimatedWaitingTime
+          ? new Date(Date.now() + payment.order.estimatedWaitingTime * 60 * 1000)
+          : null;
+
+        await tx.order.update({
+          where: { id: payment.orderId },
+          data: {
+            paymentStatus: "paid",
+            restaurantStatus: "Pending",
+            estimatedReadyTime,
+            expiresAt: new Date(Date.now() + 2 * 60 * 1000) // 2 minutes for restaurant to accept
+          }
+        });
+
+        // Create commission
+        const orderAmount = parseFloat(payment.amount);
+        const commissionRate = parseFloat(payment.order.restaurant.commissionRate);
+        const commissionAmount = (orderAmount * commissionRate) / 100;
+        const restaurantAmount = orderAmount - commissionAmount;
+
+        await tx.commission.create({
+          data: {
+            orderId: payment.orderId,
+            restaurantId: payment.order.restaurantId,
+            orderAmount: payment.amount,
+            commissionRate: payment.order.restaurant.commissionRate,
+            commissionAmount: commissionAmount.toFixed(2),
+            restaurantAmount: restaurantAmount.toFixed(2),
+            status: "pending"
+          }
+        });
+      });
+
+      console.log("Payment successful for order:", payment.orderId);
+      return res.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/orders/${payment.orderId}?payment=success`
+      );
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      
+      // Rollback payment status
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: "failed", failureReason: "Processing error" }
+      });
+
+      return res.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=processing_error`
+      );
     }
-
-    // Create new Razorpay order
-    const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(Number(order.totalAmount) * 100),
-      currency: 'INR',
-      receipt: `retry_${order.id}_${Date.now()}`,
-      notes: {
-        orderId: order.id.toString(),
-        retry: 'true',
-      },
-    });
-
-    // Update order with new Razorpay order ID
-    await prisma.order.update({
-      where: { id: order.id },
+  } else {
+    // Payment failed
+    await prisma.payment.update({
+      where: { id: payment.id },
       data: {
-        razorpayOrderId: razorpayOrder.id,
-        paymentStatus: 'pending',
-      },
+        status: "failed",
+        failureReason: RESPMSG || STATUS,
+        gatewayResponse: req.body
+      }
     });
 
-    res.json(new ApiResponse(200, 'Payment retry initiated', {
-      razorpayOrderId: razorpayOrder.id,
-      amount: razorpayOrder.amount,
-      currency: razorpayOrder.currency,
-    }));
-  } catch (error) {
-    console.error('Retry payment error:', error);
-    throw new ApiError(500, 'Failed to retry payment');
+    await prisma.order.update({
+      where: { id: payment.orderId },
+      data: { paymentStatus: "failed" }
+    });
+
+    console.log("Payment failed for order:", ORDERID, "Reason:", RESPMSG);
+    return res.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=${encodeURIComponent(RESPMSG || STATUS)}`
+    );
   }
 });
 
-export {
-  verifyPayment,
-  getPaymentStatus,
-  retryPayment,
-};
+// 3. VERIFY PAYMENT STATUS
+export const verifyPaymentStatus = asyncHandler(async (req, res) => {
+  const { orderId } = req.body;
+  const userId = req.user.id;
+
+  if (!orderId) {
+    throw new ApiError(400, "Order ID is required");
+  }
+
+  const payment = await prisma.payment.findFirst({
+    where: { orderId: parseInt(orderId) },
+    include: {
+      order: { select: { userId: true } }
+    }
+  });
+
+  if (!payment) {
+    throw new ApiError(404, "Payment not found");
+  }
+
+  if (payment.order.userId !== userId) {
+    throw new ApiError(403, "Unauthorized");
+  }
+
+  // Verify with Paytm
+  const verificationResult = await PaymentService.verifyPaytmPayment(
+    payment.gatewayOrderId
+  );
+
+  // Update payment status if verification returns different status
+  if (verificationResult.success && verificationResult.status !== payment.status) {
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: verificationResult.status,
+        gatewayPaymentId: verificationResult.transactionId
+      }
+    });
+  }
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      payment: {
+        status: verificationResult.status || payment.status,
+        amount: payment.amount,
+        gatewayPaymentId: payment.gatewayPaymentId
+      },
+      verification: verificationResult
+    }, "Payment status verified successfully")
+  );
+});
+
+// 4. GET PAYMENT STATUS
+export const getPaymentStatus = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+  const userId = req.user.id;
+
+  const payment = await prisma.payment.findFirst({
+    where: { orderId: parseInt(orderId) },
+    include: {
+      order: { 
+        select: { 
+          userId: true, 
+          totalAmount: true,
+          paymentStatus: true
+        } 
+      }
+    }
+  });
+
+  if (!payment) {
+    throw new ApiError(404, "Payment not found");
+  }
+
+  if (payment.order.userId !== userId) {
+    throw new ApiError(403, "Unauthorized");
+  }
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      payment: {
+        id: payment.id,
+        status: payment.status,
+        amount: payment.amount,
+        paymentGateway: payment.paymentGateway,
+        gatewayPaymentId: payment.gatewayPaymentId,
+        createdAt: payment.createdAt
+      }
+    }, "Payment status fetched successfully")
+  );
+});

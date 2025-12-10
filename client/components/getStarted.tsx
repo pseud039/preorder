@@ -29,13 +29,13 @@ export default function GetStartedPage() {
       <div className="flex flex-col gap-4 w-full max-w-xs">
         <button
           className="btn-secondary "
-          onClick={() => router.push("/auth/login")}
+          onClick={() => router.push("/login")}
         >
           LogIn
         </button>
         <button
           className="btn-secondary"
-          onClick={() => router.push("/auth/signup")}
+          onClick={() => router.push("/signup")}
         >
           SignUp
         </button>
