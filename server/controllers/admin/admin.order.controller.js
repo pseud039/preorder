@@ -2,6 +2,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { NotificationService } from "../../utils/notification/notification.service.js";
 
 export const getAllOrders = asyncHandler(async (req, res) => {
   const restaurantId = req.user.restaurantId;
@@ -306,16 +307,14 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 
   if (notificationType) {
-    await prisma.notification.create({
+    await NotificationService.send({
+      userId: order.userId,
+      type: notificationType,
+      title: notificationTitle,
+      message: notificationMessage,
       data: {
-        userId: order.userId,
-        type: notificationType,
-        title: notificationTitle,
-        message: notificationMessage,
-        data: {
-          orderId: order.id,
-          restaurantStatus: restaurantStatus || order.restaurantStatus,
-        },
+        orderId: order.id,
+        restaurantStatus: restaurantStatus || order.restaurantStatus,
       },
     });
   }

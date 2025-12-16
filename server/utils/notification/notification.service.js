@@ -36,11 +36,18 @@ export class NotificationService {
         }
       });
 
-      // 2. Send realtime notification (Socket.io)
+      // 2. Send realtime notification (Socket.io) - for all roles
       await this.sendRealtime(userId, notification);
 
-      // 3. Send Web Push notification
-      await this.sendWebPush(userId, { type, title, message, data });
+      // 3. Send Web Push notification - only for customers (PWA)
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true }
+      });
+
+      if (user?.role === 'customer') {
+        await this.sendWebPush(userId, { type, title, message, data });
+      }
 
       // 4. Send SMS for critical notifications
       if (this.isCritical(type)) {
@@ -118,9 +125,9 @@ export class NotificationService {
             },
             JSON.stringify(notificationPayload)
           );
-          console.log(`✅ Push sent to user ${userId} (${sub.endpoint.slice(-10)})`);
+          console.log(`  Push sent to user ${userId} (${sub.endpoint.slice(-10)})`);
         } catch (error) {
-          console.error(`❌ Failed to send push to ${sub.endpoint}:`, error);
+          console.error(`  Failed to send push to ${sub.endpoint}:`, error);
           
           // If subscription is invalid (410 Gone), mark as inactive
           if (error.statusCode === 410) {
@@ -235,7 +242,7 @@ export class NotificationService {
   static async testWebPush(userId) {
     await this.sendWebPush(userId, {
       type: 'TEST',
-      title: '🔔 Test Notification',
+      title: '  Test Notification',
       message: 'This is a test notification from your app!',
       data: { test: true }
     });
@@ -379,7 +386,7 @@ export class NotificationService {
         data: notifications
       });
 
-      // Send realtime to all users
+      // Send realtime to all users via Socket.io
       const io = global.io;
       if (io) {
         userIds.forEach(userId => {
@@ -393,8 +400,17 @@ export class NotificationService {
         });
       }
 
-      // Send web push to all users
-      for (const userId of userIds) {
+      // Send web push only to customers (PWA)
+      const users = await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, role: true }
+      });
+
+      const customerIds = users
+        .filter(user => user.role === 'customer')
+        .map(user => user.id);
+
+      for (const userId of customerIds) {
         await this.sendWebPush(userId, { type, title, message, data });
       }
 

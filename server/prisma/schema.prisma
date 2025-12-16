@@ -272,7 +272,7 @@ model OrderItem {
 model Payment {
   id                    Int           @id @default(autoincrement())
   orderId               Int           @unique
-  paymentGateway        String?       @default("razorpay")
+  paymentGateway        String?       @default("phonepe")
   
   gatewayPaymentId     String?       @unique
   gatewayOrderId       String?

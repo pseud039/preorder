@@ -2,6 +2,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { NotificationService } from "../../utils/notification/notification.service.js";
 import crypto from "crypto";
 
 async function getCartWithDetails(cartId) {
@@ -577,18 +578,16 @@ const createOrder = asyncHandler(async (req, res) => {
     });
 
     if (restaurantAdmin) {
-      await prisma.notification.create({
+      await NotificationService.send({
+        userId: restaurantAdmin.userId,
+        type: "ORDER_PLACED",
+        title: "New Order Received!",
+        message: `Order #${order.id} for ₹${totalAmount}. Accept within 2 minutes.`,
         data: {
-          userId: restaurantAdmin.userId,
-          type: "ORDER_PLACED",
-          title: "New Order Received!",
-          message: `Order #${order.id} for ₹${totalAmount}. Accept within 2 minutes.`,
-          data: {
-            orderId: order.id,
-            restaurantId: cart.restaurantId,
-            totalAmount: totalAmount.toString(),
-            expiresAt: expiresAt.toISOString(),
-          },
+          orderId: order.id,
+          restaurantId: cart.restaurantId,
+          totalAmount: totalAmount.toString(),
+          expiresAt: expiresAt.toISOString(),
         },
       });
     }
