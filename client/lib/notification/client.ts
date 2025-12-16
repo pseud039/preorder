@@ -1,5 +1,4 @@
 // lib/notification/client.ts
-// CLIENT-SIDE ONLY notification utilities for Next.js 15
 
 'use client';
 
@@ -48,10 +47,10 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   const permission = await Notification.requestPermission();
   
   if (permission === 'granted') {
-    console.log('✅ Notification permission granted');
+    console.log('  Notification permission granted');
     return true;
   } else {
-    console.log('❌ Notification permission denied');
+    console.log('  Notification permission denied');
     return false;
   }
 };
@@ -67,7 +66,7 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
       scope: '/'
     });
     
-    console.log('✅ Service Worker registered');
+    console.log('  Service Worker registered');
 
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
@@ -85,14 +84,14 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
 
     return registration;
   } catch (error) {
-    console.error('❌ Service Worker registration failed:', error);
+    console.error('  Service Worker registration failed:', error);
     return null;
   }
 };
 
 export const subscribeToPushNotifications = async (accessToken: string): Promise<PushSubscription> => {
   try {
-    console.log('🔔 Starting push subscription...');
+    console.log('  Starting push subscription...');
 
     // 1. Request permission
     const hasPermission = await requestNotificationPermission();
@@ -162,10 +161,10 @@ export const subscribeToPushNotifications = async (accessToken: string): Promise
       throw new Error('Failed to save subscription on server');
     }
 
-    console.log('✅ Successfully subscribed to push notifications');
+    console.log('  Successfully subscribed to push notifications');
     return subscription;
   } catch (error) {
-    console.error('❌ Push subscription error:', error);
+    console.error('  Push subscription error:', error);
     throw error;
   }
 };
@@ -187,12 +186,12 @@ export const unsubscribeFromPushNotifications = async (accessToken: string): Pro
         body: JSON.stringify({ endpoint: subscription.endpoint })
       });
 
-      console.log('✅ Unsubscribed from push notifications');
+      console.log('  Unsubscribed from push notifications');
       return true;
     }
     return false;
   } catch (error) {
-    console.error('❌ Unsubscribe error:', error);
+    console.error('  Unsubscribe error:', error);
     throw error;
   }
 };

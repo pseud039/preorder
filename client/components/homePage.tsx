@@ -4,6 +4,7 @@ import { Search, ShoppingCart, Heart, User, Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "@/lib/auth";
 import { io, Socket } from 'socket.io-client';
+import { toast } from 'sonner';
 
 
 interface MenuItem {
@@ -174,7 +175,7 @@ export default function FoodOrderPage() {
       console.log("Token from localStorage:", token ? "Found" : "Not found");
 
       if (!token) {
-        alert("Please login first");
+        toast.error("Please login first");
         window.location.href = "/login";
         return;
       }
@@ -193,22 +194,23 @@ export default function FoodOrderPage() {
       if (!response.ok) {
         if (response.status === 401) {
           console.error("Authentication required. Please log in.");
-          alert("Please log in to add items to cart");
+          toast.error("Please log in to add items to cart");
           return;
         }
         console.error(
           "Failed to add to cart:",
           data.message || response.statusText
         );
-        alert(`Failed to add to cart: ${data.message || "Unknown error"}`);
+        toast.error(`Failed to add to cart: ${data.message || "Unknown error"}`);
         return;
       }
 
       setCartCount((prev) => prev + 1);
+      toast.success(`${item.name} added to cart`);
       console.log("Added to cart:", item.id);
     } catch (error) {
       console.error("Error adding to cart:", error);
-      alert("Network error. Please check your connection and try again.");
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 

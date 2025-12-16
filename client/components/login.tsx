@@ -143,7 +143,7 @@ console.log(data.data.accessToken)
     } catch (error) {
       console.error("=== Login Error ===");
       console.error("Error:", error);
-      toast.error("Network error. Please try again.");
+      toast.error("Verify the credentials and try again.");
     } finally {
       setIsSubmitting(false);
     }
