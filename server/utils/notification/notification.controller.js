@@ -65,8 +65,7 @@ export const markAllAsRead = asyncHandler(async (req, res) => {
 // 4. SUBSCRIBE TO PUSH NOTIFICATIONS
 export const subscribeToPush = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { subscription } = req.body;
-
+  const  subscription  = req.body;
   if (!subscription || !subscription.endpoint || !subscription.keys) {
     throw new ApiError(400, "Invalid push subscription data");
   }
@@ -125,6 +124,8 @@ export const getVapidPublicKey = asyncHandler(async (req, res) => {
 // 7. TEST NOTIFICATION (Development only)
 export const testNotification = asyncHandler(async (req, res) => {
   const userId = req.user.id;
+
+  console.log(process.env.NODE_ENV);
 
   if (process.env.NODE_ENV === 'production') {
     throw new ApiError(403, "Test endpoint not available in production");

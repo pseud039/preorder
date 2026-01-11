@@ -16,6 +16,7 @@ export const resetOnboarding = () => {
     localStorage.removeItem('hasSeenOnboarding')
   }
 }
+
 async function refreshAccessToken() {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
     method: 'POST',
@@ -33,12 +34,12 @@ async function refreshAccessToken() {
 }
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  let accessToken = localStorage.getItem('accessToken');
+  // let accessToken = localStorage.getItem('accessToken');
   
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
-    'Authorization': `Bearer ${accessToken}`,
+    // 'Authorization': `Bearer ${accessToken}`,
   };
   
   let response = await fetch(url, {
@@ -53,8 +54,8 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
       const errorData = await response.json();
       
       if (errorData.message?.includes('expired')) {
-        const newAccessToken = await refreshAccessToken();
-        localStorage.setItem('accessToken', newAccessToken);
+        // const newAccessToken = await refreshAccessToken();
+        // localStorage.setItem('accessToken', newAccessToken);
         
         // Retry with new token
         response = await fetch(url, {
@@ -62,7 +63,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
           headers: {
             'Content-Type': 'application/json',
             ...options.headers,
-            'Authorization': `Bearer ${newAccessToken}`,
+            // 'Authorization': `Bearer ${newAccessToken}`,
           },
           credentials: 'include',
         });

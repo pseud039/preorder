@@ -19,7 +19,7 @@ model Restaurant {
   
   // Commission Settings
   commissionRate              Decimal       @default(15.00) @db.Decimal(5, 2)
-  
+    taxRate                   Float?         @default(0.05)
  // Primary: Multiplier for proportional scaling (1.0 = normal, 1.5 = 50% slower)
   baseWaitingTimeMultiplier   Decimal       @default(1.0) @db.Decimal(3, 2)
   
@@ -272,16 +272,16 @@ model OrderItem {
 model Payment {
   id                    Int           @id @default(autoincrement())
   orderId               Int           @unique
-  paymentGateway        String?       @default("phonepe")
+  paymentGateway        String?       @default("paytm")
   
-  gatewayPaymentId     String?       @unique
-  gatewayOrderId       String?
-  gatewaySignature     String?
+  gatewayPaymentId     String?       @unique   // Paytm TXNID
+  gatewayOrderId       String?                 // Paytm ORDERID
+  gatewaySignature     String?                 // Checksum for verification
   
   amount                Decimal       @db.Decimal(10, 2)
   status                PaymentStatus
   failureReason         String?
-  gatewayResponse       Json?  
+  gatewayResponse       Json?         // Store full Paytm response
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
@@ -426,10 +426,12 @@ enum OrderStatus {
   Finished
   Delivered
   Cancelled
+  
 }
 
 enum RestaurantOrderStatus {
-  Pending      
+  Pending   
+  Updated   
   Accepted     
   Rejected     
   Preparing    

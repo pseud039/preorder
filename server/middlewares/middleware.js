@@ -5,11 +5,11 @@ import { asyncHandler } from "../utils/errorHandler.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   try {
-    let token = req.headers.authorization?.replace("Bearer ", "");
-    
-    if (!token) {
-      token = req.cookies?.accessToken;
-    }
+    // let token = req.headers.authorization?.replace("Bearer ", "");
+
+    // if (!token) {
+    const token = req.cookies?.accessToken;
+    // }
     // console.log(token);
     if (!token) {
       throw new ApiError(401, "Access token is required");
@@ -36,10 +36,10 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
               select: {
                 id: true,
                 name: true,
-                isActive: true
-              }
-            }
-          }
+                isActive: true,
+              },
+            },
+          },
         },
         chefOf: {
           where: { isActive: true },
@@ -49,12 +49,12 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
               select: {
                 id: true,
                 name: true,
-                isActive: true
-              }
-            }
-          }
-        }
-      }
+                isActive: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -65,11 +65,10 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       throw new ApiError(403, "Your account has been deactivated");
     }
 
-     req.user = {
+    req.user = {
       ...user,
-      restaurantId: user.adminOf?.restaurantId || 
-                    user.chefOf?.restaurantId || 
-                    null
+      restaurantId:
+        user.adminOf?.restaurantId || user.chefOf?.restaurantId || null,
     };
 
     next();
@@ -93,7 +92,10 @@ export const isCustomer = asyncHandler(async (req, res, next) => {
 
 export const isAdmin = asyncHandler(async (req, res, next) => {
   if (req.user.role !== "admin") {
-    throw new ApiError(403, "This action is only available to restaurant admins");
+    throw new ApiError(
+      403,
+      "This action is only available to restaurant admins"
+    );
   }
 
   if (!req.user.restaurantId) {
@@ -124,7 +126,10 @@ export const isSuperAdmin = asyncHandler(async (req, res, next) => {
 
 export const isAdminOrChef = asyncHandler(async (req, res, next) => {
   if (!["admin", "chef"].includes(req.user.role)) {
-    throw new ApiError(403, "This action is only available to restaurant staff");
+    throw new ApiError(
+      403,
+      "This action is only available to restaurant staff"
+    );
   }
 
   if (!req.user.restaurantId) {
@@ -134,10 +139,10 @@ export const isAdminOrChef = asyncHandler(async (req, res, next) => {
   next();
 });
 
-export const isOwner = (resourceKey = 'userId') => {
+export const isOwner = (resourceKey = "userId") => {
   return asyncHandler(async (req, res, next) => {
     const resourceId = req.params.id;
-    
+
     next();
   });
 };
@@ -159,8 +164,8 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
         name: true,
         email: true,
         role: true,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
 
     req.user = user && user.isActive ? user : null;
@@ -180,7 +185,10 @@ export const requireEmailVerified = asyncHandler(async (req, res, next) => {
 
 export const requirePhoneVerified = asyncHandler(async (req, res, next) => {
   if (!req.user.phoneVerified) {
-    throw new ApiError(403, "Please verify your phone number before proceeding");
+    throw new ApiError(
+      403,
+      "Please verify your phone number before proceeding"
+    );
   }
   next();
 });

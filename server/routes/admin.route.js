@@ -1,63 +1,4 @@
-// import jsonwebtoken from "jsonwebtoken";
-// import bcrypt from "bcrypt";
-// import express from "express";
-// import { upload } from "../middlewares/multer.middleware.js";
-// import {
-//   getMenu,
-//   getItemDetails,
-//   getMostPopular,
-// } from "../controllers/client/client.menu.controller.js";
-// import {
-//   addMenuItems,
-//   updateItem,
-//   deleteItem,
-//   // addRestraunt,
-//   createCategory,
-// } from "../controllers/admin/admin.menu.controller.js";
-// import {
-//   forgotPassword,
-//   LoginAdmin,
-// } from "../controllers/admin/admin.auth.controller.js";
-import {
-  // generateTimeSlots,
-  getAvailableTimeSlots,
-} from "../controllers/client/client.details.contoller.js";
-// import {
-//     getAllOrders,
-//   getOrderDetails,
-//   updateOrderStatus,
-// } from "../controllers/admin/admin.order.controller.js";
-// import { verifyJWTAdmin } from "../middlewares/admin.middleware.js";
-// const router = express.Router();
 
-// //    Authentication
-// router.post("/login", LoginAdmin);
-// router.post("/forgot-password", forgotPassword);
-
-// //    Public Menu
-// router.get("/menu/popular", getMostPopular);
-// router.get("/menu/:id", getItemDetails);
-
-// //    Restaurant Management
-// // router.post("/restaurant", verifyJWTAdmin, addRestraunt);
-
-// //    Menu Management
-// router.get("/menu", getMenu);
-// router.post("/menu", upload.single("imageUrl"), addMenuItems);
-// router.put("/menu/:id", upload.single("imageUrl"), updateItem);
-// router.delete("/menu/:id", deleteItem);
-// router.post("/category/add", upload.single("imageUrl"), createCategory)
-
-//    Time Slot Management
-// router.post("/createTimeslot", getAvailableTimeSlots);
-// router.post("/generate", generateTimeSlots);
-
-// //    Order Management
-// router.get("/orders", getAllOrders);
-// router.get("/orders/:orderId",getOrderDetails);
-// router.patch("/orders/:orderId", updateOrderStatus);
-
-// export default router;
 import express from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT, isAdmin, isChef, isSuperAdmin, isAdminOrChef } from "../middlewares/middleware.js";
@@ -73,7 +14,7 @@ import {
   resetPassword,
   getCurrentUser
 } from "../controllers/admin/admin.auth.controller.js";
-
+import { getAvailableTimeSlots } from "../controllers/client/client.details.contoller.js";
 // Admin Menu Controllers
 import {
   addRestaurant,
@@ -85,6 +26,16 @@ import {
   getCategories
 } from "../controllers/admin/admin.menu.controller.js";
 
+// Admin TimeSlot Controllers
+import {
+  getTimeSlots,
+  createTimeSlot,
+  batchCreateTimeSlots,
+  updateTimeSlot,
+  deleteTimeSlot,
+  deleteTimeSlotsForDay
+} from "../controllers/admin/admin.timeslot.controller.js";
+
 // Admin Order Controllers
 import {
   getAllOrders,
@@ -93,7 +44,11 @@ import {
   cancelOrder,
   getDashboardStats,
   getRevenueReport,
-  getPopularItems
+  getPopularItems,
+  updateOrderDetails,
+  getOrderForEdit,
+  deleteOrderItem,
+  addOrderItem
 } from "../controllers/admin/admin.order.controller.js";
 
 // Chef Controllers
@@ -131,7 +86,7 @@ router.post("/staff/create-admin", verifyJWT, isSuperAdmin, createAdmin);
 
 router.post("/restaurant", verifyJWT, isAdmin, addRestaurant);
 
-router.post("/createTimeslot", getAvailableTimeSlots);
+router.post("/createTimeslot",verifyJWT, isAdmin, getAvailableTimeSlots);
 router.get("/menu", verifyJWT, isAdmin, getMenu);
 router.post("/menu", verifyJWT, isAdmin, upload.single("imageUrl"), addMenuItems);
 router.patch("/menu/:id", verifyJWT, isAdmin, upload.single("imageUrl"), updateItem);
@@ -140,10 +95,23 @@ router.delete("/menu/:id", verifyJWT, isAdmin, deleteItem);
 router.get("/categories", verifyJWT, isAdmin, getCategories);
 router.post("/categories", verifyJWT, isAdmin, upload.single("imageUrl"), createCategory);
 
+// TimeSlot routes
+router.get("/timeslots", verifyJWT, isAdmin, getTimeSlots);
+router.post("/timeslots", verifyJWT, isAdmin, createTimeSlot);
+router.post("/timeslots/batch", verifyJWT, isAdmin, batchCreateTimeSlots);
+router.patch("/timeslots/:id", verifyJWT, isAdmin, updateTimeSlot);
+router.delete("/timeslots/:id", verifyJWT, isAdmin, deleteTimeSlot);
+router.delete("/timeslots/day/:dayOfWeek", verifyJWT, isAdmin, deleteTimeSlotsForDay);
+
 router.get("/orders", verifyJWT, isAdmin, getAllOrders);
 router.get("/orders/:orderId", verifyJWT, isAdmin, getOrderDetails);
 router.patch("/orders/:orderId", verifyJWT, isAdmin, updateOrderStatus);
 router.delete("/orders/:orderId/cancel", verifyJWT, isAdmin, cancelOrder);
+router.patch("/orders/:orderId/edit/update", verifyJWT, isAdmin, updateOrderDetails);
+router.get("/orders/:orderId/edit", verifyJWT, isAdmin, getOrderForEdit);
+router.delete("/orders/:orderId/edit/items/:itemId", verifyJWT, isAdmin, deleteOrderItem);
+router.post("/orders/:orderId/edit/items", verifyJWT, isAdmin, addOrderItem);
+router.get("/orders/:orderId/edit/items", verifyJWT, isAdmin, getMenu);
 
 router.get("/dashboard", verifyJWT, isAdmin, getDashboardStats);
 router.get("/revenue-report", verifyJWT, isAdmin, getRevenueReport);

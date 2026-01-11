@@ -73,6 +73,8 @@ export default function MenuPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -82,7 +84,19 @@ export default function MenuPage() {
     waitingTime: "15",
     isVeg: true,
   });
+  
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    categoryId: "",
+    waitingTime: "15",
+    isVeg: true,
+    isAvailable: true,
+  });
+  
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     fetchMenuItems();
@@ -253,6 +267,88 @@ export default function MenuPage() {
     } catch (error) {
       console.error("Error deleting menu item:", error);
       toast.error("Error deleting menu item");
+    }
+  };
+
+  // Open edit dialog with item data
+  const openEditDialog = (item: MenuItem) => {
+    setEditingItem(item);
+    setEditFormData({
+      name: item.name,
+      description: item.description || "",
+      price: item.price,
+      categoryId: item.categoryId ? String(item.categoryId) : "",
+      waitingTime: String(item.waitingTime),
+      isVeg: item.isVeg,
+      isAvailable: item.isAvailable,
+    });
+    setEditImageFile(null);
+    setIsEditDialogOpen(true);
+  };
+
+  // Handle edit form input changes
+  const handleEditInputChange = (field: string, value: string | boolean) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Handle edit image change
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setEditImageFile(e.target.files[0]);
+    }
+  };
+
+  // Submit edit form
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", editFormData.name);
+      formDataToSend.append("description", editFormData.description);
+      formDataToSend.append("price", editFormData.price);
+      if (editFormData.categoryId) {
+        formDataToSend.append("categoryId", editFormData.categoryId);
+      }
+      formDataToSend.append("waitingTime", editFormData.waitingTime);
+      formDataToSend.append("isVeg", String(editFormData.isVeg));
+      formDataToSend.append("isAvailable", String(editFormData.isAvailable));
+
+      if (editImageFile) {
+        formDataToSend.append("imageUrl", editImageFile);
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/menu/${editingItem.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          body: formDataToSend,
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Menu item updated successfully!");
+        setIsEditDialogOpen(false);
+        setEditingItem(null);
+        setEditImageFile(null);
+        fetchMenuItems();
+      } else {
+        toast.error(data.message || "Failed to update menu item");
+      }
+    } catch (error) {
+      console.error("Error updating menu item:", error);
+      toast.error("Error updating menu item");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -484,6 +580,13 @@ export default function MenuPage() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => openEditDialog(item)}
+                      >
+                        <Pencil className="w-4 h-4 text-black" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => deleteMenuItem(item.id)}
                       >
                         <Trash2 className="w-4 h-4 text-red-600" />
@@ -496,6 +599,166 @@ export default function MenuPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Edit Menu Item Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Edit Menu Item
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit}>
+            <div className="grid gap-4 py-4">
+              {/* Current Image Preview */}
+              {editingItem?.imageUrl && !editImageFile && (
+                <div className="flex justify-center">
+                  <img
+                    src={editingItem.imageUrl}
+                    alt={editingItem.name}
+                    className="w-24 h-24 rounded-lg object-cover border"
+                  />
+                </div>
+              )}
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-name">Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={editFormData.name}
+                  onChange={(e) => handleEditInputChange("name", e.target.value)}
+                  placeholder="e.g., Margherita Pizza"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editFormData.description}
+                  onChange={(e) =>
+                    handleEditInputChange("description", e.target.value)
+                  }
+                  placeholder="Brief description of the item"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-price">Price (₹) *</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    step="0.01"
+                    value={editFormData.price}
+                    onChange={(e) =>
+                      handleEditInputChange("price", e.target.value)
+                    }
+                    placeholder="299"
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-waitingTime">Waiting Time (min) *</Label>
+                  <Input
+                    id="edit-waitingTime"
+                    type="number"
+                    value={editFormData.waitingTime}
+                    onChange={(e) =>
+                      handleEditInputChange("waitingTime", e.target.value)
+                    }
+                    placeholder="15"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-category">Category</Label>
+                <Select
+                  value={editFormData.categoryId}
+                  onValueChange={(value) =>
+                    handleEditInputChange("categoryId", value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={String(cat.id)}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-image">Update Image</Label>
+                <Input
+                  id="edit-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEditImageChange}
+                />
+                {editImageFile && (
+                  <p className="text-sm text-gray-500">
+                    New image selected: {editImageFile.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <Label htmlFor="edit-isVeg" className="cursor-pointer">
+                  Vegetarian Item
+                </Label>
+                <Switch
+                  id="edit-isVeg"
+                  checked={editFormData.isVeg}
+                  onCheckedChange={(checked) =>
+                    handleEditInputChange("isVeg", checked)
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <Label htmlFor="edit-isAvailable" className="cursor-pointer">
+                  Available for Order
+                </Label>
+                <Switch
+                  id="edit-isAvailable"
+                  checked={editFormData.isAvailable}
+                  onCheckedChange={(checked) =>
+                    handleEditInputChange("isAvailable", checked)
+                  }
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                {isSubmitting ? "Updating..." : "Update Item"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

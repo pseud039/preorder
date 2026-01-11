@@ -7,6 +7,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { transporter } from "../../utils/email/emailConfig.js";
 import { emailTemplates } from "../../utils/email/emailTemplates.js";
+import Restraunt_ID from "../../utils/constant.js";
 
 export const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -212,7 +213,8 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 export const createAdmin = asyncHandler(async (req, res) => {
-  const { email, password, name, phone, restaurantId } = req.body;
+  const { email, password, name, phone } = req.body;
+  const restaurantId = Restraunt_ID
 
   if (!email || !password || !name || !phone || !restaurantId) {
     throw new ApiError(400, "All fields are required");
@@ -232,7 +234,7 @@ export const createAdmin = asyncHandler(async (req, res) => {
   }
 
   const restaurant = await prisma.restaurant.findUnique({
-    where: { id: parseInt(restaurantId) },
+    where: { id: restaurantId },
   });
 
   if (!restaurant) {

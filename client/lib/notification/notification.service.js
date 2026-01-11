@@ -31,7 +31,6 @@ self.addEventListener('push', function(event) {
       ]
     };
 
-    // Make ORDER_READY and PAYMENT_REQUIRED require user interaction
     if (data.data?.type === 'ORDER_READY' || data.data?.type === 'PAYMENT_REQUIRED') {
       options.requireInteraction = true;
     }

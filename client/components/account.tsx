@@ -48,6 +48,8 @@ export default function Account() {
       );
       const data = await response.json();
       
+      console.log('User details API response:', data); // Debug log
+      
       if (data.success) {
         setUser(data.data);
         setFormData({
@@ -209,21 +211,13 @@ export default function Account() {
                 <label className="text-xs text-gray-500 font-medium block mb-1">
                   Phone Number
                 </label>
-                {editMode ? (
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    placeholder="Enter 10-digit phone"
-                    maxLength={10}
-                  />
-                ) : (
+                
+                 
                   <div className="flex items-center justify-between">
                     <p className="text-gray-900 font-medium">
                       {user?.phone || 'Not set'}
                     </p>
-                    {user?.phone && (
+                    {
                       user?.phoneVerified ? (
                         <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
                           <Check className="w-3 h-3" />
@@ -235,9 +229,9 @@ export default function Account() {
                           Not Verified
                         </span>
                       )
-                    )}
+                    }
                   </div>
-                )}
+                
               </div>
             </div>
           </div>
@@ -289,7 +283,7 @@ export default function Account() {
 
           {/* Orders */}
           <button
-            onClick={() => router.push('/orders')}
+            onClick={() => router.push('/order-history')}
             className="w-full bg-white rounded-2xl shadow-md p-4 flex items-center justify-between hover:shadow-lg transition-shadow"
           >
             <div className="flex items-center gap-3">

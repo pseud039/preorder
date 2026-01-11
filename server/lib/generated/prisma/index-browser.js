@@ -129,6 +129,7 @@ exports.Prisma.RestaurantScalarFieldEnum = {
   imageUrl: 'imageUrl',
   isActive: 'isActive',
   commissionRate: 'commissionRate',
+  taxRate: 'taxRate',
   baseWaitingTimeMultiplier: 'baseWaitingTimeMultiplier',
   fixedAdditionalTime: 'fixedAdditionalTime',
   createdAt: 'createdAt',
@@ -395,6 +396,7 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
 
 exports.RestaurantOrderStatus = exports.$Enums.RestaurantOrderStatus = {
   Pending: 'Pending',
+  Updated: 'Updated',
   Accepted: 'Accepted',
   Rejected: 'Rejected',
   Preparing: 'Preparing',

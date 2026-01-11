@@ -2,36 +2,60 @@ import { prisma } from "../lib/prisma.js";
 
 export class OrderService {
 
-  static generateTimeSlots(estimatedWaitingTime, slotsCount = 8) {
-  const slots = [];
-  const now = new Date();
-  
-  const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
-  
-  const minutes = earliestPickupTime.getMinutes();
-  const roundedMinutes = Math.ceil(minutes / 30) * 30;
-  earliestPickupTime.setMinutes(roundedMinutes);
-  earliestPickupTime.setSeconds(0);
-  earliestPickupTime.setMilliseconds(0);
-  
-  for (let i = 0; i < slotsCount; i++) {
-    const slotStart = new Date(earliestPickupTime.getTime() + i * 30 * 60 * 1000);
-    const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000);
+  /**
+   * Generates time slots and stores them in the database if they don't exist.
+   * Returns slots with actual database IDs for proper order association.
+   */
+  static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8) {
+    const slots = [];
+    const now = new Date();
     
-    slots.push({
-      id: `dynamic_${slotStart.getTime()}`,
-      slotStart: slotStart.toISOString(), 
-      slotEnd: slotEnd.toISOString(),     
-      label: this.formatTimeRange(slotStart, slotEnd),
-      isAvailable: true,
-      isDynamic: true,
-      remainingSlots: 10, 
-      isFull: false
-    });
+    const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
+    
+    const minutes = earliestPickupTime.getMinutes();
+    const roundedMinutes = Math.ceil(minutes / 30) * 30;
+    earliestPickupTime.setMinutes(roundedMinutes);
+    earliestPickupTime.setSeconds(0);
+    earliestPickupTime.setMilliseconds(0);
+    
+    for (let i = 0; i < slotsCount; i++) {
+      const slotStart = new Date(earliestPickupTime.getTime() + i * 30 * 60 * 1000);
+      const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000);
+      const dayOfWeek = slotStart.getDay();
+      
+      // Find or create the slot in the database
+      let dbSlot = await prisma.timeSlot.findFirst({
+        where: {
+          slotStart: slotStart,
+          slotEnd: slotEnd,
+        },
+      });
+      
+      if (!dbSlot) {
+        dbSlot = await prisma.timeSlot.create({
+          data: {
+            slotStart: slotStart,
+            slotEnd: slotEnd,
+            dayOfWeek: dayOfWeek,
+            isAvailable: true,
+            bookedCount: 0,
+          },
+        });
+      }
+      
+      slots.push({
+        id: dbSlot.id, // Use actual database ID
+        slotStart: slotStart.toISOString(), 
+        slotEnd: slotEnd.toISOString(),     
+        label: this.formatTimeRange(slotStart, slotEnd),
+        isAvailable: dbSlot.isAvailable,
+        remainingSlots: 30 - dbSlot.bookedCount, // Assuming capacity of 30
+        isFull: dbSlot.bookedCount >= 30,
+      });
+    }
+    
+    return slots;
   }
-  
-  return slots;
-}
 
   static formatTimeRange(start, end) {
     const formatTime = (date) => {
@@ -246,3 +270,32 @@ export class OrderService {
     };
   }
 }
+// utils/orderCalculations.js
+export const calculateOrderTotals = async (orderItems, restaurantId) => {
+  // Get restaurant tax rate
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+    select: { taxRate: true },
+  });
+
+  const taxRate = restaurant?.taxRate || 0.05; // Default 5%
+
+  // Calculate subtotal
+  const subtotal = orderItems.reduce(
+    (sum, item) => sum + (item.price * item.quantity),
+    0
+  );
+
+  // Calculate tax
+  const tax = Math.round(subtotal * taxRate * 100) / 100; // Round to 2 decimals
+
+  // Calculate total
+  const totalAmount = subtotal + tax;
+
+  return {
+    subtotal,
+    tax,
+    taxRate,
+    totalAmount,
+  };
+};

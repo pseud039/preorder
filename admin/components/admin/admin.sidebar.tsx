@@ -29,13 +29,13 @@ const items = [
     icon: Inbox,
   },
   {
-    title: "Customers",
-    url: "/admin/customers",
+    title: "Time Slots",
+    url: "/admin/timeslot",
     icon: Search,
   },
   {
-    title: "Analytics",
-    url: "/admin/analytics",
+    title: "Create-Chef",
+    url: "/admin/create-chef",
     icon: Settings,
   },
 ]

@@ -102,21 +102,30 @@ const verifyEmail = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Verification token is required");
   }
 
-  const user = await prisma.emailVerification.findFirst({
+  const emailVerification = await prisma.emailVerification.findFirst({
     where: {
       token: token,
+      expiresAt: {
+        gt: new Date(),
+      },
     },
   });
 
-  if (!user) {
+  if (!emailVerification) {
     throw new ApiError(400, "Invalid or expired verification token");
   }
 
   await prisma.user.update({
-    where: { id: user.id, role: "customer" },
+    where: { id: emailVerification.userId },
     data: {
       emailVerified: true,
+      emailVerifiedAt: new Date(),
     },
+  });
+
+  // Delete the used verification token
+  await prisma.emailVerification.delete({
+    where: { id: emailVerification.id },
   });
 
   res
@@ -148,11 +157,18 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
   const verificationToken = crypto.randomBytes(32).toString("hex");
   const expirationDate = new Date();
   expirationDate.setMinutes(expirationDate.getMinutes() + 15);
-  await prisma.user.update({
-    where: { id: user.id },
+
+  // Delete any existing verification tokens for this user
+  await prisma.emailVerification.deleteMany({
+    where: { userId: user.id },
+  });
+
+  // Create new verification token
+  const emailToken = await prisma.emailVerification.create({
     data: {
+      userId: user.id,
       token: verificationToken,
-      expiryAt: expirationDate,
+      expiresAt: expirationDate,
     },
   });
 
@@ -310,10 +326,10 @@ const login = asyncHandler(async (req, res) => {
   });
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    secure: true, // process.env.NODE_ENV === "production",
+    sameSite: "Lax",
     maxAge: 1 * 60 * 60 * 1000,
-    path: "/",
+    // path: "/",
   });
 
   const userData = {
@@ -389,10 +405,17 @@ export const refreshToken = asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 
+  // Clear user refresh tokens
+  await prisma.refreshToken.deleteMany({
+    where: { userId: userId },
+  });
+
   await prisma.user.update({
     where: { id: userId },
-    data: { refreshToken: null },
+    data: { refreshTokens: { set: [] } },
   });
+
+  res.clearCookie("accessToken");
 
   res.status(200).json(new ApiResponse(200, null, "Logged out successfully"));
 });

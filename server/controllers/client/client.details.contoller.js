@@ -4,6 +4,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { prisma } from "../../lib/prisma.js";
 import { OrderService } from "../../utils/order.service.js";
 import bcrypt from "bcrypt";
+import Restraunt_ID from "../../utils/constant.js";
 
 // const updateDetails = asyncHandler(async (req, res) => {
 //   const userId = req.userId;
@@ -57,7 +58,7 @@ import bcrypt from "bcrypt";
 // });
 
 const sendOTP = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user.id;
   const { phone } = req.body;
 
   if (!userId) {
@@ -73,30 +74,29 @@ const sendOTP = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid phone number format");
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  const hashedOTP = await bcrypt.hash(otp, 10);
-
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
+  // Delete any existing OTP records for this user
   await prisma.phoneOTP.deleteMany({
     where: { userId },
   });
 
-  // Create new OTP record
-  await prisma.phoneOTP.create({
-    data: {
-      userId,
-      phone,
-      otp: hashedOTP,
-      expiresAt,
-      verified: false,
-      attempts: 0,
-    },
-  });
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   if (process.env.NODE_ENV === "development") {
-    // Development mode - just log OTP, don't send SMS
+    // Development mode - generate local OTP for testing
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = await bcrypt.hash(otp, 10);
+
+    await prisma.phoneOTP.create({
+      data: {
+        userId,
+        phone,
+        otp: hashedOTP, // Store hashed OTP for dev mode
+        expiresAt,
+        verified: false,
+        attempts: 0,
+      },
+    });
+
     console.log("Phone:", phone);
     console.log("OTP:", otp);
 
@@ -113,31 +113,51 @@ const sendOTP = asyncHandler(async (req, res) => {
   }
 
   try {
-    const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
-      method: "POST",
-      headers: {
-        authorization: process.env.API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        route: "otp",
-        variables_values: otp,
-        flash: 0,
-        numbers: phone,
-      }),
-    });
+    const response = await fetch(
+      `https://2factor.in/API/V1/${process.env.TWOFACTOR_API_KEY}/SMS/${phone}/AUTOGEN`,
+      {
+        method: "GET",
+      }
+    );
 
     const data = await response.json();
 
-    if (!response.ok || !data.return) {
-      throw new Error(data.message || "Failed to send OTP");
+    if (data.Status !== "Success") {
+      throw new Error(data.Details || "Failed to send OTP");
     }
+
+    // Store session ID from 2factor.in for verification
+    await prisma.phoneOTP.create({
+      data: {
+        userId,
+        phone,
+        otp: data.Details, // Store session ID from 2factor.in
+        expiresAt,
+        verified: false,
+        attempts: 0,
+      },
+    });
 
     return res
       .status(200)
       .json(new ApiResponse(200, { phone }, "OTP sent successfully"));
   } catch (smsError) {
-    console.error("Fast2SMS error:", smsError);
+    console.error("2factor.in error:", smsError);
+
+    // Fallback for testing if SMS service fails
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = await bcrypt.hash(otp, 10);
+
+    await prisma.phoneOTP.create({
+      data: {
+        userId,
+        phone,
+        otp: hashedOTP,
+        expiresAt,
+        verified: false,
+        attempts: 0,
+      },
+    });
 
     console.log("Phone:", phone);
     console.log("OTP:", otp);
@@ -156,7 +176,7 @@ const sendOTP = asyncHandler(async (req, res) => {
 });
 
 const verifyOTP = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user.id;
   const { otp } = req.body;
 
   if (!userId) {
@@ -192,7 +212,31 @@ const verifyOTP = asyncHandler(async (req, res) => {
     );
   }
 
-  const isValid = await bcrypt.compare(otp, otpRecord.otp);
+  let isValid = false;
+
+  // Check if it's a 2factor.in session ID (production) or hashed OTP (dev/fallback)
+  const isSessionId = !otpRecord.otp.startsWith("$2"); // bcrypt hashes start with $2
+
+  if (process.env.NODE_ENV === "development" || !isSessionId) {
+    // Dev mode or fallback - verify using bcrypt
+    isValid = await bcrypt.compare(otp, otpRecord.otp);
+  } else {
+    // Production - verify using 2factor.in API
+    try {
+      const response = await fetch(
+        `https://2factor.in/API/V1/${process.env.TWOFACTOR_API_KEY}/SMS/VERIFY/${otpRecord.otp}/${otp}`,
+        {
+          method: "GET",
+        }
+      );
+
+      const data = await response.json();
+      isValid = data.Status === "Success";
+    } catch (error) {
+      console.error("2factor.in verification error:", error);
+      throw new ApiError(500, "OTP verification service unavailable");
+    }
+  }
 
   if (!isValid) {
     await prisma.phoneOTP.update({
@@ -211,6 +255,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
   await prisma.user.update({
     where: { id: userId },
     data: {
+      phone: otpRecord.phone,
       phoneVerified: true,
       phoneVerifiedAt: new Date(),
     },
@@ -224,7 +269,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
 });
 
 const resendOTP = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user.id;
 
   if (!userId) {
     throw new ApiError(401, "Unauthorized - Session expired");
@@ -275,6 +320,7 @@ const getDetails = asyncHandler(async (req, res) => {
       phone: true,
       role: true,
       emailVerified: true,
+      phoneVerified:true,
       isActive: true,
       createdAt: true,
     },
@@ -290,7 +336,7 @@ const getDetails = asyncHandler(async (req, res) => {
 });
 
 const getAvailableTimeSlots = asyncHandler(async (req, res) => {
-  const restaurantIde = 3;
+  const restaurantIde = Restraunt_ID;
   const userId = req.user.id;
   // const userId = 23;
 
@@ -336,7 +382,7 @@ const getAvailableTimeSlots = asyncHandler(async (req, res) => {
 
   const estimatedWaitingTime = Math.round(maxWaitingTime);
 
-  const slots = OrderService.generateTimeSlots(estimatedWaitingTime);
+  const slots = await OrderService.generateTimeSlots(estimatedWaitingTime);
 
   res.status(200).json(
     new ApiResponse(
@@ -352,7 +398,7 @@ const getAvailableTimeSlots = asyncHandler(async (req, res) => {
 });
 
 const selectTimeSlot = asyncHandler(async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user.id;
   const { slotId } = req.body;
 
   if (!userId) {

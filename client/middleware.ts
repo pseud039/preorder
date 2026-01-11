@@ -1,0 +1,28 @@
+import { NextResponse, NextRequest } from "next/server";
+
+export default function middleware(request: NextRequest) {
+  const reqUrl = new URL(request.url);
+
+  // These routes would redirect to /dashboard if the user is authenticated
+  const publicRoutes = ["/", "/login", "/signup", "/get-started"];
+
+  const isFile = reqUrl.pathname.includes(".");
+
+  if (isFile) return NextResponse.next();
+
+  if (reqUrl.pathname.startsWith("/_next/image")) return NextResponse.next();
+
+  if (publicRoutes.includes(reqUrl.pathname)) {
+    if (request.cookies.get("accessToken"))
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+  } else {
+    if (!request.cookies.get("accessToken"))
+      return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: "/(.*)",
+};

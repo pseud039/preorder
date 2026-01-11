@@ -183,6 +183,11 @@ export default function SearchPage() {
     }
   };
   return (
+    
+    <div className="max-w-md mx-auto min-h-screen relative overflow-hidden font-[inter]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
+      <div className="absolute top-40 left-0 w-64 h-64 bg-primary/30 rounded-full blur-3xl opacity-30 -ml-32 -mb-32"></div>
+      
     <div className="max-w-md mx-auto min-h-screen relative overflow-hidden font-[inter] px-2 lg:px-8 py-10">
       <div className="flex flex-row justify-center py-4">
         <div className="font-bold text-2xl">
@@ -277,6 +282,6 @@ export default function SearchPage() {
           </div>
         )}
       </div>
-    </div>
+    </div></div>
   );
 }

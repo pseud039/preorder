@@ -2,9 +2,10 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
+import Restraunt_ID from "../../utils/constant.js";
 
 export const getChefOrders = asyncHandler(async (req, res) => {
-  const restaurantId = req.user.restaurantId;
+  const restaurantId = Restraunt_ID;
   const {
     restaurantStatus,
     page = 1,
@@ -79,7 +80,7 @@ export const getChefOrders = asyncHandler(async (req, res) => {
 
 export const getChefOrderDetails = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
-  const restaurantId = req.user.restaurantId;
+  const restaurantId = Restraunt_ID;
 
   const order = await prisma.order.findFirst({
     where: {
@@ -124,7 +125,7 @@ export const getChefOrderDetails = asyncHandler(async (req, res) => {
 export const updateChefOrderStatus = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
   const { restaurantStatus } = req.body;
-  const restaurantId = req.user.restaurantId;
+  const restaurantId = Restraunt_ID;
 
   const allowedStatuses = ["Preparing", "Ready"];
   if (!allowedStatuses.includes(restaurantStatus)) {
@@ -183,7 +184,7 @@ export const updateChefOrderStatus = asyncHandler(async (req, res) => {
 
   if (restaurantStatus === "Preparing" && !order.estimatedReadyTime) {
     const restaurant = await prisma.restaurant.findUnique({
-      where: { id: restaurantId },
+      where: { id: Restraunt_ID },
       select: {
         baseWaitingTimeMultiplier: true,
         fixedAdditionalTime: true,
@@ -256,7 +257,7 @@ export const updateChefOrderStatus = asyncHandler(async (req, res) => {
 });
 
 export const getChefDashboard = asyncHandler(async (req, res) => {
-  const restaurantId = req.user.restaurantId;
+  const restaurantId = Restraunt_ID;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

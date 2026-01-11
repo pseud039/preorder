@@ -1,31 +1,3 @@
-// import express from "express";
-// import cors from "cors";
-// import cookieParser from "cookie-parser";
-// import Clientrouter from "./routes/client.route.js"
-// import MenuRouter from "./routes/menu.route.js"
-// import AdminRouter from "./routes/admin.route.js"
-
-// const app = express();
-
-// app.use(
-//   cors({
-//     origin:process.env.CORS_ORIGIN.split(",").map((e)=>e.trim()),
-//     sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-//     credentials: true,
-//   })
-// );
-
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-// app.use(express.static("public"));
-// app.use(cookieParser());
-
-// app.use("/client",Clientrouter);
-// app.use("/home",MenuRouter);
-// app.use("/admin",AdminRouter);
-
-// export { app };
-// app.js or server.js - Add this to your main server file
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
@@ -56,14 +28,36 @@ const io = new Server(server, {
   }
 });
 
-// Make io globally available for NotificationService
 global.io = io;
 
+const getAllowedOrigins = () => {
+  const origins = process.env.CORS_ORIGIN || "http://localhost:3000";
+  return origins.split(",").map(origin => origin.trim());
+};
+
+const allowedOrigins = getAllowedOrigins();
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+};
 // Middleware
-app.use(cors({
-  origin: process.env.FRONTENED_URL,
-  credentials: true
-}));
+// app.use(cors({
+//   origin: process.env.FRONTENED_URL,
+//   credentials: true
+// }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -94,7 +88,6 @@ io.on('connection', (socket) => {
 // Start CRON jobs
 startAllCrons();
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.statusCode || 500).json({

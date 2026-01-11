@@ -121,30 +121,38 @@ const getCategories = asyncHandler(async (req, res) => {
 
 const getItemDetails = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  try {
-    const menuItem = await prisma.menuItem.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        restaurant: true,
-        orderItems: {
-          include: {
-            order: true,
-          },
+
+  const menuItem = await prisma.menuItem.findUnique({
+    where: { id: parseInt(id) },
+    include: {
+      restaurant: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          address: true,
+          contactNumber: true,
+          imageUrl: true,
         },
       },
-    });
+      category: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          imageUrl: true,
+        },
+      },
+    },
+  });
 
-    if (!menuItem) {
-      throw new ApiError(404, "Menu item not found");
-    }
-
-    res
-      .status(200)
-      .json(new ApiResponse(200, "Menu item fetched successfully", menuItem));
-  } catch (error) {
-    console.error("Error fetching menu item:", error);
-    throw new ApiError(500, "Failed to fetch menu item");
+  if (!menuItem) {
+    throw new ApiError(404, "Menu item not found");
   }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, menuItem, "Menu item fetched successfully"));
 });
 
 const getMostPopular = asyncHandler(async (req, res) => {});

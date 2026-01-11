@@ -135,6 +135,7 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 
 export const RestaurantOrderStatus: {
   Pending: 'Pending',
+  Updated: 'Updated',
   Accepted: 'Accepted',
   Rejected: 'Rejected',
   Preparing: 'Preparing',
@@ -2934,6 +2935,7 @@ export namespace Prisma {
   export type RestaurantAvgAggregateOutputType = {
     id: number | null
     commissionRate: Decimal | null
+    taxRate: number | null
     baseWaitingTimeMultiplier: Decimal | null
     fixedAdditionalTime: number | null
   }
@@ -2941,6 +2943,7 @@ export namespace Prisma {
   export type RestaurantSumAggregateOutputType = {
     id: number | null
     commissionRate: Decimal | null
+    taxRate: number | null
     baseWaitingTimeMultiplier: Decimal | null
     fixedAdditionalTime: number | null
   }
@@ -2954,6 +2957,7 @@ export namespace Prisma {
     imageUrl: string | null
     isActive: boolean | null
     commissionRate: Decimal | null
+    taxRate: number | null
     baseWaitingTimeMultiplier: Decimal | null
     fixedAdditionalTime: number | null
     createdAt: Date | null
@@ -2969,6 +2973,7 @@ export namespace Prisma {
     imageUrl: string | null
     isActive: boolean | null
     commissionRate: Decimal | null
+    taxRate: number | null
     baseWaitingTimeMultiplier: Decimal | null
     fixedAdditionalTime: number | null
     createdAt: Date | null
@@ -2984,6 +2989,7 @@ export namespace Prisma {
     imageUrl: number
     isActive: number
     commissionRate: number
+    taxRate: number
     baseWaitingTimeMultiplier: number
     fixedAdditionalTime: number
     createdAt: number
@@ -2995,6 +3001,7 @@ export namespace Prisma {
   export type RestaurantAvgAggregateInputType = {
     id?: true
     commissionRate?: true
+    taxRate?: true
     baseWaitingTimeMultiplier?: true
     fixedAdditionalTime?: true
   }
@@ -3002,6 +3009,7 @@ export namespace Prisma {
   export type RestaurantSumAggregateInputType = {
     id?: true
     commissionRate?: true
+    taxRate?: true
     baseWaitingTimeMultiplier?: true
     fixedAdditionalTime?: true
   }
@@ -3015,6 +3023,7 @@ export namespace Prisma {
     imageUrl?: true
     isActive?: true
     commissionRate?: true
+    taxRate?: true
     baseWaitingTimeMultiplier?: true
     fixedAdditionalTime?: true
     createdAt?: true
@@ -3030,6 +3039,7 @@ export namespace Prisma {
     imageUrl?: true
     isActive?: true
     commissionRate?: true
+    taxRate?: true
     baseWaitingTimeMultiplier?: true
     fixedAdditionalTime?: true
     createdAt?: true
@@ -3045,6 +3055,7 @@ export namespace Prisma {
     imageUrl?: true
     isActive?: true
     commissionRate?: true
+    taxRate?: true
     baseWaitingTimeMultiplier?: true
     fixedAdditionalTime?: true
     createdAt?: true
@@ -3147,6 +3158,7 @@ export namespace Prisma {
     imageUrl: string | null
     isActive: boolean
     commissionRate: Decimal
+    taxRate: number | null
     baseWaitingTimeMultiplier: Decimal
     fixedAdditionalTime: number
     createdAt: Date
@@ -3181,6 +3193,7 @@ export namespace Prisma {
     imageUrl?: boolean
     isActive?: boolean
     commissionRate?: boolean
+    taxRate?: boolean
     baseWaitingTimeMultiplier?: boolean
     fixedAdditionalTime?: boolean
     createdAt?: boolean
@@ -3203,6 +3216,7 @@ export namespace Prisma {
     imageUrl?: boolean
     isActive?: boolean
     commissionRate?: boolean
+    taxRate?: boolean
     baseWaitingTimeMultiplier?: boolean
     fixedAdditionalTime?: boolean
     createdAt?: boolean
@@ -3218,6 +3232,7 @@ export namespace Prisma {
     imageUrl?: boolean
     isActive?: boolean
     commissionRate?: boolean
+    taxRate?: boolean
     baseWaitingTimeMultiplier?: boolean
     fixedAdditionalTime?: boolean
     createdAt?: boolean
@@ -3233,13 +3248,14 @@ export namespace Prisma {
     imageUrl?: boolean
     isActive?: boolean
     commissionRate?: boolean
+    taxRate?: boolean
     baseWaitingTimeMultiplier?: boolean
     fixedAdditionalTime?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type RestaurantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "address" | "contactNumber" | "imageUrl" | "isActive" | "commissionRate" | "baseWaitingTimeMultiplier" | "fixedAdditionalTime" | "createdAt" | "updatedAt", ExtArgs["result"]["restaurant"]>
+  export type RestaurantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "address" | "contactNumber" | "imageUrl" | "isActive" | "commissionRate" | "taxRate" | "baseWaitingTimeMultiplier" | "fixedAdditionalTime" | "createdAt" | "updatedAt", ExtArgs["result"]["restaurant"]>
   export type RestaurantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     admins?: boolean | Restaurant$adminsArgs<ExtArgs>
     chefs?: boolean | Restaurant$chefsArgs<ExtArgs>
@@ -3271,6 +3287,7 @@ export namespace Prisma {
       imageUrl: string | null
       isActive: boolean
       commissionRate: Prisma.Decimal
+      taxRate: number | null
       baseWaitingTimeMultiplier: Prisma.Decimal
       fixedAdditionalTime: number
       createdAt: Date
@@ -3712,6 +3729,7 @@ export namespace Prisma {
     readonly imageUrl: FieldRef<"Restaurant", 'String'>
     readonly isActive: FieldRef<"Restaurant", 'Boolean'>
     readonly commissionRate: FieldRef<"Restaurant", 'Decimal'>
+    readonly taxRate: FieldRef<"Restaurant", 'Float'>
     readonly baseWaitingTimeMultiplier: FieldRef<"Restaurant", 'Decimal'>
     readonly fixedAdditionalTime: FieldRef<"Restaurant", 'Int'>
     readonly createdAt: FieldRef<"Restaurant", 'DateTime'>
@@ -25550,6 +25568,7 @@ export namespace Prisma {
     imageUrl: 'imageUrl',
     isActive: 'isActive',
     commissionRate: 'commissionRate',
+    taxRate: 'taxRate',
     baseWaitingTimeMultiplier: 'baseWaitingTimeMultiplier',
     fixedAdditionalTime: 'fixedAdditionalTime',
     createdAt: 'createdAt',
@@ -25921,6 +25940,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -26030,20 +26063,6 @@ export namespace Prisma {
    */
   export type ListEnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType[]'>
     
-
-
-  /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
   /**
    * Deep Input Types
    */
@@ -26061,6 +26080,7 @@ export namespace Prisma {
     imageUrl?: StringNullableFilter<"Restaurant"> | string | null
     isActive?: BoolFilter<"Restaurant"> | boolean
     commissionRate?: DecimalFilter<"Restaurant"> | Decimal | DecimalJsLike | number | string
+    taxRate?: FloatNullableFilter<"Restaurant"> | number | null
     baseWaitingTimeMultiplier?: DecimalFilter<"Restaurant"> | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFilter<"Restaurant"> | number
     createdAt?: DateTimeFilter<"Restaurant"> | Date | string
@@ -26082,6 +26102,7 @@ export namespace Prisma {
     imageUrl?: SortOrderInput | SortOrder
     isActive?: SortOrder
     commissionRate?: SortOrder
+    taxRate?: SortOrderInput | SortOrder
     baseWaitingTimeMultiplier?: SortOrder
     fixedAdditionalTime?: SortOrder
     createdAt?: SortOrder
@@ -26106,6 +26127,7 @@ export namespace Prisma {
     imageUrl?: StringNullableFilter<"Restaurant"> | string | null
     isActive?: BoolFilter<"Restaurant"> | boolean
     commissionRate?: DecimalFilter<"Restaurant"> | Decimal | DecimalJsLike | number | string
+    taxRate?: FloatNullableFilter<"Restaurant"> | number | null
     baseWaitingTimeMultiplier?: DecimalFilter<"Restaurant"> | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFilter<"Restaurant"> | number
     createdAt?: DateTimeFilter<"Restaurant"> | Date | string
@@ -26127,6 +26149,7 @@ export namespace Prisma {
     imageUrl?: SortOrderInput | SortOrder
     isActive?: SortOrder
     commissionRate?: SortOrder
+    taxRate?: SortOrderInput | SortOrder
     baseWaitingTimeMultiplier?: SortOrder
     fixedAdditionalTime?: SortOrder
     createdAt?: SortOrder
@@ -26150,6 +26173,7 @@ export namespace Prisma {
     imageUrl?: StringNullableWithAggregatesFilter<"Restaurant"> | string | null
     isActive?: BoolWithAggregatesFilter<"Restaurant"> | boolean
     commissionRate?: DecimalWithAggregatesFilter<"Restaurant"> | Decimal | DecimalJsLike | number | string
+    taxRate?: FloatNullableWithAggregatesFilter<"Restaurant"> | number | null
     baseWaitingTimeMultiplier?: DecimalWithAggregatesFilter<"Restaurant"> | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntWithAggregatesFilter<"Restaurant"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Restaurant"> | Date | string
@@ -27605,6 +27629,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -27626,6 +27651,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -27646,6 +27672,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27667,6 +27694,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27688,6 +27716,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -27702,6 +27731,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27717,6 +27747,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29258,6 +29289,17 @@ export namespace Prisma {
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -29343,6 +29385,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     isActive?: SortOrder
     commissionRate?: SortOrder
+    taxRate?: SortOrder
     baseWaitingTimeMultiplier?: SortOrder
     fixedAdditionalTime?: SortOrder
     createdAt?: SortOrder
@@ -29352,6 +29395,7 @@ export namespace Prisma {
   export type RestaurantAvgOrderByAggregateInput = {
     id?: SortOrder
     commissionRate?: SortOrder
+    taxRate?: SortOrder
     baseWaitingTimeMultiplier?: SortOrder
     fixedAdditionalTime?: SortOrder
   }
@@ -29365,6 +29409,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     isActive?: SortOrder
     commissionRate?: SortOrder
+    taxRate?: SortOrder
     baseWaitingTimeMultiplier?: SortOrder
     fixedAdditionalTime?: SortOrder
     createdAt?: SortOrder
@@ -29380,6 +29425,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     isActive?: SortOrder
     commissionRate?: SortOrder
+    taxRate?: SortOrder
     baseWaitingTimeMultiplier?: SortOrder
     fixedAdditionalTime?: SortOrder
     createdAt?: SortOrder
@@ -29389,6 +29435,7 @@ export namespace Prisma {
   export type RestaurantSumOrderByAggregateInput = {
     id?: SortOrder
     commissionRate?: SortOrder
+    taxRate?: SortOrder
     baseWaitingTimeMultiplier?: SortOrder
     fixedAdditionalTime?: SortOrder
   }
@@ -29467,6 +29514,22 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -30807,6 +30870,14 @@ export namespace Prisma {
     divide?: Decimal | DecimalJsLike | number | string
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -32124,6 +32195,17 @@ export namespace Prisma {
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -32231,6 +32313,22 @@ export namespace Prisma {
     _max?: NestedDecimalFilter<$PrismaModel>
   }
 
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -32301,17 +32399,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumOrderStatusFilter<$PrismaModel = never> = {
@@ -33571,6 +33658,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -33591,6 +33679,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -33686,6 +33775,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33706,6 +33796,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33779,6 +33870,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -33799,6 +33891,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -33894,6 +33987,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33914,6 +34008,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33933,6 +34028,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -33953,6 +34049,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -34031,6 +34128,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34051,6 +34149,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34086,6 +34185,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -34106,6 +34206,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -34221,6 +34322,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34241,6 +34343,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34690,6 +34793,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -34710,6 +34814,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -34916,6 +35021,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34936,6 +35042,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35802,6 +35909,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -35822,6 +35930,7 @@ export namespace Prisma {
     imageUrl?: string | null
     isActive?: boolean
     commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
     baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: number
     createdAt?: Date | string
@@ -35911,6 +36020,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35931,6 +36041,7 @@ export namespace Prisma {
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
     baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

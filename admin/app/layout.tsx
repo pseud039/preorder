@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/admin/admin.sidebar";
 import { ThemeProvider } from "@/components/themeSwitch";
 import Navbar from "@/components/header";
+import { NotificationListener } from '@/components/notificationListener';
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -45,6 +46,7 @@ export default function RootLayout({
 
           {children}
       </main>
+            <NotificationListener />
       <Toaster position="top-center"/>
       </body>
     </html>

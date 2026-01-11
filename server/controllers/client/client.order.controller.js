@@ -4,6 +4,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { NotificationService } from "../../utils/notification/notification.service.js";
 import crypto from "crypto";
+import Restraunt_ID from "../../utils/constant.js";
 
 async function getCartWithDetails(cartId) {
   return prisma.cart.findUnique({
@@ -40,9 +41,13 @@ async function getCartWithDetails(cartId) {
 
 const getCart = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-
+  const restaurantId = Restraunt_ID;
+  
   let cart = await prisma.cart.findFirst({
-    where: { userId },
+    where: { 
+      userId,
+      restaurantId 
+    },
     include: {
       items: {
         include: {
@@ -75,7 +80,10 @@ const getCart = asyncHandler(async (req, res) => {
 
   if (!cart) {
     cart = await prisma.cart.create({
-      data: { userId },
+      data: { 
+        userId,
+        restaurantId 
+      },
       include: {
         items: true,
       },
@@ -171,40 +179,20 @@ const addToCart = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Restaurant is currently closed");
   }
 
-  const existingCart = await prisma.cart.findFirst({
+  const restaurantId = Restraunt_ID;
+
+  let cart = await prisma.cart.findFirst({
     where: {
       userId,
-    },
-    include: {
-      items: {
-        include: {
-          menuItem: {
-            include: {
-              restaurant: true,
-            },
-          },
-        },
-      },
+      restaurantId,
     },
   });
 
-  if (existingCart && existingCart.restaurantId !== menuItem.restaurantId) {
-    const cartRestaurantName =
-      existingCart.items[0]?.menuItem?.restaurant?.name || "another restaurant";
-    throw new ApiError(
-      400,
-      `You have items from ${cartRestaurantName}. Please clear your cart to order from a different restaurant.`
-    );
-  }
-
-  let cart;
-  if (existingCart) {
-    cart = existingCart;
-  } else {
+  if (!cart) {
     cart = await prisma.cart.create({
       data: {
         userId,
-        restaurantId: menuItem.restaurantId,
+        restaurantId,
       },
     });
   }
@@ -389,7 +377,7 @@ const removeFromCart = asyncHandler(async (req, res) => {
   if (remainingItems === 0) {
     await prisma.cart.update({
       where: { id: cartItem.cartId },
-      data: { restaurantId: null },
+      data: { restaurantId: Restraunt_ID },
     });
   }
 
@@ -417,9 +405,13 @@ const removeFromCart = asyncHandler(async (req, res) => {
 
 const clearCart = asyncHandler(async (req, res) => {
   const userId = req.user.id;
+  const restaurantId = Restraunt_ID;
 
   const cart = await prisma.cart.findFirst({
-    where: { userId },
+    where: { 
+      userId,
+      restaurantId 
+    },
   });
 
   if (!cart) {
@@ -428,11 +420,6 @@ const clearCart = asyncHandler(async (req, res) => {
 
   await prisma.cartItem.deleteMany({
     where: { cartId: cart.id },
-  });
-
-  await prisma.cart.update({
-    where: { id: cart.id },
-    data: { restaurantId: null },
   });
 
   res.status(200).json(new ApiResponse(200, null, "Cart cleared successfully"));
@@ -501,6 +488,23 @@ const createOrder = asyncHandler(async (req, res) => {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 2 * 60 * 1000); // 2 minutes
 
+  // Validate timeSlotId if provided
+  const parsedTimeSlotId = timeSlotId ? parseInt(timeSlotId) : null;
+  
+  if (parsedTimeSlotId) {
+    const slot = await prisma.timeSlot.findUnique({
+      where: { id: parsedTimeSlotId },
+    });
+    
+    if (!slot) {
+      throw new ApiError(404, "Selected time slot not found");
+    }
+    
+    if (!slot.isAvailable || slot.bookedCount >= 10) {
+      throw new ApiError(400, "Selected time slot is no longer available");
+    }
+  }
+
   const order = await prisma.$transaction(async (tx) => {
     const newOrder = await tx.order.create({
       data: {
@@ -513,9 +517,19 @@ const createOrder = asyncHandler(async (req, res) => {
         paymentStatus: "pending",
         expiresAt,
         notes: notes || null,
-        timeSlotId: timeSlotId ? parseInt(timeSlotId) : null,
+        timeSlotId: parsedTimeSlotId,
       },
     });
+
+    // Increment bookedCount on the time slot
+    if (parsedTimeSlotId) {
+      await tx.timeSlot.update({
+        where: { id: parsedTimeSlotId },
+        data: {
+          bookedCount: { increment: 1 },
+        },
+      });
+    }
 
     const orderItemsData = cart.items.map((item) => ({
       orderId: newOrder.id,
@@ -535,7 +549,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
     await tx.cart.update({
       where: { id: cart.id },
-      data: { restaurantId: 3 },
+      data: { restaurantId: Restraunt_ID },
     });
 
     return newOrder;
@@ -591,6 +605,18 @@ const createOrder = asyncHandler(async (req, res) => {
         },
       });
     }
+    await NotificationService.sendToAdmin({
+    restaurantId: Restraunt_ID,
+    type: 'ORDER_PLACED',
+    title: ' New Order Received!',
+    message: `Order #${order.id} - ₹${order.totalAmount}`,
+    data: {
+      orderId: order.id,
+      orderTotal: order.totalAmount,
+      customerName: order.user.name,
+      userId: order.userId
+    }
+  });
   } catch (notifError) {
     console.error("Failed to send notification:", notifError);
   }
@@ -608,14 +634,14 @@ const createOrder = asyncHandler(async (req, res) => {
 
 const verifyPayment = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } =
+  const { orderId, paytmOrderId, paytmTxnId, paytmParams } =
     req.body;
 
   const order = await prisma.order.findFirst({
     where: {
       id: parseInt(orderId),
       userId,
-      paymentOrderId: razorpayOrderId, 
+      paymentOrderId: paytmOrderId, 
     },
   });
 
@@ -623,13 +649,13 @@ const verifyPayment = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Order not found");
   }
 
-  const body = razorpayOrderId + "|" + razorpayPaymentId;
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(body.toString())
-    .digest("hex");
-
-  const isAuthentic = expectedSignature === razorpaySignature;
+  // Verify checksum using PaytmChecksum
+  const PaytmChecksum = (await import("paytmchecksum")).default;
+  const isAuthentic = await PaytmChecksum.verifySignature(
+    paytmParams,
+    process.env.PAYTM_MERCHANT_KEY,
+    paytmParams.CHECKSUMHASH
+  );
 
   if (!isAuthentic) {
     await prisma.$transaction(async (tx) => {
@@ -673,7 +699,7 @@ const verifyPayment = asyncHandler(async (req, res) => {
     await tx.payment.updateMany({
       where: { orderId: order.id },
       data: {
-        gatewayPaymentId: razorpayPaymentId,
+        gatewayPaymentId: paytmTxnId,
         status: "paid",
       },
     });

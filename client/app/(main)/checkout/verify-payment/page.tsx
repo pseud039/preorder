@@ -1,5 +1,5 @@
-export default function verifyPage(){
-    return(
-        <VerificationPage/>
-    )
+import VerificationPage from "@/components/verificationPage";
+
+export default function verifyPage() {
+  return <VerificationPage />;
 }

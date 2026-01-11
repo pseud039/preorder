@@ -52,4 +52,21 @@ self.addEventListener("install", (event) => {
   );
 });
 
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  const payload = event.data.json();
+
+  console.log("Push received:", payload);
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/badge.png",
+      data: payload.data,
+    })
+  );
+});
+
 serwist.addEventListeners();

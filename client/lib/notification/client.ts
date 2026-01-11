@@ -1,5 +1,3 @@
-// lib/notification/client.ts
-
 'use client';
 
 import type { 
@@ -66,7 +64,7 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
       scope: '/'
     });
     
-    console.log('  Service Worker registered');
+    console.log('Service Worker registered');
 
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
@@ -84,7 +82,7 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
 
     return registration;
   } catch (error) {
-    console.error('  Service Worker registration failed:', error);
+    console.error('Service Worker registration failed:', error);
     return null;
   }
 };
@@ -93,13 +91,11 @@ export const subscribeToPushNotifications = async (accessToken: string): Promise
   try {
     console.log('  Starting push subscription...');
 
-    // 1. Request permission
     const hasPermission = await requestNotificationPermission();
     if (!hasPermission) {
       throw new Error('Notification permission denied');
     }
 
-    // 2. Register service worker
     let registration = await navigator.serviceWorker.ready;
     if (!registration) {
       const reg = await registerServiceWorker();
@@ -109,7 +105,6 @@ export const subscribeToPushNotifications = async (accessToken: string): Promise
       registration = await navigator.serviceWorker.ready;
     }
 
-    // 3. Get VAPID public key from backend
     const keyResponse = await fetch(`${API_BASE_URL}/api/client/notifications/vapid-public-key`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`
@@ -123,7 +118,6 @@ export const subscribeToPushNotifications = async (accessToken: string): Promise
     const keyData: ApiResponse<VapidKeyResponse> = await keyResponse.json();
     const vapidPublicKey = keyData.data.publicKey;
 
-    // 4. Check if already subscribed
     let subscription = await registration.pushManager.getSubscription();
     
     if (subscription) {
@@ -131,7 +125,6 @@ export const subscribeToPushNotifications = async (accessToken: string): Promise
       await subscription.unsubscribe();
     }
 
-    // 5. Subscribe to push
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: vapidPublicKey

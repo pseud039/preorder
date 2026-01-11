@@ -7,6 +7,7 @@ import {
   ShoppingBag,
   ArrowLeft,
   Loader2,
+  Ghost,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -14,6 +15,7 @@ import UserDetailsModal from "@/components/detailsModal";
 import OTPVerificationModal from "@/components/verificationModal";
 import TimeSlotModal from "@/components/slotBookingModal";
 import { fetchWithAuth } from "@/lib/auth";
+import { Button } from "./ui/button";
 
 interface MenuItem {
   id: number;
@@ -52,6 +54,7 @@ interface Cart {
 interface UserDetails {
   name: string;
   phone: string;
+  phoneVerified: boolean;
 }
 
 interface ApiResponse {
@@ -109,6 +112,7 @@ export default function CartPage() {
         setUserDetails({
           name: data.data.name || "",
           phone: data.data.phone || "",
+          phoneVerified: data.data.phoneVerified || false,
         });
       }
     } catch (error) {
@@ -322,8 +326,16 @@ export default function CartPage() {
       return;
     }
 
+    // If no name or phone, show details modal
     if (!userDetails?.name || !userDetails?.phone) {
       setShowUserDetailsModal(true);
+      return;
+    }
+
+    // If phone exists but not verified, show OTP modal
+    if (!userDetails?.phoneVerified) {
+      setTempPhone(userDetails.phone);
+      setShowOTPModal(true);
       return;
     }
 
@@ -340,7 +352,10 @@ export default function CartPage() {
   const handleOTPSuccess = () => {
     setShowOTPModal(false);
     toast.success("Phone verified successfully!");
-    checkUserDetails();
+    // Update local state to mark phone as verified
+    if (userDetails) {
+      setUserDetails({ ...userDetails, phoneVerified: true });
+    }
     setShowTimeSlotModal(true);
   };
 
@@ -373,9 +388,8 @@ export default function CartPage() {
         throw new Error(data.message || "Failed to create order");
       }
 
-      toast.success("Order created! Proceeding to payment...");
-
-      router.push(`/checkout/payment?orderId=${data.data.order.id}`);
+      toast.success("Order created!");
+      router.push(`/cart/confirmation?orderId=${data.data.order.id}`);
     } catch (error: any) {
       console.error("Error creating order:", error);
       toast.error(error.message || "Failed to create order");
@@ -395,170 +409,177 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto pb-20 pt-5">
-      <div className="flex items-center justify-between px-6 pt-6 pb-4">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          aria-label="Go back"
-        >
-          <ArrowLeft className="w-6 h-6 text-gray-700" />
-        </button>
-        <h1 className="text-2xl font-bold text-gray-900">Cart</h1>
-        {cart && cart.items.length > 0 && (
-          <button
-            onClick={clearCart}
-            className="text-sm text-red-500 hover:text-red-700"
-          >
-            Clear All
-          </button>
-        )}
-        {(!cart || cart.items.length === 0) && <div className="w-10" />}
-      </div>
+    <div className="max-w-md mx-auto  relative overflow-hidden font-[inter]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
+      <div className="absolute top-40 left-0 w-64 h-64 bg-primary/30 rounded-full blur-3xl opacity-30 -ml-32 -mb-32"></div>
 
-      <div className="flex-1 px-6 py-6 pb-32 overflow-y-auto">
-        {!cart || cart.items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-96">
-            <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Your cart is empty
-            </h2>
-            <p className="text-gray-600 text-center mb-6">
-              Add items from our menu to get started
-            </p>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-full transition-colors"
+      <div className="bg-white flex flex-col max-w-md mx-auto">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-700" />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900">Cart</h1>
+          {cart && cart.items.length > 0 && (
+            <Button
+            variant="ghost"
+              onClick={clearCart}
+              className=" text-red-500 py-1 px-2"
             >
-              Continue Shopping
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {cart.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex gap-4 bg-gray-50 rounded-lg p-4 relative"
+              Clear 
+            </Button>
+          )}
+          {(!cart || cart.items.length === 0) && <div className="w-10" />}
+        </div>
+
+        <div className="flex-1 px-6 py-6 overflow-y-auto">
+          {!cart || cart.items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-96">
+              <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Your cart is empty
+              </h2>
+              <p className="text-gray-600 text-center mb-6">
+                Add items from our menu to get started
+              </p>
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-full transition-colors cursor-pointer"
               >
-                {updating === item.id && (
-                  <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg">
-                    <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
-                  </div>
-                )}
-                <img
-                  src={item.menuItem.imageUrl || "/placeholder-food.jpg"}
-                  alt={item.menuItem.name}
-                  className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder-food.jpg";
-                  }}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-semibold text-gray-900 truncate">
-                      {item.menuItem.name}
-                    </h3>
-                    {item.menuItem.isVeg && (
-                      <div className="w-4 h-4 border-2 border-green-600 rounded flex items-center justify-center flex-shrink-0 ml-2">
-                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                Continue Shopping
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {cart.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex gap-4 rounded-lg p-4 relative bg-white/70 backdrop-blur-md shadow-md border-[#E5E7EB] border"
+                >
+                  {updating === item.id && (
+                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg">
+                      <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+                    </div>
+                  )}
+                  <img
+                    src={item.menuItem.imageUrl || "/placeholder-food.jpg"}
+                    alt={item.menuItem.name}
+                    className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder-food.jpg";
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-semibold text-gray-900 truncate">
+                        {item.menuItem.name}
+                      </h3>
+                      {item.menuItem.isVeg && (
+                        <div className="w-4 h-4 border-2 border-green-600 rounded flex items-center justify-center flex-shrink-0 ml-2">
+                          <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-orange-500 font-bold mb-3">
+                      ₹{Number(item.price).toFixed(2)}
+                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200">
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity - 1)
+                          }
+                          className="p-2 hover:bg-gray-100 transition-colors rounded-l-lg disabled:opacity-50"
+                          aria-label="Decrease quantity"
+                          disabled={updating === item.id}
+                        >
+                          <Minus className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
+                          className="p-2 hover:bg-gray-100 transition-colors rounded-r-lg disabled:opacity-50"
+                          aria-label="Increase quantity"
+                          disabled={updating === item.id}
+                        >
+                          <Plus className="w-4 h-4 text-gray-600" />
+                        </button>
                       </div>
-                    )}
-                  </div>
-                  <p className="text-orange-500 font-bold mb-3">
-                    ₹{Number(item.price).toFixed(2)}
-                  </p>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200">
                       <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
-                        className="p-2 hover:bg-gray-100 transition-colors rounded-l-lg disabled:opacity-50"
-                        aria-label="Decrease quantity"
+                        onClick={() => removeItem(item.id)}
+                        className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        aria-label="Remove item"
                         disabled={updating === item.id}
                       >
-                        <Minus className="w-4 h-4 text-gray-600" />
-                      </button>
-                      <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                        className="p-2 hover:bg-gray-100 transition-colors rounded-r-lg disabled:opacity-50"
-                        aria-label="Increase quantity"
-                        disabled={updating === item.id}
-                      >
-                        <Plus className="w-4 h-4 text-gray-600" />
+                        <Trash2 className="w-5 h-5 text-red-500" />
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      aria-label="Remove item"
-                      disabled={updating === item.id}
-                    >
-                      <Trash2 className="w-5 h-5 text-red-500" />
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {/* Order Summary */}
-            <div className="bg-gray-50 rounded-lg p-4 mt-6 space-y-3">
-              <div className="flex justify-between text-gray-700">
-                <span>Subtotal ({cart.itemCount} items)</span>
-                <span>₹{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-700">
-                <span>Tax (10%)</span>
-                <span>₹{tax.toFixed(2)}</span>
-              </div>
-              <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-gray-900 text-lg">
-                <span>Total</span>
-                <span>₹{total.toFixed(2)}</span>
+              {/* Order Summary */}
+              <div className="rounded-lg px-4 mt-6 space-y-3 py-6 bg-white/70 backdrop-blur-md shadow-md border-[#E5E7EB] border">
+                <div className="flex justify-between text-gray-700">
+                  <span>Subtotal ({cart.itemCount} items)</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-700">
+                  <span>Tax (10%)</span>
+                  <span>₹{tax.toFixed(2)}</span>
+                </div>
+                <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-gray-900 text-lg">
+                  <span>Total</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* Checkout Button - Fixed at Bottom */}
-      {cart && cart.items.length > 0 && (
-        <div className="w-3/4 bg-white px-6 py-4 max-w-md mx-auto">
-          <button
-            onClick={handleCheckout}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-full transition-colors shadow-lg active:scale-95"
-          >
-            {!userDetails?.name || !userDetails?.phone
-              ? "Add Details to Checkout"
-              : `Checkout - ₹${total}`}
-          </button>
+          {/* Checkout Button - Fixed at Bottom */}
+          {cart && cart.items.length > 0 && (
+            <div className="w-3/4 bg-white px-6 py-4 max-w-md mx-auto">
+              <button
+                onClick={handleCheckout}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-full transition-colors shadow-lg active:scale-95"
+              >
+                {!userDetails?.name || !userDetails?.phone
+                  ? "Add Details to Checkout"
+                  : `Checkout - ₹${total}`}
+              </button>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Modals */}
-      <div className="">
-      <UserDetailsModal
-        isOpen={showUserDetailsModal}
-        onClose={() => setShowUserDetailsModal(false)}
-        onSuccess={handleUserDetailsSuccess}
-      />
+        {/* Modals */}
+        <div className="">
+          <UserDetailsModal
+            isOpen={showUserDetailsModal}
+            onClose={() => setShowUserDetailsModal(false)}
+            onSuccess={handleUserDetailsSuccess}
+          />
 
-      <OTPVerificationModal
-        isOpen={showOTPModal}
-        phone={tempPhone}
-        onClose={() => setShowOTPModal(false)}
-        onSuccess={handleOTPSuccess}
-      />
+          <OTPVerificationModal
+            isOpen={showOTPModal}
+            phone={tempPhone}
+            onClose={() => setShowOTPModal(false)}
+            onSuccess={handleOTPSuccess}
+          />
 
-      <TimeSlotModal
-        isOpen={showTimeSlotModal}
-        onClose={() => setShowTimeSlotModal(false)}
-        onSlotSelect={handleTimeSlotSelect}
-      /></div>
+          <TimeSlotModal
+            isOpen={showTimeSlotModal}
+            onClose={() => setShowTimeSlotModal(false)}
+            onSlotSelect={handleTimeSlotSelect}
+          />
+        </div>
+      </div>
     </div>
   );
 }

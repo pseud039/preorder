@@ -1,6 +1,6 @@
 
 self.addEventListener('push', (event) => {
-  console.log('📬 Push notification received:', event);
+  console.log('Push notification received:', event);
 
   if (!event.data) {
     console.warn('Push event has no data');
@@ -11,6 +11,7 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data.json();
   } catch (e) {
+        // const text = event.data.text();
     console.error('Failed to parse push data:', e);
     data = { title: 'New Notification', body: event.data.text() };
   }
@@ -30,13 +31,13 @@ self.addEventListener('push', (event) => {
   // Add action buttons based on notification type
   if (data.type === 'ORDER_ACCEPTED' || data.type === 'PAYMENT_REQUIRED') {
     options.actions = [
-      { action: 'view', title: '👀 View Order' },
-      { action: 'close', title: '✕ Close' }
+      { action: 'view', title: ' View Order' },
+      { action: 'close', title: ' Close' }
     ];
   } else if (data.type === 'ORDER_READY') {
     options.actions = [
-      { action: 'view', title: '🏃 On My Way' },
-      { action: 'close', title: '✕ Close' }
+      { action: 'view', title: ' On My Way' },
+      { action: 'close', title: ' Close' }
     ];
   }
 
@@ -64,7 +65,7 @@ self.addEventListener('notificationclick', (event) => {
   if (data.url) {
     urlToOpen = data.url;
   } else if (data.orderId) {
-    urlToOpen = `/orders/${data.orderId}`;
+    urlToOpen = `/order-history/${data.orderId}`;
   } else if (data.type?.includes('ORDER')) {
     urlToOpen = '/orders';
   }

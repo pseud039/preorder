@@ -4,6 +4,7 @@ import "../globals.css";
 import { usePathname } from "next/navigation";
 import Onboardingpage1 from "@/components/splashScreen";
 import Navbar from "@/components/navbar";
+import NotificatonPopup from "@/components/notificatonPopup";
 
 // import LoadWS from "./loadws";
 const APP_NAME = "Predine";
@@ -78,6 +79,8 @@ export default function RootLayout({
     <>
       <main className="pb-24"> {children}</main>
       <Navbar />
+
+      <NotificatonPopup />
     </>
   );
 }

@@ -1,4 +1,3 @@
-// lib/api/notification.api.ts
 import type { 
   ApiResponse, 
   NotificationResponse, 
@@ -7,9 +6,6 @@ import type {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-/**
- * Get user's notifications
- */
 export const getNotifications = async (
   accessToken: string,
   params?: {
@@ -41,9 +37,7 @@ export const getNotifications = async (
   return result.data;
 };
 
-/**
- * Mark notification as read
- */
+
 export const markNotificationAsRead = async (
   accessToken: string,
   notificationId: number
@@ -67,9 +61,7 @@ export const markNotificationAsRead = async (
   return result.data.notification;
 };
 
-/**
- * Mark all notifications as read
- */
+
 export const markAllNotificationsAsRead = async (
   accessToken: string
 ): Promise<void> => {
@@ -89,9 +81,7 @@ export const markAllNotificationsAsRead = async (
   }
 };
 
-/**
- * Test notification (development only)
- */
+
 export const sendTestNotification = async (
   accessToken: string
 ): Promise<void> => {

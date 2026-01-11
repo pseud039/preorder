@@ -9,7 +9,8 @@ export default function Navbar() {
   const getActivePage = () => {
     if (pathname === "/account") return "account";
     if (pathname === "/search") return "search";
-    if (pathname === "/orders") return "orders";
+    if (pathname === "/cart") return "orders";
+    if(pathname ==="/order-history") return "account";
     return "home";
   };
 
@@ -29,7 +30,7 @@ export default function Navbar() {
     orders: {
       icon: Soup,
       title: "Cart",
-      route: "/orders",
+      route: "/cart",
     },
     account: {
       icon: UserRoundPen,

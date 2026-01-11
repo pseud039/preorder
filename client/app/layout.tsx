@@ -93,39 +93,39 @@ export default function RootLayout({
             },
             className: 'font-[inter]',
             duration: 3000,
-            success: {
-              style: {
-                background: '#fff',
-                color: '#059669',
-                border: '1px solid #10b981',
-              },
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              style: {
-                background: '#fff',
-                color: '#dc2626',
-                border: '1px solid #ef4444',
-              },
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
-              },
-            },
-            info: {
-              style: {
-                background: '#fff',
-                color: '#f97316',
-                border: '1px solid #f97316',
-              },
-              iconTheme: {
-                primary: '#f97316',
-                secondary: '#fff',
-              },
-            },
+            // success: {
+            //   style: {
+            //     background: '#fff',
+            //     color: '#059669',
+            //     border: '1px solid #10b981',
+            //   },
+            //   iconTheme: {
+            //     primary: '#10b981',
+            //     secondary: '#fff',
+            //   },
+            // },
+            // error: {
+            //   style: {
+            //     background: '#fff',
+            //     color: '#dc2626',
+            //     border: '1px solid #ef4444',
+            //   },
+            //   iconTheme: {
+            //     primary: '#ef4444',
+            //     secondary: '#fff',
+            //   },
+            // },
+            // info: {
+            //   style: {
+            //     background: '#fff',
+            //     color: '#f97316',
+            //     border: '1px solid #f97316',
+            //   },
+            //   iconTheme: {
+            //     primary: '#f97316',
+            //     secondary: '#fff',
+            //   },
+            // },
           }}
         />
               <AppWrapper>

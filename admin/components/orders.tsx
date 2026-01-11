@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -26,7 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Eye, RefreshCw } from "lucide-react";
+import { Loader2, Eye, RefreshCw, Pencil, Plus, Minus, Trash2, Search, X, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface User {
@@ -108,6 +109,31 @@ interface OrdersResponse {
   success: boolean;
 }
 
+interface AvailableMenuItem {
+  id: number;
+  name: string;
+  price: string;
+  imageUrl: string;
+  isVeg: boolean;
+  category: { id: number; name: string } | null;
+  waitingTime: number;
+}
+
+interface EditableOrderItem {
+  id?: number;
+  menuItemId: number;
+  quantity: number;
+  price: string;
+  menuItem: {
+    id: number;
+    name: string;
+    price: string;
+    imageUrl: string;
+    isVeg: boolean;
+  };
+  isNew?: boolean;
+}
+
 export default function OrdersTable() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -115,6 +141,17 @@ export default function OrdersTable() {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string>("");
+  
+  // Edit mode states
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [editLoading, setEditLoading] = useState<boolean>(false);
+  const [saveLoading, setSaveLoading] = useState<boolean>(false);
+  const [editableItems, setEditableItems] = useState<EditableOrderItem[]>([]);
+  const [availableMenuItems, setAvailableMenuItems] = useState<AvailableMenuItem[]>([]);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
+  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showAddItemPanel, setShowAddItemPanel] = useState<boolean>(false);
 
   useEffect(() => {
     fetchOrders();
@@ -248,6 +285,212 @@ export default function OrdersTable() {
     });
   };
 
+  // Fetch order details for editing
+  const fetchOrderForEdit = async (orderId: number) => {
+    try {
+      setEditLoading(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/${orderId}/edit`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Cannot edit this order");
+      }
+
+      // Set editable items
+      setEditableItems(
+        data.data.order.orderItems.map((item: OrderItem) => ({
+          id: item.id,
+          menuItemId: item.menuItemId,
+          quantity: item.quantity,
+          price: item.price,
+          menuItem: item.menuItem,
+        }))
+      );
+
+      setAvailableMenuItems(data.data.availableMenuItems || []);
+      setAvailableTimeSlots(data.data.availableTimeSlots || []);
+      setSelectedTimeSlotId(data.data.order.timeSlot?.id || null);
+      
+      // If no menu items from edit endpoint, fetch from menu route
+      if (!data.data.availableMenuItems || data.data.availableMenuItems.length === 0) {
+        await fetchMenuItems();
+      }
+      
+      setIsEditMode(true);
+    } catch (error: any) {
+      console.error("Error fetching order for edit:", error);
+      toast.error(error.message || "Cannot edit this order");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Save edited order
+  const saveOrderChanges = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      setSaveLoading(true);
+
+      const orderItems = editableItems.map((item) => ({
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/${selectedOrder.id}/edit/update`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            orderItems,
+            timeSlotId: selectedTimeSlotId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update order");
+      }
+
+      toast.success(data.message || "Order updated successfully");
+      setIsEditMode(false);
+      setIsDialogOpen(false);
+      fetchOrders();
+    } catch (error: any) {
+      console.error("Error saving order:", error);
+      toast.error(error.message || "Failed to save order changes");
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  // Add item to order
+  const addItemToOrder = (menuItem: AvailableMenuItem) => {
+    const existingItem = editableItems.find(
+      (item) => item.menuItemId === menuItem.id
+    );
+
+    if (existingItem) {
+      setEditableItems(
+        editableItems.map((item) =>
+          item.menuItemId === menuItem.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+    } else {
+      setEditableItems([
+        ...editableItems,
+        {
+          menuItemId: menuItem.id,
+          quantity: 1,
+          price: menuItem.price,
+          menuItem: {
+            id: menuItem.id,
+            name: menuItem.name,
+            price: menuItem.price,
+            imageUrl: menuItem.imageUrl,
+            isVeg: menuItem.isVeg,
+          },
+          isNew: true,
+        },
+      ]);
+    }
+    toast.success(`${menuItem.name} added`);
+  };
+
+  // Update item quantity
+  const updateItemQuantity = (menuItemId: number, delta: number) => {
+    setEditableItems(
+      editableItems
+        .map((item) => {
+          if (item.menuItemId === menuItemId) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter((item): item is EditableOrderItem => item !== null)
+    );
+  };
+
+  // Remove item from order
+  const removeItemFromOrder = (menuItemId: number) => {
+    if (editableItems.length <= 1) {
+      toast.error("Order must have at least one item");
+      return;
+    }
+    setEditableItems(editableItems.filter((item) => item.menuItemId !== menuItemId));
+  };
+
+  // Calculate total for editable items
+  const calculateEditableTotal = () => {
+    return editableItems.reduce(
+      (sum, item) => sum + Number(item.price) * item.quantity,
+      0
+    );
+  };
+
+  // Filter menu items by search
+  const filteredMenuItems = availableMenuItems.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category?.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Cancel edit mode
+  const cancelEdit = () => {
+    setIsEditMode(false);
+    setEditableItems([]);
+    setSearchQuery("");
+    setShowAddItemPanel(false);
+  };
+
+  // Check if order can be edited
+  // Orders can only be edited when NOT paid
+  const canEditOrder = (order: Order) => {
+    return (
+      order.paymentStatus !== "paid" &&
+      ["Pending", "Accepted"].includes(order.restaurantStatus) &&
+      order.status !== "Cancelled"
+    );
+  };
+
+  // Fetch menu items for adding to order
+  const fetchMenuItems = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/menu`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.data?.menuItems) {
+        setAvailableMenuItems(data.data.menuItems);
+      }
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+    }
+  };
+
   return (
     <div className="space-y-4 p-6">
       {/* Header */}
@@ -349,7 +592,7 @@ export default function OrdersTable() {
                           order.restaurantStatus === "Rejected"
                         }
                       >
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="max-w-32 w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -386,16 +629,30 @@ export default function OrdersTable() {
       </div>
 
       {/* Order Details Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) {
+          cancelEdit();
+        }
+      }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Order Details #{selectedOrder?.id}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Order #{selectedOrder?.id}
+              {isEditMode && (
+                <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                  Editing
+                </Badge>
+              )}
+            </DialogTitle>
             <DialogDescription>
-              Complete information about this order
+              {isEditMode 
+                ? "Edit order items and details. Changes will be notified to the customer."
+                : "Complete information about this order"}
             </DialogDescription>
           </DialogHeader>
 
-          {selectedOrder && (
+          {selectedOrder && !isEditMode && (
             <div className="space-y-6">
               {/* Order Status */}
               <div>
@@ -455,7 +712,24 @@ export default function OrdersTable() {
 
               {/* Order Items */}
               <div>
-                <h3 className="font-semibold mb-2">Order Items</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Order Items</h3>
+                  {canEditOrder(selectedOrder) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchOrderForEdit(selectedOrder.id)}
+                      disabled={editLoading}
+                    >
+                      {editLoading ? (
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      ) : (
+                        <Pencil className="w-4 h-4 mr-1" />
+                      )}
+                      Edit Items
+                    </Button>
+                  )}
+                </div>
                 <div className="border rounded-lg divide-y">
                   {selectedOrder.orderItems.map((item) => (
                     <div
@@ -494,6 +768,24 @@ export default function OrdersTable() {
                     </div>
                   ))}
                 </div>
+                
+                {/* Edit Notice for Unpaid Orders */}
+                {canEditOrder(selectedOrder) && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      <span className="font-medium">Note:</span> This order is not yet paid. You can edit items before customer completes payment.
+                    </p>
+                  </div>
+                )}
+                
+                {/* Paid Order Notice */}
+                {selectedOrder.paymentStatus === "paid" && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      <span className="font-medium">✓ Paid:</span> This order has been paid and cannot be modified.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Time Slot */}
@@ -551,13 +843,243 @@ export default function OrdersTable() {
             </div>
           )}
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-            >
-              Close
-            </Button>
+          {/* Edit Mode View */}
+          {selectedOrder && isEditMode && (
+            <div className="space-y-6">
+              {/* Current Order Items - Editable */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Order Items</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAddItemPanel(!showAddItemPanel)}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Item
+                  </Button>
+                </div>
+                
+                <div className="border rounded-lg divide-y">
+                  {editableItems.map((item) => (
+                    <div
+                      key={item.menuItemId}
+                      className="p-3 flex justify-between items-center"
+                    >
+                      <div className="flex items-center gap-3">
+                        {item.menuItem.imageUrl && (
+                          <img
+                            src={item.menuItem.imageUrl}
+                            alt={item.menuItem.name}
+                            className="w-12 h-12 rounded object-cover"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium flex items-center gap-2">
+                            {item.menuItem.name}
+                            {item.isNew && (
+                              <Badge variant="outline" className="bg-green-100 text-green-700 text-xs">
+                                New
+                              </Badge>
+                            )}
+                            <span
+                              className={`inline-flex px-1.5 py-0.5 rounded text-xs ${
+                                item.menuItem.isVeg
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {item.menuItem.isVeg ? "Veg" : "Non-Veg"}
+                            </span>
+                          </p>
+                          <p className="text-sm text-gray-600">₹{item.price}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 border rounded-lg">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateItemQuantity(item.menuItemId, -1)}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <span className="w-8 text-center font-medium">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateItemQuantity(item.menuItemId, 1)}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <span className="font-semibold w-16 text-right">
+                          ₹{Number(item.price) * item.quantity}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => removeItemFromOrder(item.menuItemId)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Total */}
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                  <span className="font-semibold">New Total:</span>
+                  <span className="text-xl font-bold">₹{calculateEditableTotal()}</span>
+                </div>
+              </div>
+
+              {/* Add Item Panel */}
+              {showAddItemPanel && (
+                <div className="border rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">Add Items to Order</h4>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setShowAddItemPanel(false)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  {/* Search */}
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Search menu items..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {/* Menu Items Grid */}
+                  <div className="max-h-64 overflow-y-auto">
+                    <div className="grid grid-cols-1 gap-2">
+                      {filteredMenuItems.map((menuItem) => {
+                        const isInOrder = editableItems.some(
+                          (item) => item.menuItemId === menuItem.id
+                        );
+                        return (
+                          <div
+                            key={menuItem.id}
+                            className={`p-3 border rounded-lg flex justify-between items-center ${
+                              isInOrder ? "bg-green-50 border-green-200" : "bg-white hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {menuItem.imageUrl && (
+                                <img
+                                  src={menuItem.imageUrl}
+                                  alt={menuItem.name}
+                                  className="w-10 h-10 rounded object-cover"
+                                />
+                              )}
+                              <div>
+                                <p className="font-medium text-sm flex items-center gap-2">
+                                  {menuItem.name}
+                                  <span
+                                    className={`inline-flex px-1 py-0.5 rounded text-xs ${
+                                      menuItem.isVeg
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-red-100 text-red-700"
+                                    }`}
+                                  >
+                                    {menuItem.isVeg ? "V" : "NV"}
+                                  </span>
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {menuItem.category?.name} • ₹{menuItem.price}
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              variant={isInOrder ? "outline" : "default"}
+                              size="sm"
+                              onClick={() => addItemToOrder(menuItem)}
+                            >
+                              {isInOrder ? (
+                                <>
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Add More
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Add
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                      {filteredMenuItems.length === 0 && (
+                        <p className="text-center text-gray-500 py-4">
+                          No items found
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Time Slot Selection */}
+              {availableTimeSlots.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Change Pickup Time</h3>
+                  <Select
+                    value={selectedTimeSlotId?.toString() || ""}
+                    onValueChange={(value) => setSelectedTimeSlotId(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a time slot" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTimeSlots.map((slot) => (
+                        <SelectItem key={slot.id} value={slot.id.toString()}>
+                          {formatTime(slot.slotStart)} - {formatTime(slot.slotEnd)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-2">
+            {!isEditMode ? (
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Close
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={cancelEdit}>
+                  Cancel
+                </Button>
+                <Button onClick={saveOrderChanges} disabled={saveLoading}>
+                  {saveLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  Save Changes
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

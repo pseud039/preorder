@@ -4,6 +4,31 @@ import { ChevronRight } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useRouter } from "next/navigation";
 
+import Slide1Img from "@/assets/onboarding/slide1.png";
+import Slide2Img from "@/assets/onboarding/slide2.png";
+import Slide3Img from "@/assets/onboarding/slide3.png";
+import Image from "next/image";
+
+const slides = [
+  {
+    image: Slide1Img,
+    title: "Order whatever you want to eat",
+    description:
+      "Order delicious food from your favorite restaurants with just a few taps",
+  },
+  {
+    image: Slide2Img,
+    title: "Choose according to your preferred time slot",
+    description:
+      "Select your preferred pickup or delivery time slot that fits your schedule",
+  },
+  {
+    image: Slide3Img,
+    title: "Let's end your cravings",
+    description:
+      "Get your food delivered fresh and hot right without any hassle",
+  },
+];
 
 export default function OnboardingSlides() {
   const router = useRouter();
@@ -12,7 +37,12 @@ export default function OnboardingSlides() {
   const [touchEnd, setTouchEnd] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    
+    if (token) router.push("/dashboard");
+  }, []);
+
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem("hasSeenOnboarding");
 
@@ -31,27 +61,6 @@ export default function OnboardingSlides() {
 
     return () => clearTimeout(timer);
   }, [currentSlide]);
-
-  const slides = [
-    {
-      image: "/onboardingslide1.png",
-      title: "Order whatever you want to eat",
-      description:
-        "Order delicious food from your favorite restaurants with just a few taps",
-    },
-    {
-      image: "/onboardingslide2.png",
-      title: "Choose according to your preferred time slot",
-      description:
-        "Select your preferred pickup or delivery time slot that fits your schedule",
-    },
-    {
-      image: "/onboardingslide3.png",
-      title: "Let's end your cravings",
-      description:
-        "Get your food delivered fresh and hot right without any hassle",
-    },
-  ];
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
@@ -76,23 +85,6 @@ export default function OnboardingSlides() {
     console.log("Navigate to login");
   };
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 75) {
-      handleNext();
-    }
-    if (touchStart - touchEnd < -75) {
-      handlePrev();
-    }
-  };
-
   const slideVariants: Variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? "100%" : "-100%",
@@ -104,7 +96,7 @@ export default function OnboardingSlides() {
   };
 
   return (
-    <div className="relative min-h-screen max-w-md mx-auto bg-orange-50 overflow-hidden">
+    <div className="relative h-[100dvh] max-w-md mx-auto bg-orange-50 overflow-hidden">
       <div className="absolute inset-0">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
@@ -119,13 +111,18 @@ export default function OnboardingSlides() {
             }}
             className="absolute inset-0"
           >
-            <img
+            <Image
               src={slides[currentSlide].image}
               alt={slides[currentSlide].title}
               className="w-full h-full object-cover"
             />
           </motion.div>
         </AnimatePresence>
+
+        <div className="absolute inset-0 grid grid-cols-2">
+          <button onClick={handlePrev}></button>
+          <button onClick={handleNext}></button>
+        </div>
       </div>
 
       {/* Skip Button */}
@@ -143,47 +140,46 @@ export default function OnboardingSlides() {
 
       {/* Main Content */}
       <div
-        className="relative z-10 min-h-screen flex flex-col justify-end"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        className="bg-white/95 backdrop-blur-md rounded-t-[2rem] pt-8 px-8 pb-4 shadow-2xl flex flex-col justify-center items-center absolute bottom-0"
+        style={{ minHeight: "20rem" }}
       >
-        <div className="bg-white/95 backdrop-blur-md rounded-t-[2rem] pt-8 px-8 pb-4 shadow-2xl flex flex-col justify-center items-center" style={{ minHeight: "20rem" }}>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 text-center">
-            {slides[currentSlide].title}
-          </h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 text-center">
+          {slides[currentSlide].title}
+        </h1>
 
-          <p className="text-lg text-gray-600 text-center mb-8">
-            {slides[currentSlide].description}
-          </p>
+        <p className="text-lg text-gray-600 text-center mb-8">
+          {slides[currentSlide].description}
+        </p>
 
-          <div className="flex gap-[2px] justify-center mb-8">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setDirection(index > currentSlide ? 1 : -1);
-                  setCurrentSlide(index);
-                }}
-                className={`h-1 transition-all duration-300 ${
-                  index === currentSlide
-                    ? "w-16 bg-orange-500"
-                    : "w-2 bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          {currentSlide === slides.length - 1 ? (
-            <button onClick={handleGetStarted} className="bg-orange-500 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-orange-600 transition-colors shadow-lg">
-              Get Started
-              <ChevronRight size={20} />
-            </button>
-          ) : (
-            <div className="pb-2"></div>
-          )}
+        <div className="flex gap-[2px] justify-center mb-8">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setDirection(index > currentSlide ? 1 : -1);
+                setCurrentSlide(index);
+              }}
+              className={`h-1 transition-all duration-300 ${
+                index === currentSlide
+                  ? "w-16 bg-orange-500"
+                  : "w-2 bg-gray-300 hover:bg-gray-400"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
+
+        {currentSlide === slides.length - 1 ? (
+          <button
+            onClick={handleGetStarted}
+            className="bg-orange-500 text-white px-8 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-orange-600 transition-colors shadow-lg"
+          >
+            Get Started
+            <ChevronRight size={20} />
+          </button>
+        ) : (
+          <div className="pb-2"></div>
+        )}
       </div>
     </div>
   );

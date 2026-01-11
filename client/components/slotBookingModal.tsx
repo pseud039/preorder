@@ -142,11 +142,11 @@ export default function TimeSlotModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 transition-opacity"
         onClick={onClose}
       />
 
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 flex items-center justify-center z-100 p-4">
         <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <div>
@@ -263,24 +263,9 @@ export default function TimeSlotModal({
                               to {formatTime(slot.slotEnd)}
                             </div>
 
-                            {!isFull && remainingSlots > 0 && (
-                              <div
-                                className={`flex items-center gap-1 mt-2 text-xs ${
-                                  isLowAvailability
-                                    ? "text-orange-600"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                <Users className="w-3 h-3" />
-                                <span>{remainingSlots} left</span>
-                              </div>
-                            )}
+                          
 
-                            {isFull && (
-                              <div className="text-xs text-red-500 font-medium mt-2">
-                                Fully Booked
-                              </div>
-                            )}
+        
                           </button>
                         );
                       })}

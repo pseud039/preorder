@@ -3,6 +3,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
+import Restraunt_ID from "../../utils/constant.js";
 
 export const getRestaurants = asyncHandler(async (req, res) => {
   const {
@@ -260,7 +261,7 @@ export const getMenuItemById = asyncHandler(async (req, res) => {
 });
 
 export const getCategories = asyncHandler(async (req, res) => {
-  const restaurantId = 3;
+  const restaurantId = Restraunt_ID;
 
   const categories = await prisma.category.findMany({
     where: {

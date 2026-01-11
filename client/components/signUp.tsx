@@ -42,7 +42,6 @@ export default function SignUpPage() {
     };
     let isValid = true;
 
-    // Email validation
     if (!formData.email) {
       newErrors.email = "Email is required";
       isValid = false;
@@ -51,7 +50,6 @@ export default function SignUpPage() {
       isValid = false;
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
       isValid = false;
@@ -60,7 +58,6 @@ export default function SignUpPage() {
       isValid = false;
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
       isValid = false;

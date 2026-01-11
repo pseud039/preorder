@@ -159,7 +159,7 @@ export class NotificationService {
       case 'ORDER_READY':
       case 'ORDER_COMPLETED':
       case 'PAYMENT_REQUIRED':
-        return orderId ? `/orders/${orderId}` : '/orders';
+        return orderId ? `/order-history/${orderId}` : '/orders';
       
       case 'ORDER_PLACED':
         return orderId ? `/admin/orders/${orderId}` : '/admin/orders';
@@ -207,6 +207,57 @@ export class NotificationService {
       throw error;
     }
   }
+
+ /**
+ * Send notification to admin/chef with enhanced features
+ */
+static async sendToAdmin({ restaurantId, type, title, message, data = null }) {
+  try {
+    // Get all admins and chefs for this restaurant
+    const [admins, chefs] = await Promise.all([
+      prisma.restaurantAdmin.findMany({
+        where: { 
+          restaurantId,
+          isActive: true 
+        },
+        select: { userId: true }
+      }),
+      prisma.restaurantChef.findMany({
+        where: { 
+          restaurantId,
+          isActive: true 
+        },
+        select: { userId: true }
+      })
+    ]);
+
+    const userIds = [
+      ...admins.map(a => a.userId),
+      ...chefs.map(c => c.userId)
+    ];
+
+    if (userIds.length === 0) {
+      console.log('No admins/chefs found for restaurant:', restaurantId);
+      return;
+    }
+
+    // Send to all admins and chefs
+    for (const userId of userIds) {
+      await this.send({
+        userId,
+        type,
+        title,
+        message,
+        data
+      });
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error sending admin notification:', error);
+    return false;
+  }
+}
 
   /**
    * Unsubscribe from push notifications
