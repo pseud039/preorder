@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const reqUrl = new URL(request.url);
 
   // These routes would redirect to /dashboard if the user is authenticated
