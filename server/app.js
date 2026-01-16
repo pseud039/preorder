@@ -23,7 +23,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTENED_URL,
+    origin: process.env.CORS_ORIGIN.split(",").map(origin => origin.trim()),
     credentials: true
   }
 });
@@ -35,19 +35,23 @@ const getAllowedOrigins = () => {
   return origins.split(",").map(origin => origin.trim());
 };
 
-const allowedOrigins = getAllowedOrigins();
+// const allowedOrigins = getAllowedOrigins();
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+  origin: getAllowedOrigins(),
+  // origin: function (origin, callback) {
+  //   console.log(origin);
+  //   console.log(allowedOrigins);
+
+  //   // Allow requests with no origin (like mobile apps or curl requests)
+  //   if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  //   if (allowedOrigins.indexOf(origin) !== -1) {
+  //     callback(null, true);
+  //   } else {
+  //     callback(new Error("Not allowed by CORS"));
+  //   }
+  // },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
