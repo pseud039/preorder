@@ -27,6 +27,8 @@ services:
       dockerfile: Dockerfile
     container_name: preorder-server
     restart: unless-stopped
+    env_file:
+      - ./server/.env
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-preorder}
@@ -48,6 +50,8 @@ services:
       dockerfile: Dockerfile
     container_name: preorder-admin
     restart: unless-stopped
+    env_file:
+      - ./admin/.env
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -66,6 +70,8 @@ services:
       dockerfile: Dockerfile
     container_name: preorder-client
     restart: unless-stopped
+    env_file:
+      - ./client/.env
     environment:
       NODE_ENV: production
       PORT: 3000
