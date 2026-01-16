@@ -122,10 +122,10 @@ import {
 } from "../controllers/client/client.order.controller.js";
 import { 
   createPaymentOrder, 
-  verifyPayment,
+  // verifyPayment,
   verifyPaymentStatus, 
   getPaymentStatus,
-  handlePaymentWebhook
+  // handlePaymentWebhook
 } from "../utils/paymentgateway/payment.js";
 import { getCategories } from "../controllers/admin/admin.restraunt.controller.js";
 import {
@@ -197,7 +197,7 @@ router.get("/orders/:orderId", verifyJWT, isCustomer, getOrderById);
 router.post("/payment/create-order", verifyJWT, isCustomer, createPaymentOrder);
 
 // Verify payment after successful transaction
-router.post("/payment/verify", verifyJWT, isCustomer, verifyPayment);
+// router.post("/payment/verify", verifyJWT, isCustomer, verifyPayment);
 
 // Check payment status
 router.post("/payment/verify-status", verifyJWT, isCustomer, verifyPaymentStatus);
@@ -206,7 +206,7 @@ router.post("/payment/verify-status", verifyJWT, isCustomer, verifyPaymentStatus
 router.get("/payment/status/:orderId", verifyJWT, isCustomer, getPaymentStatus);
 
 // Razorpay webhook (NO AUTH - Razorpay servers call this)
-router.post("/payment/webhook", handlePaymentWebhook);
+// router.post("/payment/webhook", handlePaymentWebhook);
 
 
 export default router;
