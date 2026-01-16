@@ -10,4 +10,7 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [{ url: "/offline", revision: "1" }],
 });
 
-export default withSerwist({ typescript: { ignoreBuildErrors: true }, output: "standalone", });
+export default withSerwist({
+  typescript: { ignoreBuildErrors: true },
+  output: "standalone",
+});

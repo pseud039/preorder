@@ -53,39 +53,39 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   }
 };
 
-export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
-  if (!('serviceWorker' in navigator)) {
-    console.warn('Service Worker not supported');
-    return null;
-  }
+// export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
+//   if (!('serviceWorker' in navigator)) {
+//     console.warn('Service Worker not supported');
+//     return null;
+//   }
 
-  try {
-    const registration = await navigator.serviceWorker.register('/service-worker.js', {
-      scope: '/'
-    });
+//   try {
+//     const registration = await navigator.serviceWorker.register('/service-worker.js', {
+//       scope: '/'
+//     });
     
-    console.log('Service Worker registered');
+//     console.log('Service Worker registered');
 
-    registration.addEventListener('updatefound', () => {
-      const newWorker = registration.installing;
-      if (newWorker) {
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            if (confirm('New version available! Reload?')) {
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
-              window.location.reload();
-            }
-          }
-        });
-      }
-    });
+//     registration.addEventListener('updatefound', () => {
+//       const newWorker = registration.installing;
+//       if (newWorker) {
+//         newWorker.addEventListener('statechange', () => {
+//           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+//             if (confirm('New version available! Reload?')) {
+//               newWorker.postMessage({ type: 'SKIP_WAITING' });
+//               window.location.reload();
+//             }
+//           }
+//         });
+//       }
+//     });
 
-    return registration;
-  } catch (error) {
-    console.error('Service Worker registration failed:', error);
-    return null;
-  }
-};
+//     return registration;
+//   } catch (error) {
+//     console.error('Service Worker registration failed:', error);
+//     return null;
+//   }
+// };
 
 export const subscribeToPushNotifications = async (accessToken: string): Promise<PushSubscription> => {
   try {
@@ -97,13 +97,13 @@ export const subscribeToPushNotifications = async (accessToken: string): Promise
     }
 
     let registration = await navigator.serviceWorker.ready;
-    if (!registration) {
-      const reg = await registerServiceWorker();
-      if (!reg) {
-        throw new Error('Service Worker registration failed');
-      }
-      registration = await navigator.serviceWorker.ready;
-    }
+    // if (!registration) {
+    //   const reg = await registerServiceWorker();
+    //   if (!reg) {
+    //     throw new Error('Service Worker registration failed');
+    //   }
+    //   registration = await navigator.serviceWorker.ready;
+    // }
 
     const keyResponse = await fetch(`${API_BASE_URL}/api/client/notifications/vapid-public-key`, {
       headers: {
