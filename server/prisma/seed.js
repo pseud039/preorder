@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 
-import { PrismaClient } from "../lib/generated/prisma/client";
+import { PrismaClient } from "../lib/generated/prisma/client.js";
 
 const prisma = new PrismaClient();
 async function main() {
@@ -14,6 +14,7 @@ async function main() {
       address: "ghaziabad",
       contactNumber: "324324332",
       isActive: true,
+      commissionRate: 2
     },
   });
 
