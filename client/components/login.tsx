@@ -115,9 +115,9 @@ export default function LoginPage() {
         if (response.status === 409) {
           toast.error("Email already exists");
         }else if (response.status === 401){
-          throw new Error("Invalid credentials");
+          throw new Error("Invalid credentials or verify your email.");
         } else if (response.status === 404) {
-          toast.error("User not found. Please sign up first.");
+          toast.error("User not found. Please sign up first.  ");
         } else {
           toast.error(data.message || "Something went wrong");
         }

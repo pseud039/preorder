@@ -278,7 +278,7 @@ export const createAdmin = asyncHandler(async (req, res) => {
   });
 
   try {
-    const mailTemp = emailTemplates.welcomeAdmin(email, name, restaurant.name);
+    const mailTemp = emailTemplates.InviteAdmin(email,password);
     await transporter.sendMail({
       ...mailTemp,
       to: email,
@@ -310,7 +310,7 @@ export const createAdmin = asyncHandler(async (req, res) => {
 export const createChef = asyncHandler(async (req, res) => {
   const { email, password, name, phone, specialization, shiftStart, shiftEnd } =
     req.body;
-  const restaurantId = req.user.restaurantId; // From auth middleware
+  const restaurantId = req.user.restaurantId || Restraunt_ID; // From auth middleware
 
   if (!email || !password || !name || !phone) {
     throw new ApiError(400, "Email, password, name, and phone are required");
@@ -368,6 +368,16 @@ export const createChef = asyncHandler(async (req, res) => {
     return { user: newUser, chef: restaurantChef };
   });
 
+  try{
+    const mailTemp = emailTemplates.InviteChef(email,password);
+    await transporter.sendMail({
+      ...mailTemp,
+      to: email,
+
+    });
+  }catch(error){
+    throw new ApiError(500, "Failed to send invite email");
+  }
   return res.status(201).json(
     new ApiResponse(
       201,

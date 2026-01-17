@@ -80,7 +80,7 @@ export default function SignUpPage() {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/client/signUp`,
+        `${process.env.NEXT_PUBLIC_API_URL}/client/signup`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -102,10 +102,10 @@ export default function SignUpPage() {
         return;
       }
 
-      toast.success("Account created successfully!");
+      toast.success("Account created. Verify the email sent to you!");
 
       setTimeout(() => {
-        router.push("/login");
+        router.push("/verify-email");
       }, 1000);
     } catch (error) {
       console.error("Signup error:", error);
