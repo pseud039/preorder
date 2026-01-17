@@ -1,5 +1,6 @@
 export const emailTemplates = {
   emailConformation: (email,link) => ({
+    from: process.env.EMAIL_FROM,
     subject: "Email conformation",
     html: `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -171,6 +172,7 @@ text-decoration: none
 </html>`,
   }),
   InviteLinkAdmin: (email,link) => ({
+    from: process.env.EMAIL_FROM,
     subject: "Join predine as admin",
     html: `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -342,6 +344,7 @@ text-decoration: none
 </html>`,
   }),
   ForgotPassword:(email,link)=>({
+    from: process.env.EMAIL_FROM,
     subject:"Password reset confirmation",
     html: `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
