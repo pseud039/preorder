@@ -11,7 +11,7 @@ import { transporter } from "../../utils/email/emailConfig.js";
 import {
   generateAccessToken,
   generateRefreshToken,
-  parseDuration
+  parseDuration,
 } from "../user.controller.js";
 
 const signup = asyncHandler(async (req, res) => {
@@ -73,17 +73,17 @@ const signup = asyncHandler(async (req, res) => {
     },
   });
   const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
-      console.log("Sending email via ZeptoMail:", {
-      from: process.env.EMAIL_FROM,
-      to: email,
-      host: `${process.env.EMAIL_HOST}`
-    });
+  console.log("Sending email via ZeptoMail:", {
+    from: process.env.EMAIL_FROM,
+    to: email,
+    host: `${process.env.EMAIL_HOST}`,
+  });
   try {
     const mailTemp = emailTemplates.emailConformation(email, confirmationLink);
     const info = await transporter.sendMail({
       ...mailTemp,
       to: email,
-      from: process.env.EMAIL_FROM, 
+      from: process.env.EMAIL_FROM,
     });
   } catch (error) {
     console.error("Failed to send booking link", error);
@@ -102,7 +102,7 @@ const signup = asyncHandler(async (req, res) => {
     );
 });
 
-const   verifyEmail = asyncHandler(async (req, res) => {
+const verifyEmail = asyncHandler(async (req, res) => {
   const { token } = req.params;
 
   if (!token) {
@@ -334,7 +334,9 @@ const login = asyncHandler(async (req, res) => {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
   });
+
   res.cookie("accessToken", accessToken, {
+    domain: ".predine.in",
     httpOnly: true,
     secure: true, // process.env.NODE_ENV === "production",
     sameSite: "Lax",
