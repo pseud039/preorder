@@ -73,11 +73,17 @@ const signup = asyncHandler(async (req, res) => {
     },
   });
   const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
+      console.log("Sending email via ZeptoMail:", {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      host: `${process.env.EMAIL_HOST}`
+    });
   try {
     const mailTemp = emailTemplates.emailConformation(email, confirmationLink);
     const info = await transporter.sendMail({
       ...mailTemp,
       to: email,
+      from: process.env.EMAIL_FROM, 
     });
   } catch (error) {
     console.error("Failed to send booking link", error);
