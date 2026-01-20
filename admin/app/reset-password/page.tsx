@@ -1,9 +1,8 @@
 "use client";
 import { useParams } from "next/navigation";
-import VerifyEmailPage from "@/components/resetPass";
-export default function VerifyEmail(){
-const params = useParams<{id: string}>()
-return (
-    <VerifyEmailPage id={params.id}/>
-)
+import ResetPasswordPage from "@/components/resetPass";
+
+export default function ResetPassword() {
+  const params = useParams<{ id: string }>();
+  return <ResetPasswordPage token={params.id} />;
 }

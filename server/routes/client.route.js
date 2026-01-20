@@ -149,51 +149,31 @@ router.post("/password/:token", resetPassword);
 router.post('/auth/refresh', refreshToken);
 router.get("/logout", verifyJWT, isCustomer, logout);
 
-// ============================================
-// USER PROFILE & DETAILS
-// ============================================
 router.get("/details", verifyJWT, isCustomer, getDetails);
 router.put("/details", verifyJWT, isCustomer, updateProfile);
 
-// ============================================
-// OTP MANAGEMENT
-// ============================================
 router.post("/send-otp", verifyJWT, isCustomer, sendOTP);
 router.post("/verify-otp", verifyJWT, isCustomer, verifyOTP);
 router.post("/resend-otp", verifyJWT, isCustomer, resendOTP);
 
-// ============================================
-// MENU & CATEGORIES
-// ============================================
 router.get("/categories", verifyJWT, isCustomer, getCategories);
 
-// ============================================
-// CART MANAGEMENT
-// ============================================
 router.get("/order", verifyJWT, isCustomer, getCart);
 router.post("/add", verifyJWT, isCustomer, addToCart);
 router.post("/update", verifyJWT, isCustomer, updateCartItem);
 router.post("/delete", verifyJWT, isCustomer, removeFromCart);
 router.post("/remove", verifyJWT, isCustomer, clearCart);
 
-// ============================================
-// TIME SLOT MANAGEMENT
-// ============================================
 router.get("/available", verifyJWT, isCustomer, getAvailableTimeSlots);
 router.post("/select", verifyJWT, isCustomer, selectTimeSlot);
 router.get("/timeslots", verifyJWT, getTimeSlots);
 
 
-// ============================================
-// ORDER MANAGEMENT
-// ============================================
+
 router.post("/create-order", verifyJWT, isCustomer, createOrder);
 router.get("/orders", verifyJWT, isCustomer, getMyOrders);
 router.get("/orders/:orderId", verifyJWT, isCustomer, getOrderById);
 
-// ============================================
-// PAYMENT ROUTES (RAZORPAY)
-// ============================================
 
 // Create Razorpay order
 router.post("/payment/create-order", verifyJWT, isCustomer, createPaymentOrder);

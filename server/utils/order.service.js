@@ -3,16 +3,6 @@ import Restraunt_ID from "./constant.js";
 
 export class OrderService {
 
-  /**
-   * Generates available time slots based on restaurant operating hours.
-   * 
-   * Logic:
-   * 1. Get today's day of week
-   * 2. Find template slots from DB for today (and tomorrow if needed)
-   * 3. Convert template times to actual dates for today
-   * 4. Filter out past slots and fully booked slots
-   * 5. Return slots starting from (now + estimatedWaitingTime)
-   */
   // static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8, restaurantId = Restraunt_ID) {
   //   const now = new Date();
     
@@ -100,32 +90,27 @@ export class OrderService {
   // Earliest possible pickup time = now + waiting time
   const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
   
-  // Fetch actual time slots from database that are:
-  // 1. In the future (after earliest pickup time)
-  // 2. Available
-  // 3. Not fully booked
   const slots = await prisma.timeSlot.findMany({
     where: {
       // restaurantId: parseInt(restaurantId),
       slotStart: {
-        gte: earliestPickupTime, // Only slots after earliest possible pickup
+        gte: earliestPickupTime, 
       },
       isAvailable: true,
       bookedCount: {
-        lt: 30, // Not fully booked (assuming capacity is 30)
+        lt: 30, 
       }
     },
     orderBy: {
       slotStart: 'asc',
     },
-    take: slotsCount, // Limit to requested number of slots
+    take: slotsCount, 
   });
   
   if (slots.length === 0) {
     return [];
   }
   
-  // Format slots for frontend
   const formattedSlots = slots.map(slot => {
     const slotStart = new Date(slot.slotStart);
     const slotEnd = new Date(slot.slotEnd);
@@ -372,7 +357,6 @@ export class OrderService {
     };
   }
 }
-// Platform fee configuration
 const PLATFORM_FEE_CONFIG = {
   fixedFee: 5,          
   percentageFee: 0.02,  
@@ -380,9 +364,8 @@ const PLATFORM_FEE_CONFIG = {
   maxFee: 50,          
 };
 
-// utils/orderCalculations.js
 export const calculateOrderTotals = async (orderItems, restaurantId) => {
-  // Get restaurant tax rate
+
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: restaurantId },
     select: { taxRate: true },
@@ -390,21 +373,17 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
 
   const taxRate = restaurant?.taxRate || 0.05; // Default 5%
 
-  // Calculate subtotal (item prices)
   const subtotal = orderItems.reduce(
     (sum, item) => sum + (parseFloat(item.price) * item.quantity),
     0
   );
 
-  // Calculate platform fee (fixed + percentage, clamped between min and max)
   let platformFee = PLATFORM_FEE_CONFIG.fixedFee + (subtotal * PLATFORM_FEE_CONFIG.percentageFee);
   platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));
   platformFee = Math.round(platformFee * 100) / 100; // Round to 2 decimals
 
-  // Calculate tax on subtotal only (not on platform fee)
   const tax = Math.round(subtotal * taxRate * 100) / 100; // Round to 2 decimals
 
-  // Calculate total
   const totalAmount = Math.round((subtotal + tax + platformFee) * 100) / 100;
 
   return {
@@ -425,17 +404,13 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
   };
 };
 
-// Simple calculation without DB call (for cart display)
 export const calculatePriceBreakdown = (subtotal, taxRate = 0.05) => {
-  // Calculate platform fee
   let platformFee = PLATFORM_FEE_CONFIG.fixedFee + (subtotal * PLATFORM_FEE_CONFIG.percentageFee);
   platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));
   platformFee = Math.round(platformFee * 100) / 100;
 
-  // Calculate tax
   const tax = Math.round(subtotal * taxRate * 100) / 100;
 
-  // Calculate total
   const totalAmount = Math.round((subtotal + tax + platformFee) * 100) / 100;
 
   return {

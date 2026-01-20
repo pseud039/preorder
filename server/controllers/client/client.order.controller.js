@@ -539,13 +539,11 @@ const createOrder = asyncHandler(async (req, res) => {
     );
   }
 
-  // Calculate subtotal (items only)
   const subtotal = cart.items.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
 
-  // Calculate full price breakdown with tax and platform fee
   const taxRate = restaurant.taxRate || 0.05;
   const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
   const totalAmount = priceBreakdown.totalAmount;
@@ -563,7 +561,6 @@ const createOrder = asyncHandler(async (req, res) => {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 2 * 60 * 1000); // 2 minutes
 
-  // Validate timeSlotId if provided
   const parsedTimeSlotId = timeSlotId ? parseInt(timeSlotId) : null;
   
   if (parsedTimeSlotId) {
@@ -596,7 +593,6 @@ const createOrder = asyncHandler(async (req, res) => {
       },
     });
 
-    // Increment bookedCount on the time slot
     if (parsedTimeSlotId) {
       await tx.timeSlot.update({
         where: { id: parsedTimeSlotId },

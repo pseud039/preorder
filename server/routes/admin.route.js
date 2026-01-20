@@ -38,7 +38,6 @@ import {
   deleteTimeSlotsForDay
 } from "../controllers/admin/admin.timeslot.controller.js";
 
-// Admin Order Controllers
 import {
   getAllOrders,
   getOrderDetails,
@@ -53,7 +52,6 @@ import {
   addOrderItem
 } from "../controllers/admin/admin.order.controller.js";
 
-// Chef Controllers
 import {
   getChefOrders,
   getChefOrderDetails,
@@ -61,7 +59,6 @@ import {
   getChefDashboard
 } from "../controllers/chef/chef.order.controller.js";
 
-// SuperAdmin Controllers
 import {
   getAllRestaurants,
   getRestaurantDetails,
@@ -99,7 +96,6 @@ router.post("/categories", verifyJWT, isAdmin, upload.single("imageUrl"), create
 router.patch("/categories/:id", verifyJWT, isAdmin, upload.single("imageUrl"), updateCategory);
 router.delete("/categories/:id", verifyJWT, isAdmin, deleteCategory);
 
-// TimeSlot routes
 router.get("/timeslots", verifyJWT, isAdmin, getTimeSlots);
 router.post("/timeslots", verifyJWT, isAdmin, createTimeSlot);
 router.post("/timeslots/batch", verifyJWT, isAdmin, batchCreateTimeSlots);
