@@ -338,8 +338,9 @@ const getDetails = asyncHandler(async (req, res) => {
 const getAvailableTimeSlots = asyncHandler(async (req, res) => {
   const restaurantIde = Restraunt_ID;
   const userId = req.user.id;
-  // const userId = 23;
-
+  console.log('🚨 === BEFORE EVERYTHING ===');
+  const beforeCount = await prisma.timeSlot.count();
+  console.log('Total slots in DB:', beforeCount);
   const cart = await prisma.cart.findFirst({
     where: {
       userId,
@@ -351,7 +352,6 @@ const getAvailableTimeSlots = asyncHandler(async (req, res) => {
           menuItem: true,
         },
       },
-      // restaurant: true,
     },
   });
 
@@ -361,6 +361,7 @@ const getAvailableTimeSlots = asyncHandler(async (req, res) => {
       "Cart is empty. Add items to see available time slots."
     );
   }
+  
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: parseInt(restaurantIde) },
     select: {
@@ -381,8 +382,35 @@ const getAvailableTimeSlots = asyncHandler(async (req, res) => {
   }, 0);
 
   const estimatedWaitingTime = Math.round(maxWaitingTime);
-
+console.log('🚨 === BEFORE generateTimeSlots ===');
+  const beforeGenCount = await prisma.timeSlot.count();
+  console.log('Total slots before generation:', beforeGenCount);
   const slots = await OrderService.generateTimeSlots(estimatedWaitingTime);
+ console.log('🚨 === AFTER generateTimeSlots ===');
+  const afterGenCount = await prisma.timeSlot.count();
+  console.log('Total slots after generation:', afterGenCount);
+  console.log('New slots created:', afterGenCount - beforeGenCount);
+
+  // Handle case when no slots are available
+  if (slots.length === 0) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          slots: [],
+          estimatedWaitingTime,
+          message: "No time slots available at the moment. Restaurant may be closed or fully booked.",
+        },
+        "No available time slots"
+      )
+    );
+  }
+
+  // Calculate earliest available slot time for the message
+  const earliestSlot = slots[0];
+  const earliestTime = new Date(earliestSlot.slotStart);
+  const now = new Date();
+  const minutesUntilEarliest = Math.round((earliestTime - now) / (60 * 1000));
 
   res.status(200).json(
     new ApiResponse(
@@ -390,9 +418,10 @@ const getAvailableTimeSlots = asyncHandler(async (req, res) => {
       {
         slots,
         estimatedWaitingTime,
-        message: `Earliest pickup available after ${estimatedWaitingTime} minutes`,
+        earliestAvailableAt: earliestSlot.slotStart,
+        message: `Earliest pickup: ${earliestSlot.dayLabel} at ${earliestSlot.label.split(' - ')[0]} (in ~${minutesUntilEarliest} mins)`,
       },
-      "Time slots generated successfully"
+      "Time slots fetched successfully"
     )
   );
 });

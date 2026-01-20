@@ -249,6 +249,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   const validStatuses = ["Waiting", "Finished", "Delivered", "Cancelled"];
   const validRestaurantStatuses = [
     "Pending",
+    "Updated",
     "Accepted",
     "Rejected",
     "Preparing",
@@ -1000,7 +1001,7 @@ export const updateOrderDetails = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       updatedOrder,
-      `Order updated successfully. Changes: ${changesText}`
+      `Order updated successfully. Changes: ${changes.join(", ")}`
     )
   );
 });

@@ -1,5 +1,5 @@
 "use client";
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Calendar, Home, Inbox, Search, Settings, FolderOpen } from "lucide-react"
 
 import {
   Sidebar,
@@ -17,6 +17,11 @@ const items = [
     title: "Dashboard",
     url: "/admin/dashboard",
     icon: Home,
+  },
+  {
+    title: "Categories",
+    url: "/admin/categories",
+    icon: FolderOpen,
   },
   {
     title: "Menu",
@@ -47,7 +52,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel className="text-lg text-orange-600 my-5">
             <img src="/image.png" alt="Predine Logo" className="inline-block w-10 h-10 mr-2" />
-            Preorder
+            Predine
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

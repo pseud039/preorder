@@ -3,6 +3,7 @@ import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { NotificationService } from "../../utils/notification/notification.service.js";
+import { calculatePriceBreakdown, calculateOrderTotals } from "../../utils/order.service.js";
 import crypto from "crypto";
 import Restraunt_ID from "../../utils/constant.js";
 
@@ -97,12 +98,22 @@ const getCart = asyncHandler(async (req, res) => {
     (item) => !item.menuItem.isAvailable
   );
 
-  const totalAmount = cart.items.reduce(
+  const subtotal = cart.items.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
 
   const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Get restaurant tax rate for price calculation
+  const restaurantData = await prisma.restaurant.findUnique({
+    where: { id: cart.restaurantId },
+    select: { taxRate: true },
+  });
+  const taxRate = restaurantData?.taxRate || 0.05;
+
+  // Calculate full price breakdown including tax and platform fee
+  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
 
   const maxWaitingTime = cart.items.reduce((max, item) => {
     const actualWaitingTime = restaurant
@@ -115,7 +126,12 @@ const getCart = asyncHandler(async (req, res) => {
 
   const cartWithTotals = {
     ...cart,
-    totalAmount,
+    subtotal: priceBreakdown.subtotal,
+    tax: priceBreakdown.tax,
+    taxPercentage: priceBreakdown.taxPercentage,
+    platformFee: priceBreakdown.platformFee,
+    totalAmount: priceBreakdown.totalAmount,
+    priceBreakdown: priceBreakdown.breakdown,
     itemCount,
     estimatedWaitingTime: Math.round(maxWaitingTime),
   };
@@ -226,17 +242,30 @@ const addToCart = asyncHandler(async (req, res) => {
 
   const updatedCart = await getCartWithDetails(cart.id);
 
-  const totalAmount = updatedCart.items.reduce(
+  const subtotal = updatedCart.items.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
+
+  // Get restaurant tax rate
+  const restaurantData = await prisma.restaurant.findUnique({
+    where: { id: menuItem.restaurant.id },
+    select: { taxRate: true },
+  });
+  const taxRate = restaurantData?.taxRate || 0.05;
+
+  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
 
   res.status(200).json(
     new ApiResponse(
       200,
       {
         cart: updatedCart,
-        totalAmount,
+        subtotal: priceBreakdown.subtotal,
+        tax: priceBreakdown.tax,
+        platformFee: priceBreakdown.platformFee,
+        totalAmount: priceBreakdown.totalAmount,
+        priceBreakdown: priceBreakdown.breakdown,
         itemCount: updatedCart.items.reduce(
           (sum, item) => sum + item.quantity,
           0
@@ -297,17 +326,31 @@ const updateCartItem = asyncHandler(async (req, res) => {
     }
 
     const updatedCart = await getCartWithDetails(cartItem.cartId);
-    const totalAmount = updatedCart.items.reduce(
+    const subtotal = updatedCart.items.reduce(
       (sum, item) => sum + parseFloat(item.price) * item.quantity,
       0
     );
+
+    // Get restaurant tax rate
+    const restaurantData = updatedCart.items.length > 0 
+      ? await prisma.restaurant.findUnique({
+          where: { id: updatedCart.restaurantId },
+          select: { taxRate: true },
+        })
+      : null;
+    const taxRate = restaurantData?.taxRate || 0.05;
+    const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
 
     return res.status(200).json(
       new ApiResponse(
         200,
         {
           cart: updatedCart,
-          totalAmount,
+          subtotal: priceBreakdown.subtotal,
+          tax: priceBreakdown.tax,
+          platformFee: priceBreakdown.platformFee,
+          totalAmount: priceBreakdown.totalAmount,
+          priceBreakdown: priceBreakdown.breakdown,
           itemCount: updatedCart.items.reduce(
             (sum, item) => sum + item.quantity,
             0
@@ -327,17 +370,29 @@ const updateCartItem = asyncHandler(async (req, res) => {
   });
 
   const updatedCart = await getCartWithDetails(cartItem.cartId);
-  const totalAmount = updatedCart.items.reduce(
+  const subtotal = updatedCart.items.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
+
+  // Get restaurant tax rate
+  const restaurantData = await prisma.restaurant.findUnique({
+    where: { id: updatedCart.restaurantId },
+    select: { taxRate: true },
+  });
+  const taxRate = restaurantData?.taxRate || 0.05;
+  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
 
   res.status(200).json(
     new ApiResponse(
       200,
       {
         cart: updatedCart,
-        totalAmount,
+        subtotal: priceBreakdown.subtotal,
+        tax: priceBreakdown.tax,
+        platformFee: priceBreakdown.platformFee,
+        totalAmount: priceBreakdown.totalAmount,
+        priceBreakdown: priceBreakdown.breakdown,
         itemCount: updatedCart.items.reduce(
           (sum, item) => sum + item.quantity,
           0
@@ -382,17 +437,31 @@ const removeFromCart = asyncHandler(async (req, res) => {
   }
 
   const updatedCart = await getCartWithDetails(cartItem.cartId);
-  const totalAmount = updatedCart.items.reduce(
+  const subtotal = updatedCart.items.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
+
+  // Get restaurant tax rate
+  const restaurantData = updatedCart.items.length > 0 
+    ? await prisma.restaurant.findUnique({
+        where: { id: updatedCart.restaurantId },
+        select: { taxRate: true },
+      })
+    : null;
+  const taxRate = restaurantData?.taxRate || 0.05;
+  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
 
   res.status(200).json(
     new ApiResponse(
       200,
       {
         cart: updatedCart,
-        totalAmount,
+        subtotal: priceBreakdown.subtotal,
+        tax: priceBreakdown.tax,
+        platformFee: priceBreakdown.platformFee,
+        totalAmount: priceBreakdown.totalAmount,
+        priceBreakdown: priceBreakdown.breakdown,
         itemCount: updatedCart.items.reduce(
           (sum, item) => sum + item.quantity,
           0
@@ -470,10 +539,16 @@ const createOrder = asyncHandler(async (req, res) => {
     );
   }
 
-  const totalAmount = cart.items.reduce(
+  // Calculate subtotal (items only)
+  const subtotal = cart.items.reduce(
     (sum, item) => sum + parseFloat(item.price) * item.quantity,
     0
   );
+
+  // Calculate full price breakdown with tax and platform fee
+  const taxRate = restaurant.taxRate || 0.05;
+  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+  const totalAmount = priceBreakdown.totalAmount;
 
   const maxWaitingTime = cart.items.reduce((max, item) => {
     const actualWaitingTime =
@@ -626,7 +701,10 @@ const createOrder = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         201,
-        { order: completeOrder },
+        { 
+          order: completeOrder,
+          priceBreakdown: priceBreakdown.breakdown,
+        },
         "Order placed successfully. Waiting for restaurant confirmation."
       )
     );
@@ -815,6 +893,7 @@ const getOrderById = asyncHandler(async (req, res) => {
           description: true,
           address: true,
           contactNumber: true,
+          taxRate: true,
         },
       },
       timeSlot: true,
@@ -831,9 +910,20 @@ const getOrderById = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Unauthorized to view this order");
   }
 
+  // Calculate price breakdown for order details
+  const subtotal = order.orderItems.reduce(
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
+    0
+  );
+  const taxRate = order.restaurant.taxRate || 0.05;
+  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+
   res
     .status(200)
-    .json(new ApiResponse(200, { order }, "Order fetched successfully"));
+    .json(new ApiResponse(200, { 
+      order,
+      priceBreakdown: priceBreakdown.breakdown,
+    }, "Order fetched successfully"));
 });
 
 const getOrderStatus = asyncHandler(async (req, res) => {

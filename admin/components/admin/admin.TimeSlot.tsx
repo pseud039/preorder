@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface TimeSlot {
   id?: number;
@@ -41,13 +42,6 @@ const DAYS_OF_WEEK = [
   { value: 5, label: "Friday", short: "Fri" },
   { value: 6, label: "Saturday", short: "Sat" },
 ];
-
-// Simple toast replacement
-const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-  console.log(`[${type.toUpperCase()}] ${message}`);
-  // You can replace this with your actual toast implementation
-  alert(`${type.toUpperCase()}: ${message}`);
-};
 
 export default function TimeSlotManagement() {
   const [loading, setLoading] = useState(false);
@@ -72,7 +66,7 @@ export default function TimeSlotManagement() {
       });
 
       if (response.status === 401) {
-        showToast("Session expired. Please login again.", 'error');
+        toast.error("Session expired. Please login again.");
         window.location.href = "/login";
         return;
       }
@@ -111,7 +105,7 @@ export default function TimeSlotManagement() {
       }
     } catch (error) {
       console.error("Error fetching time slots:", error);
-      showToast("Failed to load time slots", 'error');
+      toast.error("Failed to load time slots");
     } finally {
       setFetchingSlots(false);
     }
@@ -125,12 +119,12 @@ export default function TimeSlotManagement() {
 
   const generateSlots = () => {
     if (selectedDays.length === 0) {
-      showToast("Please select at least one day", 'error');
+      toast.error("Please select at least one day");
       return;
     }
 
     if (!startTime || !endTime) {
-      showToast("Please select start and end times", 'error');
+      toast.error("Please select start and end times");
       return;
     }
 
@@ -141,7 +135,7 @@ export default function TimeSlotManagement() {
     const endMinutes = endHour * 60 + endMin;
 
     if (startMinutes >= endMinutes) {
-      showToast("End time must be after start time", 'error');
+      toast.error("End time must be after start time");
       return;
     }
 
@@ -177,10 +171,38 @@ export default function TimeSlotManagement() {
     });
 
     setDaySlots(newSlots);
-    showToast(`Generated slots for ${selectedDays.length} day(s)`, 'success');
+    toast.success(`Generated slots for ${selectedDays.length} day(s)`);
   };
 
-  const removeSlot = (day: number, index: number) => {
+  const removeSlot = async (day: number, index: number) => {
+    const slot = daySlots[day][index];
+    
+    // If slot has an ID, it exists in the backend - delete it
+    if (slot.id) {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const response = await fetch(`${apiUrl}/admin/timeslots/${slot.id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          toast.error(data.message || "Failed to delete time slot");
+          return;
+        }
+
+        toast.success("Time slot deleted");
+      } catch (error) {
+        console.error("Error deleting time slot:", error);
+        toast.error("Failed to delete time slot");
+        return;
+      }
+    }
+
+    // Update local state
     setDaySlots((prev) => {
       const updated = { ...prev };
       updated[day] = updated[day].filter((_, i) => i !== index);
@@ -191,26 +213,80 @@ export default function TimeSlotManagement() {
     });
   };
 
-  const toggleSlotAvailability = (day: number, index: number) => {
+  const toggleSlotAvailability = async (day: number, index: number) => {
+    const slot = daySlots[day][index];
+    const newAvailability = !slot.isAvailable;
+
+    // If slot has an ID, update in backend
+    if (slot.id) {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const response = await fetch(`${apiUrl}/admin/timeslots/${slot.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ isAvailable: newAvailability }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          toast.error(data.message || "Failed to update time slot");
+          return;
+        }
+      } catch (error) {
+        console.error("Error updating time slot:", error);
+        toast.error("Failed to update time slot");
+        return;
+      }
+    }
+
+    // Update local state
     setDaySlots((prev) => {
       const updated = { ...prev };
       updated[day] = [...updated[day]];
       updated[day][index] = {
         ...updated[day][index],
-        isAvailable: !updated[day][index].isAvailable
+        isAvailable: newAvailability
       };
       return updated;
     });
   };
 
-  const clearDay = (day: number) => {
-    setDaySlots((prev) => {
-      const updated = { ...prev };
-      delete updated[day];
-      return updated;
-    });
+  const clearDay = async (day: number) => {
     const dayName = DAYS_OF_WEEK.find((d) => d.value === day)?.label;
-    showToast(`Cleared slots for ${dayName}`, 'info');
+    
+    if (!confirm(`Are you sure you want to delete all slots for ${dayName}?`)) {
+      return;
+    }
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const response = await fetch(`${apiUrl}/admin/timeslots/day/${day}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || "Failed to clear day");
+        return;
+      }
+
+      // Update local state
+      setDaySlots((prev) => {
+        const updated = { ...prev };
+        delete updated[day];
+        return updated;
+      });
+
+      toast.success(`Cleared ${data.data?.count || 0} slot(s) for ${dayName}`);
+    } catch (error) {
+      console.error("Error clearing day:", error);
+      toast.error("Failed to clear day");
+    }
   };
 
   const saveTimeSlots = async () => {
@@ -220,7 +296,7 @@ export default function TimeSlotManagement() {
     });
 
     if (allSlots.length === 0) {
-      showToast("No time slots to save", 'error');
+      toast.error("No time slots to save");
       return;
     }
 
@@ -264,11 +340,11 @@ export default function TimeSlotManagement() {
         throw new Error(data.message || "Failed to save time slots");
       }
 
-      showToast(`Successfully saved ${allSlots.length} time slot(s)`, 'success');
+      toast.success(`Successfully saved ${allSlots.length} time slot(s)`);
       await fetchTimeSlots();
     } catch (error: any) {
       console.error("Error saving time slots:", error);
-      showToast(error.message || "Failed to save time slots", 'error');
+      toast.error(error.message || "Failed to save time slots");
     } finally {
       setLoading(false);
     }

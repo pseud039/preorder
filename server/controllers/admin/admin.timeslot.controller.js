@@ -93,6 +93,7 @@ export const createTimeSlot = asyncHandler(async (req, res) => {
 });
 
 // Batch create time slots (for bulk generation)
+// Batch create time slots (for bulk generation)
 export const batchCreateTimeSlots = asyncHandler(async (req, res) => {
   const { slots } = req.body;
 
@@ -113,6 +114,10 @@ export const batchCreateTimeSlots = asyncHandler(async (req, res) => {
     const startDate = new Date(slot.slotStart);
     const endDate = new Date(slot.slotEnd);
 
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      throw new ApiError(400, "Invalid date format for slotStart or slotEnd");
+    }
+
     if (startDate >= endDate) {
       throw new ApiError(400, "slotStart must be before slotEnd");
     }
@@ -128,13 +133,19 @@ export const batchCreateTimeSlots = asyncHandler(async (req, res) => {
 
   // Create new slots
   const createdSlots = await prisma.timeSlot.createMany({
-    data: slots.map((slot) => ({
-      dayOfWeek: parseInt(slot.dayOfWeek),
-      slotStart: new Date(slot.slotStart),
-      slotEnd: new Date(slot.slotEnd),
-      isAvailable: slot.isAvailable ?? true,
-      bookedCount: 0,
-    })),
+    data: slots.map((slot) => {
+      // 🔥 FIX: Ensure dates are properly parsed
+      const slotStart = new Date(slot.slotStart);
+      const slotEnd = new Date(slot.slotEnd);
+      
+      return {
+        dayOfWeek: parseInt(slot.dayOfWeek),
+        slotStart: slotStart,
+        slotEnd: slotEnd,
+        isAvailable: slot.isAvailable ?? true,
+        bookedCount: 0,
+      };
+    }),
   });
 
   res.status(201).json(

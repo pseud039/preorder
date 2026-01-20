@@ -237,7 +237,7 @@ export default function SearchPage() {
                 <h4 className="font-bold px-4 text-gray-900 text-sm mb-1 truncate flex justify-between items-center">
                   {item.name}
                   <button className="w-8 h-8 bg-white flex items-center justify-center">
-                    <Heart className="w-4 h-4 text-red-500 hover:cursor-pointer" />
+                    {/* <Heart className="w-4 h-4 text-red-500 hover:cursor-pointer" /> */}
                   </button>
                 </h4>
                 <div className="pb-4 px-4 flex items-center justify-between">

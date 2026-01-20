@@ -428,7 +428,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\Projects\\Clients\\Utkal\\preorder\\server\\lib\\generated\\prisma",
+      "value": "C:\\Web_dev\\predine\\preorder\\server\\lib\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -457,7 +457,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\Projects\\Clients\\Utkal\\preorder\\server\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Web_dev\\predine\\preorder\\server\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

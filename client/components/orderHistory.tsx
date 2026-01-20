@@ -42,12 +42,26 @@ interface TimeSlot {
   slotEnd: string;
 }
 
+interface PriceBreakdown {
+  itemsTotal: number;
+  taxAmount: number;
+  taxLabel: string;
+  platformFeeAmount: number;
+  platformFeeLabel: string;
+  grandTotal: number;
+}
+
 interface Order {
   id: number;
   status: string;
   restaurantStatus: string;
   paymentStatus: string;
   totalAmount: string;
+  subtotal?: number;
+  tax?: number;
+  taxPercentage?: number;
+  platformFee?: number;
+  priceBreakdown?: PriceBreakdown;
   notes: string | null;
   estimatedWaitingTime: number | null;
   estimatedReadyTime: string | null;
@@ -204,11 +218,11 @@ export default function OrderHistory() {
 
   return (
     
-    <div className="max-w-md mx-auto min-h-screen relative overflow-hidden font-[inter]">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
-      <div className="absolute top-40 left-0 w-64 h-64 bg-primary/30 rounded-full z-10 blur-3xl opacity-30 -ml-32 -mb-32"></div>
+    <div className="max-w-md mx-auto min-h-screen relative bg-accent/10 overflow-hidden font-[inter]">
+      {/* <div className="absolute top-0 right-0 w-64 h-64 bg-primary/50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
+      <div className="absolute top-40 left-0 w-64 h-64 bg-primary/30 rounded-full z-10 blur-3xl opacity-30 -ml-32 -mb-32"></div> */}
       
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-24">
+    <div className="max-w-md mx-auto min-h-screen  pb-24">
       {/* Header */}
       <div className=" shadow-sm sticky top-0 z-10">
         <div className="px-6 py-6">
@@ -305,7 +319,7 @@ export default function OrderHistory() {
                   <span>{formatDate(order.createdAt)}</span>
                 </div>
                 <span className="text-lg font-bold text-primary">
-                  ₹{parseFloat(order.totalAmount).toFixed(2)}
+                  ₹{(order.priceBreakdown?.grandTotal ?? parseFloat(order.totalAmount)).toFixed(2)}
                 </span>
               </div>
 

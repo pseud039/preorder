@@ -40,6 +40,15 @@ interface CartItem {
   menuItem: MenuItem;
 }
 
+interface PriceBreakdown {
+  itemsTotal: number;
+  taxAmount: number;
+  taxLabel: string;
+  platformFeeAmount: number;
+  platformFeeLabel: string;
+  grandTotal: number;
+}
+
 interface Cart {
   id: number;
   userId: number;
@@ -49,6 +58,11 @@ interface Cart {
   items: CartItem[];
   totalAmount: number;
   itemCount: number;
+  subtotal?: number;
+  tax?: number;
+  taxPercentage?: number;
+  platformFee?: number;
+  priceBreakdown?: PriceBreakdown;
 }
 
 interface UserDetails {
@@ -396,9 +410,13 @@ export default function CartPage() {
     }
   };
 
-  const subtotal = cart?.totalAmount || 0;
-  const tax = subtotal * 0.1;
-  const total = subtotal + tax;
+  // Use API-provided breakdown or calculate defaults
+  const subtotal = cart?.priceBreakdown?.itemsTotal ?? cart?.subtotal ?? cart?.totalAmount ?? 0;
+  const taxAmount = cart?.priceBreakdown?.taxAmount ?? cart?.tax ?? subtotal * 0.05;
+  const taxLabel = cart?.priceBreakdown?.taxLabel ?? `GST (${cart?.taxPercentage ?? 5}%)`;
+  const platformFee = cart?.priceBreakdown?.platformFeeAmount ?? cart?.platformFee ?? 15;
+  const platformFeeLabel = cart?.priceBreakdown?.platformFeeLabel ?? "Platform Fee";
+  const total = cart?.priceBreakdown?.grandTotal ?? (subtotal + taxAmount + platformFee);
 
   if (loading) {
     return (
@@ -532,8 +550,12 @@ export default function CartPage() {
                   <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-700">
-                  <span>Tax (10%)</span>
-                  <span>₹{tax.toFixed(2)}</span>
+                  <span>{taxLabel}</span>
+                  <span>₹{taxAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-700">
+                  <span>{platformFeeLabel}</span>
+                  <span>₹{platformFee.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-gray-900 text-lg">
                   <span>Total</span>
@@ -552,7 +574,7 @@ export default function CartPage() {
               >
                 {!userDetails?.name || !userDetails?.phone
                   ? "Add Details to Checkout"
-                  : `Checkout - ₹${total}`}
+                  : `Checkout - ₹${total.toFixed(2)}`}
               </button>
             </div>
           )}

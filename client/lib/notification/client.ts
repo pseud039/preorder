@@ -96,7 +96,7 @@ export const subscribeToPushNotifications = async (accessToken: string): Promise
       throw new Error('Notification permission denied');
     }
 
-    let registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.ready;
     // if (!registration) {
     //   const reg = await registerServiceWorker();
     //   if (!reg) {

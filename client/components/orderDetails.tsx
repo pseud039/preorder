@@ -11,13 +11,24 @@ import {
   ChefHat,
   CreditCard,
   Calendar,
-  Receipt,
+  AlertTriangle,
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { Button } from "./ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface MenuItem {
   id: number;
@@ -46,16 +57,31 @@ interface TimeSlot {
   slotEnd: string;
 }
 
+interface PriceBreakdown {
+  itemsTotal: number;
+  taxAmount: number;
+  taxLabel: string;
+  platformFeeAmount: number;
+  platformFeeLabel: string;
+  grandTotal: number;
+}
+
 interface Order {
   id: number;
   status: string;
   restaurantStatus: string;
   paymentStatus: string;
   totalAmount: string;
+  subtotal?: number;
+  tax?: number;
+  taxPercentage?: number;
+  platformFee?: number;
+  priceBreakdown?: PriceBreakdown;
   notes: string | null;
   estimatedWaitingTime: number | null;
   estimatedReadyTime: string | null;
   createdAt: string;
+  isEditedByRestaurant?: boolean; // NEW: Flag to check if edited
   orderItems: OrderItem[];
   restaurant: Restaurant;
   timeSlot: TimeSlot | null;
@@ -70,6 +96,9 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
   // Setup Socket.IO for real-time order updates
   useEffect(() => {
@@ -93,7 +122,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
 
     // Listen for order-related notifications
     newSocket.on("notification", (notification) => {
-      console.log(" Order notification received:", notification);
+      console.log("🔔 Order notification received:", notification);
 
       const orderRelatedTypes = [
         "ORDER_ACCEPTED",
@@ -103,6 +132,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
         "ORDER_COMPLETED",
         "ORDER_EXPIRED",
         "PAYMENT_EXPIRED",
+        "ORDER_UPDATED", // NEW: Listen for order updates
       ];
 
       // Auto-refresh order when status changes
@@ -145,6 +175,41 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
       toast.error("Failed to fetch order");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!order) return;
+
+    try {
+      setCancelling(true);
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/client/orders/${orderId}/cancel`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            reason: cancelReason || "Did not agree with order modifications",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Order cancelled successfully");
+        setShowCancelDialog(false);
+        fetchOrder(); // Refresh order data
+      } else {
+        toast.error(data.message || "Failed to cancel order");
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast.error("Failed to cancel order");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -209,6 +274,19 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
     order.restaurantStatus === "Accepted" &&
     order.paymentStatus !== "paid";
 
+  const canCancel =
+    order &&
+    order.status !== "Cancelled" &&
+    order.paymentStatus !== "paid" &&
+    !["Preparing", "Ready", "Completed"].includes(order.restaurantStatus);
+
+  // NEW: Check if order was edited by restaurant and user hasn't paid yet
+  const showEditWarning =
+    order &&
+    order.isEditedByRestaurant &&
+    order.paymentStatus !== "paid" &&
+    order.status !== "Cancelled";
+
   if (loading) {
     return (
       <div className="max-w-md mx-auto min-h-screen flex items-center justify-center bg-gray-50">
@@ -234,9 +312,9 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
   }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 pb-24">
+    <div className="max-w-md mx-auto min-h-screen bg-accent/10 relative overflow-hidden font-[inter] pb-24">
       {/* Order Details View */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
+      <div className="shadow-xs top-0">
         <div className="px-6 py-4 flex items-center gap-4">
           <button
             onClick={() => router.push("/order-history")}
@@ -252,6 +330,25 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
       </div>
 
       <div className="p-6 space-y-4">
+        {/* NEW: Edit Warning Banner */}
+        {showEditWarning && (
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-orange-900 mb-1">
+                  Order Modified by Restaurant
+                </h4>
+                <p className="text-sm text-orange-800">
+                  The restaurant has made changes to your order. Please review
+                  the updated items and total amount. You can proceed to payment
+                  if you agree, or cancel the order.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Status Card */}
         <div className="bg-white rounded-3xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
@@ -279,9 +376,7 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
               <span className="text-sm text-gray-500">Payment</span>
             </div>
             {canPay ? (
-              <div className="text-primary text-sm">
-                Pay Now
-              </div>
+              <div className="text-primary text-sm">Pay Now</div>
             ) : (
               <span
                 className={`px-3 py-1 rounded-full text-xs font-semibold ${getPaymentStatusColor(
@@ -331,6 +426,11 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
         <div className="bg-white rounded-3xl shadow-md p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             Order Items
+            {showEditWarning && (
+              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                Modified
+              </span>
+            )}
           </h3>
           <div className="space-y-3">
             {order.orderItems.map((item) => (
@@ -369,11 +469,51 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
             ))}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
+          <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+            <div className="flex items-center justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span>
+                ₹
+                {(
+                  order.priceBreakdown?.itemsTotal ??
+                  order.subtotal ??
+                  parseFloat(order.totalAmount)
+                ).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-gray-600">
+              <span>
+                {order.priceBreakdown?.taxLabel ??
+                  `GST (${order.taxPercentage ?? 5}%)`}
+              </span>
+              <span>
+                ₹
+                {(order.priceBreakdown?.taxAmount ?? order.tax ?? 0).toFixed(
+                  2
+                )}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-gray-600">
+              <span>
+                {order.priceBreakdown?.platformFeeLabel ?? "Platform Fee"}
+              </span>
+              <span>
+                ₹
+                {(
+                  order.priceBreakdown?.platformFeeAmount ??
+                  order.platformFee ??
+                  0
+                ).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
               <span className="text-lg font-bold text-gray-900">Total</span>
               <span className="text-2xl font-bold text-primary">
-                ₹{parseFloat(order.totalAmount).toFixed(2)}
+                ₹
+                {(
+                  order.priceBreakdown?.grandTotal ??
+                  parseFloat(order.totalAmount)
+                ).toFixed(2)}
               </span>
             </div>
           </div>
@@ -404,13 +544,73 @@ export default function OrderDetails({ orderId }: OrderDetailsProps) {
           )}
         </div>
 
-        {/* Pay Now Button at bottom */}
+        {/* Action Buttons */}
         {canPay && (
-          <Button className="w-full" size="lg" onClick={handlePayment}>
-            Pay Now
-          </Button>
+          <div className="space-y-3">
+            <Button className="w-full" size="lg" onClick={handlePayment}>
+              Proceed to Payment
+            </Button>
+
+            {/* NEW: Cancel Order Button when edited */}
+            {showEditWarning && canCancel && (
+              <Button
+                className="w-full"
+                size="lg"
+                variant="outline"
+                onClick={() => setShowCancelDialog(true)}
+              >
+                Cancel Order
+              </Button>
+            )}
+          </div>
         )}
       </div>
+
+      {/* NEW: Cancel Order Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this order? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="my-4">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Reason for cancellation (optional)
+            </label>
+            <Textarea
+              placeholder="e.g., Did not agree with the modifications..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>
+              Keep Order
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelOrder}
+              disabled={cancelling}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {cancelling ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                "Cancel Order"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

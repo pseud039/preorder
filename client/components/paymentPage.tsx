@@ -27,9 +27,23 @@ interface TimeSlot {
   slotEnd: string;
 }
 
+interface PriceBreakdown {
+  itemsTotal: number;
+  taxAmount: number;
+  taxLabel: string;
+  platformFeeAmount: number;
+  platformFeeLabel: string;
+  grandTotal: number;
+}
+
 interface OrderDetails {
   id: number;
   totalAmount: number;
+  subtotal?: number;
+  tax?: number;
+  taxPercentage?: number;
+  platformFee?: number;
+  priceBreakdown?: PriceBreakdown;
   restaurantId: number;
   timeSlotId?: number;
   notes?: string;
@@ -237,7 +251,7 @@ export default function PaymentPage() {
                 Amount to Pay
               </p>
               <p className="text-5xl font-bold text-primary">
-                ₹{orderDetails.totalAmount}
+                ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount).toFixed(2)}
               </p>
             </div>
           </div>
@@ -342,11 +356,29 @@ export default function PaymentPage() {
                 ))}
               </div>
 
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center text-lg">
+              <div className="border-t pt-4 space-y-2">
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>Subtotal</span>
+                  <span>
+                    ₹{(orderDetails.priceBreakdown?.itemsTotal ?? orderDetails.subtotal ?? orderDetails.totalAmount).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>{orderDetails.priceBreakdown?.taxLabel ?? `GST (${orderDetails.taxPercentage ?? 5}%)`}</span>
+                  <span>
+                    ₹{(orderDetails.priceBreakdown?.taxAmount ?? orderDetails.tax ?? 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>{orderDetails.priceBreakdown?.platformFeeLabel ?? "Platform Fee"}</span>
+                  <span>
+                    ₹{(orderDetails.priceBreakdown?.platformFeeAmount ?? orderDetails.platformFee ?? 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-lg pt-2 border-t">
                   <span className="font-semibold text-gray-900">Total</span>
                   <span className="font-bold text-orange-600">
-                    ₹{orderDetails.totalAmount}
+                    ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -369,7 +401,7 @@ export default function PaymentPage() {
             ) : (
               <>
                 <CreditCard className="w-5 h-5" />
-                Pay ₹{orderDetails.totalAmount} with Paytm
+                Pay ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount).toFixed(2)} with Paytm
               </>
             )}
           </button>

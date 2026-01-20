@@ -23,7 +23,9 @@ import {
   deleteItem,
   createCategory,
   getMenu,
-  getCategories
+  getCategories,
+  updateCategory,
+  deleteCategory
 } from "../controllers/admin/admin.menu.controller.js";
 
 // Admin TimeSlot Controllers
@@ -94,6 +96,8 @@ router.delete("/menu/:id", verifyJWT, isAdmin, deleteItem);
 
 router.get("/categories", verifyJWT, isAdmin, getCategories);
 router.post("/categories", verifyJWT, isAdmin, upload.single("imageUrl"), createCategory);
+router.patch("/categories/:id", verifyJWT, isAdmin, upload.single("imageUrl"), updateCategory);
+router.delete("/categories/:id", verifyJWT, isAdmin, deleteCategory);
 
 // TimeSlot routes
 router.get("/timeslots", verifyJWT, isAdmin, getTimeSlots);

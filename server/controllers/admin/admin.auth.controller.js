@@ -8,6 +8,7 @@ import { ApiError } from "../../utils/ApiError.js";
 import { transporter } from "../../utils/email/emailConfig.js";
 import { emailTemplates } from "../../utils/email/emailTemplates.js";
 import Restraunt_ID from "../../utils/constant.js";
+import { parseDuration } from "../user.controller.js";
 
 export const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -61,7 +62,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
       role: user.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 
   const refreshToken = jwt.sign(
@@ -71,7 +72,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
       role: user.role,
     },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
   );
 
   await prisma.refreshToken.create({
@@ -86,7 +87,8 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 15 * 60 * 1000, // 15 minutes
+    // maxAge: 15 * 60 * 1000, // 15 minutes
+    maxAge: parseDuration(process.env.ACCESS_TOKEN_EXPIRY),
     path: "/",
   });
 
@@ -94,7 +96,9 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+     maxAge: parseDuration(process.env.REFRESH_TOKEN_EXPIRY),
+
     path: "/",
   });
 
@@ -190,14 +194,14 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       role: user.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
+    maxAge: parseDuration(process.env.ACCESS_TOKEN_EXPIRY),
     path: "/",
   });
 
@@ -453,7 +457,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetLink = `${process.env.FRONTEND_URL}/admin/reset-password/${resetToken}`;
 
   try {
-    const mailTemp = emailTemplates.passwordReset(email, user.name, resetLink);
+    const mailTemp = emailTemplates.ForgotPassword(email,resetLink);
     await transporter.sendMail({
       ...mailTemp,
       to: email,

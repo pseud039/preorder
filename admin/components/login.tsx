@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import portalImg  from "@/public/login.png"
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
   className?: string;
@@ -147,7 +148,9 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 gap-12 md:px-16 md:py-8">
-      <div className="bg-[#e8eee3] rounded-xl hidden md:block"></div>
+      <div className="bg-[#e8eee3] rounded-xl hidden md:flex items-end overflow-hidden">
+        <img src={portalImg.src} alt="Portal Image" className="ml-5 h-4/6 rounded-l-xl bg-white py-2"/>
+      </div>
       <form
         className="flex justify-center w-3/4 mx-auto flex-col gap-6"
         {...props}

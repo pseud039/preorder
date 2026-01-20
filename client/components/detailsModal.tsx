@@ -119,7 +119,7 @@ export default function UserDetailsModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
-                className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                className="w-full pl-11 pr-4 py-3 border text-gray-700  border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                 disabled={loading}
                 required
               />
@@ -143,8 +143,8 @@ export default function UserDetailsModal({
                   const val = e.target.value.replace(/\D/g, "");
                   if (val.length <= 10) setPhone(val);
                 }}
-                placeholder="9876543210"
-                className="w-full pl-20 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                placeholder="Enter your phone number"
+                className="w-full pl-20 pr-4 py-3 border  text-gray-700 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                 disabled={loading}
                 maxLength={10}
                 required

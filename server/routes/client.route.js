@@ -138,7 +138,7 @@ import {
 } from "../controllers/client/client.details.contoller.js";
 import { isCustomer, verifyJWT } from "../middlewares/middleware.js";
 import { refreshToken } from "../controllers/user.controller.js";
-
+import { getTimeSlots } from "../controllers/admin/admin.timeslot.controller.js";
 const router = express.Router();
 
 router.post("/signup", signup);
@@ -181,6 +181,8 @@ router.post("/remove", verifyJWT, isCustomer, clearCart);
 // ============================================
 router.get("/available", verifyJWT, isCustomer, getAvailableTimeSlots);
 router.post("/select", verifyJWT, isCustomer, selectTimeSlot);
+router.get("/timeslots", verifyJWT, getTimeSlots);
+
 
 // ============================================
 // ORDER MANAGEMENT

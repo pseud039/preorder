@@ -11,6 +11,7 @@ import { transporter } from "../../utils/email/emailConfig.js";
 import {
   generateAccessToken,
   generateRefreshToken,
+  parseDuration
 } from "../user.controller.js";
 
 const signup = asyncHandler(async (req, res) => {
@@ -90,12 +91,12 @@ const signup = asyncHandler(async (req, res) => {
         201,
         { user },
         "Account created successfully. Please verify your email.",
-        "/login"
-      )
+        "/login",
+      ),
     );
 });
 
-const verifyEmail = asyncHandler(async (req, res) => {
+const   verifyEmail = asyncHandler(async (req, res) => {
   const { token } = req.params;
 
   if (!token) {
@@ -131,7 +132,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(
-      new ApiResponse(200, null, "Email verified successfully", "/auth/login")
+      new ApiResponse(200, null, "Email verified successfully", "/auth/login"),
     );
 });
 
@@ -304,13 +305,13 @@ const login = asyncHandler(async (req, res) => {
   if (!user.isActive) {
     throw new ApiError(
       403,
-      "Your account has been deactivated. Please contact support"
+      "Your account has been deactivated. Please contact support",
     );
   }
-  if(!user.emailVerified){
+  if (!user.emailVerified) {
     throw new ApiError(401, "Please verify your email to login");
   }
-  
+
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordValid) {
@@ -331,7 +332,8 @@ const login = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true, // process.env.NODE_ENV === "production",
     sameSite: "Lax",
-    maxAge: 1 * 60 * 60 * 1000,
+    // maxAge: 1 * 60 * 60 * 1000,
+    maxAge: parseDuration(process.env.ACCESS_TOKEN_EXPIRY),
     // path: "/",
   });
 
@@ -357,8 +359,8 @@ const login = asyncHandler(async (req, res) => {
         accessToken,
         refreshToken,
       },
-      "Login successful"
-    )
+      "Login successful",
+    ),
   );
 });
 
@@ -385,7 +387,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
   }
 
   const { accessToken, refreshToken: newRefreshToken } = generateTokens(
-    user.id
+    user.id,
   );
 
   await prisma.user.update({
@@ -400,8 +402,8 @@ export const refreshToken = asyncHandler(async (req, res) => {
         accessToken,
         refreshToken: newRefreshToken,
       },
-      "Token refreshed successfully"
-    )
+      "Token refreshed successfully",
+    ),
   );
 });
 
@@ -441,8 +443,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         new ApiResponse(
           200,
           null,
-          "If the email exists, a password reset link has been sent"
-        )
+          "If the email exists, a password reset link has been sent",
+        ),
       );
     return;
   }
@@ -466,8 +468,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         null,
-        "If the email exists, a password reset link has been sent"
-      )
+        "If the email exists, a password reset link has been sent",
+      ),
     );
 });
 
@@ -510,7 +512,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(
-      new ApiResponse(200, null, "Password reset successful", "/auth/login")
+      new ApiResponse(200, null, "Password reset successful", "/auth/login"),
     );
 });
 

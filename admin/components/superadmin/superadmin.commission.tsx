@@ -172,13 +172,23 @@ export default function CommissionsPage() {
     try {
       setSettlingAll(true);
 
+      // Get all pending commission IDs
+      const pendingCommissions = commissions.filter(c => c.status === "pending");
+      
+      if (pendingCommissions.length === 0) {
+        toast.error("No pending commissions to settle");
+        return;
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/superadmin/commissions/settle`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ settleAll: true }),
+          body: JSON.stringify({ 
+            commissionIds: pendingCommissions.map(c => c.id)
+          }),
         }
       );
 
@@ -188,7 +198,7 @@ export default function CommissionsPage() {
         throw new Error(data.message || "Failed to settle commissions");
       }
 
-      toast.success("All pending commissions settled");
+      toast.success(`${data.data.settledCount} commission(s) settled`);
       fetchCommissions();
       fetchSummary();
     } catch (error: any) {

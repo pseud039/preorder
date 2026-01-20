@@ -1,61 +1,163 @@
 import { prisma } from "../lib/prisma.js";
+import Restraunt_ID from "./constant.js";
 
 export class OrderService {
 
   /**
-   * Generates time slots and stores them in the database if they don't exist.
-   * Returns slots with actual database IDs for proper order association.
+   * Generates available time slots based on restaurant operating hours.
+   * 
+   * Logic:
+   * 1. Get today's day of week
+   * 2. Find template slots from DB for today (and tomorrow if needed)
+   * 3. Convert template times to actual dates for today
+   * 4. Filter out past slots and fully booked slots
+   * 5. Return slots starting from (now + estimatedWaitingTime)
    */
-  static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8) {
-    const slots = [];
-    const now = new Date();
+  // static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8, restaurantId = Restraunt_ID) {
+  //   const now = new Date();
     
-    const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
+  //   // Earliest possible pickup time = now + waiting time
+  //   const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
     
-    const minutes = earliestPickupTime.getMinutes();
-    const roundedMinutes = Math.ceil(minutes / 30) * 30;
-    earliestPickupTime.setMinutes(roundedMinutes);
-    earliestPickupTime.setSeconds(0);
-    earliestPickupTime.setMilliseconds(0);
+  //   // Get today's and tomorrow's day of week
+  //   const todayDayOfWeek = now.getDay();
+  //   const tomorrowDayOfWeek = (todayDayOfWeek + 1) % 7;
     
-    for (let i = 0; i < slotsCount; i++) {
-      const slotStart = new Date(earliestPickupTime.getTime() + i * 30 * 60 * 1000);
-      const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000);
-      const dayOfWeek = slotStart.getDay();
+  //   // Get today's date at midnight (for combining with slot times)
+  //   const todayMidnight = new Date(now);
+  //   todayMidnight.setHours(0, 0, 0, 0);
+    
+  //   const tomorrowMidnight = new Date(todayMidnight);
+  //   tomorrowMidnight.setDate(tomorrowMidnight.getDate() + 1);
+    
+  //   // Fetch template slots for today and tomorrow from database
+  //   const templateSlots = await prisma.timeSlot.findMany({
+  //     where: {
+  //       dayOfWeek: { in: [todayDayOfWeek, tomorrowDayOfWeek] },
+  //       isAvailable: true,
+  //     },
+  //     orderBy: [
+  //       { dayOfWeek: 'asc' },
+  //       { slotStart: 'asc' },
+  //     ],
+  //   });
+    
+  //   if (templateSlots.length === 0) {
+  //     return [];
+  //   }
+    
+  //   const availableSlots = [];
+    
+  //   for (const template of templateSlots) {
+  //     // Determine which date to use based on dayOfWeek
+  //     const baseDate = template.dayOfWeek === todayDayOfWeek ? todayMidnight : tomorrowMidnight;
       
-      // Find or create the slot in the database
-      let dbSlot = await prisma.timeSlot.findFirst({
-        where: {
-          slotStart: slotStart,
-          slotEnd: slotEnd,
-        },
-      });
+  //     // Extract hours and minutes from template slot times
+  //     const templateStart = new Date(template.slotStart);
+  //     const templateEnd = new Date(template.slotEnd);
       
-      if (!dbSlot) {
-        dbSlot = await prisma.timeSlot.create({
-          data: {
-            slotStart: slotStart,
-            slotEnd: slotEnd,
-            dayOfWeek: dayOfWeek,
-            isAvailable: true,
-            bookedCount: 0,
-          },
-        });
+  //     // Create actual slot times for today/tomorrow
+  //     const actualSlotStart = new Date(baseDate);
+  //     actualSlotStart.setHours(templateStart.getHours(), templateStart.getMinutes(), 0, 0);
+      
+  //     const actualSlotEnd = new Date(baseDate);
+  //     actualSlotEnd.setHours(templateEnd.getHours(), templateEnd.getMinutes(), 0, 0);
+      
+  //     // Skip if slot is in the past or before earliest pickup time
+  //     if (actualSlotStart < earliestPickupTime) {
+  //       continue;
+  //     }
+      
+  //     // Skip if fully booked
+  //     if (template.bookedCount >= 30) {
+  //       continue;
+  //     }
+      
+  //     availableSlots.push({
+  //       id: template.id,
+  //       slotStart: actualSlotStart.toISOString(),
+  //       slotEnd: actualSlotEnd.toISOString(),
+  //       label: this.formatTimeRange(actualSlotStart, actualSlotEnd),
+  //       isAvailable: true,
+  //       remainingSlots: Math.max(0, 30 - template.bookedCount),
+  //       isFull: template.bookedCount >= 30,
+  //       dayOfWeek: template.dayOfWeek,
+  //       isToday: template.dayOfWeek === todayDayOfWeek,
+  //       dayLabel: template.dayOfWeek === todayDayOfWeek ? 'Today' : 'Tomorrow',
+  //     });
+      
+  //     // Stop if we have enough slots
+  //     if (availableSlots.length >= slotsCount) {
+  //       break;
+  //     }
+  //   }
+    
+  //   return availableSlots;
+  // }
+  static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8, restaurantId = Restraunt_ID) {
+  const now = new Date();
+  
+  // Earliest possible pickup time = now + waiting time
+  const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
+  
+  // Fetch actual time slots from database that are:
+  // 1. In the future (after earliest pickup time)
+  // 2. Available
+  // 3. Not fully booked
+  const slots = await prisma.timeSlot.findMany({
+    where: {
+      // restaurantId: parseInt(restaurantId),
+      slotStart: {
+        gte: earliestPickupTime, // Only slots after earliest possible pickup
+      },
+      isAvailable: true,
+      bookedCount: {
+        lt: 30, // Not fully booked (assuming capacity is 30)
       }
-      
-      slots.push({
-        id: dbSlot.id, // Use actual database ID
-        slotStart: slotStart.toISOString(), 
-        slotEnd: slotEnd.toISOString(),     
-        label: this.formatTimeRange(slotStart, slotEnd),
-        isAvailable: dbSlot.isAvailable,
-        remainingSlots: 30 - dbSlot.bookedCount, // Assuming capacity of 30
-        isFull: dbSlot.bookedCount >= 30,
-      });
+    },
+    orderBy: {
+      slotStart: 'asc',
+    },
+    take: slotsCount, // Limit to requested number of slots
+  });
+  
+  if (slots.length === 0) {
+    return [];
+  }
+  
+  // Format slots for frontend
+  const formattedSlots = slots.map(slot => {
+    const slotStart = new Date(slot.slotStart);
+    const slotEnd = new Date(slot.slotEnd);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const slotDate = new Date(slotStart);
+    slotDate.setHours(0, 0, 0, 0);
+    
+    const isToday = slotDate.getTime() === today.getTime();
+    const isTomorrow = slotDate.getTime() === today.getTime() + (24 * 60 * 60 * 1000);
+    
+    let dayLabel = 'Today';
+    if (isTomorrow) dayLabel = 'Tomorrow';
+    else if (!isToday) {
+      dayLabel = slotStart.toLocaleDateString('en-US', { weekday: 'long' });
     }
     
-    return slots;
-  }
+    return {
+      id: slot.id,
+      slotStart: slot.slotStart, // Use original datetime from DB
+      slotEnd: slot.slotEnd,     // Use original datetime from DB
+      label: this.formatTimeRange(slotStart, slotEnd),
+      isAvailable: true,
+      remainingSlots: Math.max(0, 30 - slot.bookedCount),
+      isFull: slot.bookedCount >= 30,
+      dayLabel,
+      isToday,
+    };
+  });
+  
+  return formattedSlots;
+}
 
   static formatTimeRange(start, end) {
     const formatTime = (date) => {
@@ -270,6 +372,14 @@ export class OrderService {
     };
   }
 }
+// Platform fee configuration
+const PLATFORM_FEE_CONFIG = {
+  fixedFee: 5,          
+  percentageFee: 0.02,  
+  minFee: 5,            
+  maxFee: 50,          
+};
+
 // utils/orderCalculations.js
 export const calculateOrderTotals = async (orderItems, restaurantId) => {
   // Get restaurant tax rate
@@ -280,22 +390,68 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
 
   const taxRate = restaurant?.taxRate || 0.05; // Default 5%
 
-  // Calculate subtotal
+  // Calculate subtotal (item prices)
   const subtotal = orderItems.reduce(
-    (sum, item) => sum + (item.price * item.quantity),
+    (sum, item) => sum + (parseFloat(item.price) * item.quantity),
     0
   );
 
-  // Calculate tax
+  // Calculate platform fee (fixed + percentage, clamped between min and max)
+  let platformFee = PLATFORM_FEE_CONFIG.fixedFee + (subtotal * PLATFORM_FEE_CONFIG.percentageFee);
+  platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));
+  platformFee = Math.round(platformFee * 100) / 100; // Round to 2 decimals
+
+  // Calculate tax on subtotal only (not on platform fee)
   const tax = Math.round(subtotal * taxRate * 100) / 100; // Round to 2 decimals
 
   // Calculate total
-  const totalAmount = subtotal + tax;
+  const totalAmount = Math.round((subtotal + tax + platformFee) * 100) / 100;
 
   return {
-    subtotal,
+    subtotal: Math.round(subtotal * 100) / 100,
     tax,
     taxRate,
+    taxPercentage: Math.round(taxRate * 100), // For display: e.g., 5%
+    platformFee,
     totalAmount,
+    breakdown: {
+      itemsTotal: Math.round(subtotal * 100) / 100,
+      taxAmount: tax,
+      taxLabel: `GST (${Math.round(taxRate * 100)}%)`,
+      platformFeeAmount: platformFee,
+      platformFeeLabel: 'Platform Fee',
+      grandTotal: totalAmount,
+    }
+  };
+};
+
+// Simple calculation without DB call (for cart display)
+export const calculatePriceBreakdown = (subtotal, taxRate = 0.05) => {
+  // Calculate platform fee
+  let platformFee = PLATFORM_FEE_CONFIG.fixedFee + (subtotal * PLATFORM_FEE_CONFIG.percentageFee);
+  platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));
+  platformFee = Math.round(platformFee * 100) / 100;
+
+  // Calculate tax
+  const tax = Math.round(subtotal * taxRate * 100) / 100;
+
+  // Calculate total
+  const totalAmount = Math.round((subtotal + tax + platformFee) * 100) / 100;
+
+  return {
+    subtotal: Math.round(subtotal * 100) / 100,
+    tax,
+    taxRate,
+    taxPercentage: Math.round(taxRate * 100),
+    platformFee,
+    totalAmount,
+    breakdown: {
+      itemsTotal: Math.round(subtotal * 100) / 100,
+      taxAmount: tax,
+      taxLabel: `GST (${Math.round(taxRate * 100)}%)`,
+      platformFeeAmount: platformFee,
+      platformFeeLabel: 'Platform Fee',
+      grandTotal: totalAmount,
+    }
   };
 };

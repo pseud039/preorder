@@ -69,7 +69,7 @@ export default function FoodOrderPage() {
 
     // Listen for notifications
     newSocket.on('notification', (notification) => {
-      console.log('📬 Received notification:', notification);
+      console.log('Received notification:', notification);
       
       setNotifications(prev => [notification, ...prev]);
       
@@ -96,8 +96,19 @@ export default function FoodOrderPage() {
         );
         const data = await response.json();
 
-        console.log("Categories API Response:", data);
+        // console.log("Categories API Response:", data);
         
+        if (!response.ok) {
+          if (response.status === 403) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userId');
+            router.push('/login');
+            return;
+          }
+          throw new Error('Failed to fetch categories');
+        }
+
         const uniqueCategories = data.data.categories;
 
         const categoriesWithAll: Category[] = [
@@ -108,16 +119,6 @@ export default function FoodOrderPage() {
         console.log("Fetched Categories:", uniqueCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
-      //   var token=true;
-      //   if(error.includes("expired")){
-      //      token=false;
-      //   }
-
-      // if (!token) {
-      //   alert("Please login first");
-      //   window.location.href = "/login";
-      //   return;
-      // }
       }
     };
 
@@ -142,6 +143,18 @@ export default function FoodOrderPage() {
         const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/home/menu?${params}`
         );
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userId');
+            router.push('/login');
+            return;
+          }
+          throw new Error('Failed to fetch menu');
+        }
+
         const data: ApiResponse<MenuItem> = await response.json();
 
         if (data.success) {
@@ -193,8 +206,11 @@ export default function FoodOrderPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          console.error("Authentication required. Please log in.");
-          toast.error("Please log in to add items to cart");
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userId');
+          toast.error("Session expired. Please log in again.");
+          router.push('/login');
           return;
         }
         console.error(
@@ -231,7 +247,7 @@ export default function FoodOrderPage() {
               Hey Foodie!!
             </span>
           </div>
-          <button className="relative" onClick={() => router.push("/orders")}>
+          <button className="relative" onClick={() => router.push("/cart")}>
             <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center">
               <ShoppingCart fill="#f1623a" className="w-5 h-5 text-primary" />
             </div>
@@ -294,11 +310,32 @@ export default function FoodOrderPage() {
         {/* Discount Banner */}
         <div className="rounded-3xl p-6 mb-6 relative overflow-hidden shadow-md font-[inter] bg-gradient-to-r from-orange-200 via-yellow-100 to-orange-100">
           <div className="relative flex justify-start flex-col z-10 text-left">
-            <h2 className="text-gray-900 font-bold text-2xl">Get</h2>
-            <h2 className="text-primary font-bold text-3xl italic">50% off</h2>
-            <p className="text-gray-900 text-sm font-medium">on first meal</p>
+            {/* <p className="text-gray-900 text-md font-medium">Tired of waiting for the food you ordered?</p> */}
+              <p className="text-sm font-medium text-black-500 uppercase tracking-wide">Skip the wait</p>
+            <h2 className="text-primary font-bold text-2xl italic pr-2">Pre-order 
+             <span className="text-gray-900 font-semibold text-lg mb-0.5"> your meal</span></h2>
+            <p className="text-gray-900 text-sm font-medium">Ready till you arrive</p>
           </div>
         </div>
+        {/* Redesigned Banner */}
+{/* <div className="rounded-2xl p-5 mb-6 relative overflow-hidden border border-orange-200/50 bg-white shadow-sm">
+  <div className="flex items-center justify-between gap-4"> */}
+    {/* Left Content */}
+    {/* <div className="flex-1">
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Skip the wait</p>
+      </div>
+      <h3 className="text-gray-900 font-semibold text-lg mb-0.5">Pre-order your meal</h3>
+      <p className="text-gray-600 text-sm">Ready when you arrive</p>
+    </div> */}
+    
+    {/* Right CTA */}
+    {/* <button className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm whitespace-nowrap">
+      Try Now
+    </button>
+  </div>
+</div> */}
 
         {/* Categories */}
         <div className="mb-6">
@@ -377,7 +414,7 @@ export default function FoodOrderPage() {
             {menuItems.map((item) => (
               <div key={item.id} className="bg-white rounded-3xl shadow-sm">
                 <div className="relative mb-2">
-                  <div className="w-full h-38 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-t-2xl overflow-hidden">
+                  <div className="w-full h-40 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-t-2xl overflow-hidden">
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
@@ -385,8 +422,8 @@ export default function FoodOrderPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-sm">
-                        :)
+                      <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                        No Image
                       </div>
                     )}
                   </div>
@@ -402,7 +439,7 @@ export default function FoodOrderPage() {
                 <h4 className="font-bold px-4 text-gray-900 text-sm mb-1 truncate flex justify-between items-center">
                   {item.name}
                   <button className="w-8 h-8 bg-white flex items-center justify-center">
-                    <Heart className="w-4 h-4 text-red-500 hover:cursor-pointer" />
+                    {/* <Heart className="w-4 h-4 text-red-500 hover:cursor-pointer" /> */}
                   </button>
                 </h4>
                 <div className="pb-4 px-4 flex items-center justify-between">

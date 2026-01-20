@@ -300,7 +300,7 @@ function OrderConfirmationContent() {
     switch (orderStatus) {
       case "Accepted":
         return {
-          icon: "🎉",
+          icon: "",
           title: "Order Accepted!",
           description:
             "Your order has been accepted! Redirecting to payment...",
@@ -308,7 +308,7 @@ function OrderConfirmationContent() {
         };
       case "Rejected":
         return {
-          icon: "❌",
+          icon: "",
           title: "Order Rejected",
           description:
             "The restaurant couldn't accept your order. Redirecting to order history...",
@@ -316,7 +316,7 @@ function OrderConfirmationContent() {
         };
       case "Expired":
         return {
-          icon: "⏰",
+          icon: "",
           title: "Time Expired",
           description:
             "The restaurant didn't respond in time. Redirecting to order history...",
@@ -324,7 +324,7 @@ function OrderConfirmationContent() {
         };
       default:
         return {
-          icon: "⏳",
+          icon: "",
           title: "Waiting for Confirmation",
           description:
             "The restaurant will confirm your order within 5 minutes. Please wait...",
@@ -374,7 +374,7 @@ function OrderConfirmationContent() {
             </div>
 
             {/* Connection status indicator */}
-            <div className="mt-4 flex items-center justify-center gap-2">
+            {/* <div className="mt-4 flex items-center justify-center gap-2">
               <div
                 className={`w-2 h-2 rounded-full ${
                   isConnected ? "bg-green-500" : "bg-yellow-500"
@@ -385,7 +385,7 @@ function OrderConfirmationContent() {
                   ? "Connected - Listening for updates"
                   : "Connecting..."}
               </span>
-            </div>
+            </div> */}
           </div>
         )}
 

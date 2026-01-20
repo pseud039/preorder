@@ -116,7 +116,7 @@ export default function DashboardGrid() {
       bgColor: "bg-green-50",
     },
     {
-      label: "Today's Orders",
+      label: " Today Orders",
       value: stats?.todayOrders || 0,
       icon: Users,
       color: "bg-indigo-500",

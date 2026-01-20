@@ -211,27 +211,32 @@ export default function Account() {
                 <label className="text-xs text-gray-500 font-medium block mb-1">
                   Phone Number
                 </label>
-                
-                 
+                {editMode ? (
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Enter your phone number"
+                  />
+                ) : (
                   <div className="flex items-center justify-between">
                     <p className="text-gray-900 font-medium">
                       {user?.phone || 'Not set'}
                     </p>
-                    {
-                      user?.phoneVerified ? (
-                        <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                          <Check className="w-3 h-3" />
-                          Verified
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
-                          <X className="w-3 h-3" />
-                          Not Verified
-                        </span>
-                      )
-                    }
+                    {user?.phoneVerified ? (
+                      <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                        <Check className="w-3 h-3" />
+                        Verified
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                        <X className="w-3 h-3" />
+                        Not Verified
+                      </span>
+                    )}
                   </div>
-                
+                )}
               </div>
             </div>
           </div>
@@ -298,7 +303,7 @@ export default function Account() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
 
-          {/* Security - Change Password */}
+          {/* Security - Change Password
           <button
             onClick={() => toast.info('Change password feature coming soon')}
             className="w-full bg-white rounded-2xl shadow-md p-4 flex items-center justify-between hover:shadow-lg transition-shadow"
@@ -313,7 +318,7 @@ export default function Account() {
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
-          </button>
+          </button> */}
         </div>
 
         {/* Logout Button */}

@@ -15,6 +15,26 @@ function generateAccessToken(userId, email) {
   });
 }
 
+export const parseDuration = (duration) => {
+  const match = duration.match(/^(\d+)([smhd])$/);
+  
+  if (!match) {
+    throw new Error('Invalid duration format. Use format like: 1s, 5m, 1h, 1d');
+  }
+
+  const value = parseInt(match[1]);
+  const unit = match[2];
+
+  const units = {
+    s: 1000,           // seconds
+    m: 60 * 1000,      // minutes
+    h: 60 * 60 * 1000, // hours
+    d: 24 * 60 * 60 * 1000 // days
+  };
+
+  return value * units[unit];
+};
+
 function generateRefreshToken() {
   return crypto.randomBytes(64).toString("hex");
 }
@@ -122,7 +142,8 @@ export const refreshToken = asyncHandler(async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 1 * 60 * 60 * 1000,
+      // maxAge: 1 * 60 * 60 * 1000,
+      maxAge: parseDuration(ACCESS_TOKEN_EXPIRY),
       path: "/",
     });
 

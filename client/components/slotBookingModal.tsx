@@ -33,7 +33,7 @@ export default function TimeSlotModal({
   const [slots, setSlots] = useState<DaySlots[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);  
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function TimeSlotModal({
       const token = localStorage.getItem("auth_token");
 
       const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/client/available`,
+        `${process.env.NEXT_PUBLIC_API_URL}/client/timeslots`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -64,7 +64,7 @@ export default function TimeSlotModal({
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch slots");
       }
-    const flatSlots = data.data?.slots || [];
+    const flatSlots = data.data || [];
 
  const groupedByDay = flatSlots.reduce((acc: any, slot: any) => {
       const slotDate = new Date(slot.slotStart);
