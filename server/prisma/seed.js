@@ -25,23 +25,14 @@ async function main() {
       email: "predine.dev@gmail.com",
       passwordHash: await bcrypt.hash("Admin@123", 10),
       role: "superadmin",
-      name: "Admin_01",
+      name: "SuperAdmin_01",
       isActive: true,
       emailVerified: true,
     },
   });
 
-  const restAdmin = await prisma.restaurantAdmin.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      id: 1,
-      userId: admin.id,
-      restaurantId: greenChili.id,
-    },
-  });
 
-  console.log({ greenChili, admin, restAdmin });
+  console.log({ greenChili, admin });
 }
 main()
   .then(async () => {
