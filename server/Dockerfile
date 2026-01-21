@@ -25,6 +25,9 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
 
+RUN mkdir -p /usr/src/app/public/temp \
+    && chown -R node:node /usr/src/app/public/temp
+
 # Run the application as a non-root user.
 USER node
 
