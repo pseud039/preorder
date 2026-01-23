@@ -4,8 +4,12 @@ import signUp from "@/public/sign-Up.png";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
+
 
 export default function SignUpPage() {
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,7 +19,18 @@ export default function SignUpPage() {
     email: "",
     password: "",
     confirmPassword: "",
+      terms: "",
   });
+
+  const handleTermsChange = (checked: boolean) => {
+  setAcceptedTerms(checked);
+  if (checked && errors.terms) {
+    setErrors((prev) => ({
+      ...prev,
+      terms: "",
+    }));
+  }
+};
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -39,6 +54,8 @@ export default function SignUpPage() {
       email: "",
       password: "",
       confirmPassword: "",
+          terms: "",
+
     };
     let isValid = true;
 
@@ -65,6 +82,10 @@ export default function SignUpPage() {
       newErrors.confirmPassword = "Passwords do not match";
       isValid = false;
     }
+if (!acceptedTerms) {
+    newErrors.terms = "You must accept the terms and conditions";
+    isValid = false;
+  }
 
     setErrors(newErrors);
     return isValid;
@@ -187,14 +208,38 @@ export default function SignUpPage() {
               )}
             </div>
           </div>
-
+          <div className=""><div className="text-gray-500 p-2">
+ <FieldGroup className="mx-auto w-full">
+      <Field orientation="horizontal">
+        <Checkbox
+          id="terms-checkbox-desc"
+          name="terms-checkbox-desc"
+           checked={acceptedTerms}
+  onCheckedChange={handleTermsChange}
+  disabled={isSubmitting}
+        />
+        <FieldContent className="font-xs">
+          <FieldLabel htmlFor="terms-checkbox-desc ">
+            Accept <a href="/policies" className="hover:underline">terms and conditions</a>
+          </FieldLabel>
+          <FieldDescription className="">
+            By clicking this checkbox, you agree to the terms and conditions.
+          </FieldDescription>
+          {errors.terms && (
+  <FieldDescription className="text-red-500 ml-6">
+    {errors.terms}
+  </FieldDescription>
+)}
+        </FieldContent>
+      </Field>
+    </FieldGroup></div>
           <button
             type="submit"
             disabled={isSubmitting}
             className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Signing up" : "Sign Up"}
-          </button>
+          </button></div>
           <div className="flex flex-row justify-center items-center gap-1">
             <span className="text-center text-sm text-primary-text/60">
               Already have an account?
