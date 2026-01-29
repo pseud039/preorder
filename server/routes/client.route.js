@@ -109,6 +109,7 @@ import {
   logout,
   verifyEmail,
   updateProfile,
+  deleteUser,
 } from "../controllers/client/client.auth.controller.js";
 import {
   getCart,
@@ -148,6 +149,7 @@ router.post("/password", forgotPassword);
 router.post("/password/:token", resetPassword);
 router.post('/auth/refresh', refreshToken);
 router.get("/logout", verifyJWT, isCustomer, logout);
+router.delete("/delete-account", verifyJWT, isCustomer, deleteUser);
 
 router.get("/details", verifyJWT, isCustomer, getDetails);
 router.put("/details", verifyJWT, isCustomer, updateProfile);

@@ -654,6 +654,23 @@ export const changePassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Password changed successfully"));
 });
 
+export const deleteUser = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  if (!userId) throw new ApiError(401, "User not signed in!");
+
+  const exists = await prisma.user.findFirst({
+    where: { id: userId },
+  });
+
+  if (!exists) throw new ApiError(404, "User not found!");
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isActive: false },
+  });
+});
+
 export {
   signup,
   verifyEmail,
@@ -661,4 +678,5 @@ export {
   login,
   updateProfile,
   getCurrentUser,
+  deleteUser,
 };
