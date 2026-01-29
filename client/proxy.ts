@@ -4,7 +4,7 @@ export default function proxy(request: NextRequest) {
   const reqUrl = new URL(request.url);
 
   // These routes would redirect to /dashboard if the user is authenticated
-  const publicRoutes = ["/", "/login", "/signup", "/get-started"];
+  const publicRoutes = ["/", "/login", "/signup", "/get-started", "/policies"];
   const publicRegex = [/\/verify-email\/[0-9a-fA-Z]*/];
 
   const isFile = reqUrl.pathname.includes(".");
