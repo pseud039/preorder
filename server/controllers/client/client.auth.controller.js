@@ -678,5 +678,4 @@ export {
   login,
   updateProfile,
   getCurrentUser,
-  deleteUser,
 };
