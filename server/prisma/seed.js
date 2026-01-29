@@ -30,9 +30,28 @@ async function main() {
       emailVerified: true,
     },
   });
+const paymentconfig = await prisma.paymentSetup.upsert({
+  where: {
+    restaurantId: 3,
+  },
 
+  update: {
+    fixedfee: 20.00,
+    precentagefee: 5.00,
+    minFee: 10.00,
+    maxFee: 20.00,
+  },
 
-  console.log({ greenChili, admin });
+  create: {
+    restaurantId: 3,
+    fixedfee: 20.00,
+    precentagefee: 5.00,
+    minFee: 5.00,
+    maxFee: 15.00,
+  },
+});
+
+  console.log({ greenChili, admin, paymentconfig });
 }
 main()
   .then(async () => {

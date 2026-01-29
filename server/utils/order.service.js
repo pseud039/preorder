@@ -357,12 +357,15 @@ export class OrderService {
     };
   }
 }
-const PLATFORM_FEE_CONFIG = {
-  fixedFee: 5,          
-  percentageFee: 0.02,  
-  minFee: 5,            
-  maxFee: 50,          
-};
+// const PLATFORM_FEE_CONFIG = {
+//   fixedFee: 5,          
+//   percentageFee: 0.02,  
+//   minFee: 5,            
+//   maxFee: 50,          
+// };
+ const PLATFORM_FEE_CONFIG = await prisma.paymentSetup.findFirst({
+  where: { restaurantId: 3 }
+});
 
 export const calculateOrderTotals = async (orderItems, restaurantId) => {
 
@@ -377,6 +380,9 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
     (sum, item) => sum + (parseFloat(item.price) * item.quantity),
     0
   );
+   const PLATFORM_FEE_CONFIG = await prisma.paymentSetup.findFirst({
+  where: { restaurantId: 3 }
+});
 
   let platformFee = PLATFORM_FEE_CONFIG.fixedFee + (subtotal * PLATFORM_FEE_CONFIG.percentageFee);
   platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));

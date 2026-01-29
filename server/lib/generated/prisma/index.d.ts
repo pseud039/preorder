@@ -29,6 +29,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type PhoneOTP = $Result.DefaultSelection<Prisma.$PhoneOTPPayload>
 /**
+ * Model PaymentSetup
+ * 
+ */
+export type PaymentSetup = $Result.DefaultSelection<Prisma.$PaymentSetupPayload>
+/**
  * Model RestaurantAdmin
  * 
  */
@@ -353,6 +358,16 @@ export class PrismaClient<
     * ```
     */
   get phoneOTP(): Prisma.PhoneOTPDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.paymentSetup`: Exposes CRUD operations for the **PaymentSetup** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PaymentSetups
+    * const paymentSetups = await prisma.paymentSetup.findMany()
+    * ```
+    */
+  get paymentSetup(): Prisma.PaymentSetupDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.restaurantAdmin`: Exposes CRUD operations for the **RestaurantAdmin** model.
@@ -957,6 +972,7 @@ export namespace Prisma {
     Restaurant: 'Restaurant',
     User: 'User',
     PhoneOTP: 'PhoneOTP',
+    PaymentSetup: 'PaymentSetup',
     RestaurantAdmin: 'RestaurantAdmin',
     RestaurantChef: 'RestaurantChef',
     Category: 'Category',
@@ -991,7 +1007,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "restaurant" | "user" | "phoneOTP" | "restaurantAdmin" | "restaurantChef" | "category" | "menuItem" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "timeSlot" | "refreshToken" | "emailVerification" | "passwordReset" | "commission" | "notification" | "pushSubscription"
+      modelProps: "restaurant" | "user" | "phoneOTP" | "paymentSetup" | "restaurantAdmin" | "restaurantChef" | "category" | "menuItem" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "timeSlot" | "refreshToken" | "emailVerification" | "passwordReset" | "commission" | "notification" | "pushSubscription"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1214,6 +1230,80 @@ export namespace Prisma {
           count: {
             args: Prisma.PhoneOTPCountArgs<ExtArgs>
             result: $Utils.Optional<PhoneOTPCountAggregateOutputType> | number
+          }
+        }
+      }
+      PaymentSetup: {
+        payload: Prisma.$PaymentSetupPayload<ExtArgs>
+        fields: Prisma.PaymentSetupFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PaymentSetupFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PaymentSetupFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>
+          }
+          findFirst: {
+            args: Prisma.PaymentSetupFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PaymentSetupFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>
+          }
+          findMany: {
+            args: Prisma.PaymentSetupFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>[]
+          }
+          create: {
+            args: Prisma.PaymentSetupCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>
+          }
+          createMany: {
+            args: Prisma.PaymentSetupCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PaymentSetupCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>[]
+          }
+          delete: {
+            args: Prisma.PaymentSetupDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>
+          }
+          update: {
+            args: Prisma.PaymentSetupUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>
+          }
+          deleteMany: {
+            args: Prisma.PaymentSetupDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PaymentSetupUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PaymentSetupUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>[]
+          }
+          upsert: {
+            args: Prisma.PaymentSetupUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PaymentSetupPayload>
+          }
+          aggregate: {
+            args: Prisma.PaymentSetupAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePaymentSetup>
+          }
+          groupBy: {
+            args: Prisma.PaymentSetupGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PaymentSetupGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PaymentSetupCountArgs<ExtArgs>
+            result: $Utils.Optional<PaymentSetupCountAggregateOutputType> | number
           }
         }
       }
@@ -2500,6 +2590,7 @@ export namespace Prisma {
     restaurant?: RestaurantOmit
     user?: UserOmit
     phoneOTP?: PhoneOTPOmit
+    paymentSetup?: PaymentSetupOmit
     restaurantAdmin?: RestaurantAdminOmit
     restaurantChef?: RestaurantChefOmit
     category?: CategoryOmit
@@ -3198,6 +3289,7 @@ export namespace Prisma {
     fixedAdditionalTime?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    paymentSetup?: boolean | Restaurant$paymentSetupArgs<ExtArgs>
     admins?: boolean | Restaurant$adminsArgs<ExtArgs>
     chefs?: boolean | Restaurant$chefsArgs<ExtArgs>
     menuItems?: boolean | Restaurant$menuItemsArgs<ExtArgs>
@@ -3257,6 +3349,7 @@ export namespace Prisma {
 
   export type RestaurantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "address" | "contactNumber" | "imageUrl" | "isActive" | "commissionRate" | "taxRate" | "baseWaitingTimeMultiplier" | "fixedAdditionalTime" | "createdAt" | "updatedAt", ExtArgs["result"]["restaurant"]>
   export type RestaurantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    paymentSetup?: boolean | Restaurant$paymentSetupArgs<ExtArgs>
     admins?: boolean | Restaurant$adminsArgs<ExtArgs>
     chefs?: boolean | Restaurant$chefsArgs<ExtArgs>
     menuItems?: boolean | Restaurant$menuItemsArgs<ExtArgs>
@@ -3271,6 +3364,7 @@ export namespace Prisma {
   export type $RestaurantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Restaurant"
     objects: {
+      paymentSetup: Prisma.$PaymentSetupPayload<ExtArgs> | null
       admins: Prisma.$RestaurantAdminPayload<ExtArgs>[]
       chefs: Prisma.$RestaurantChefPayload<ExtArgs>[]
       menuItems: Prisma.$MenuItemPayload<ExtArgs>[]
@@ -3686,6 +3780,7 @@ export namespace Prisma {
    */
   export interface Prisma__RestaurantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    paymentSetup<T extends Restaurant$paymentSetupArgs<ExtArgs> = {}>(args?: Subset<T, Restaurant$paymentSetupArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     admins<T extends Restaurant$adminsArgs<ExtArgs> = {}>(args?: Subset<T, Restaurant$adminsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RestaurantAdminPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chefs<T extends Restaurant$chefsArgs<ExtArgs> = {}>(args?: Subset<T, Restaurant$chefsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RestaurantChefPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     menuItems<T extends Restaurant$menuItemsArgs<ExtArgs> = {}>(args?: Subset<T, Restaurant$menuItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MenuItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4119,6 +4214,25 @@ export namespace Prisma {
      * Limit how many Restaurants to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Restaurant.paymentSetup
+   */
+  export type Restaurant$paymentSetupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    where?: PaymentSetupWhereInput
   }
 
   /**
@@ -6865,6 +6979,1157 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PhoneOTPInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PaymentSetup
+   */
+
+  export type AggregatePaymentSetup = {
+    _count: PaymentSetupCountAggregateOutputType | null
+    _avg: PaymentSetupAvgAggregateOutputType | null
+    _sum: PaymentSetupSumAggregateOutputType | null
+    _min: PaymentSetupMinAggregateOutputType | null
+    _max: PaymentSetupMaxAggregateOutputType | null
+  }
+
+  export type PaymentSetupAvgAggregateOutputType = {
+    id: number | null
+    restaurantId: number | null
+    fixedfee: Decimal | null
+    precentagefee: Decimal | null
+    minFee: Decimal | null
+    maxFee: Decimal | null
+  }
+
+  export type PaymentSetupSumAggregateOutputType = {
+    id: number | null
+    restaurantId: number | null
+    fixedfee: Decimal | null
+    precentagefee: Decimal | null
+    minFee: Decimal | null
+    maxFee: Decimal | null
+  }
+
+  export type PaymentSetupMinAggregateOutputType = {
+    id: number | null
+    restaurantId: number | null
+    fixedfee: Decimal | null
+    precentagefee: Decimal | null
+    minFee: Decimal | null
+    maxFee: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PaymentSetupMaxAggregateOutputType = {
+    id: number | null
+    restaurantId: number | null
+    fixedfee: Decimal | null
+    precentagefee: Decimal | null
+    minFee: Decimal | null
+    maxFee: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PaymentSetupCountAggregateOutputType = {
+    id: number
+    restaurantId: number
+    fixedfee: number
+    precentagefee: number
+    minFee: number
+    maxFee: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PaymentSetupAvgAggregateInputType = {
+    id?: true
+    restaurantId?: true
+    fixedfee?: true
+    precentagefee?: true
+    minFee?: true
+    maxFee?: true
+  }
+
+  export type PaymentSetupSumAggregateInputType = {
+    id?: true
+    restaurantId?: true
+    fixedfee?: true
+    precentagefee?: true
+    minFee?: true
+    maxFee?: true
+  }
+
+  export type PaymentSetupMinAggregateInputType = {
+    id?: true
+    restaurantId?: true
+    fixedfee?: true
+    precentagefee?: true
+    minFee?: true
+    maxFee?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PaymentSetupMaxAggregateInputType = {
+    id?: true
+    restaurantId?: true
+    fixedfee?: true
+    precentagefee?: true
+    minFee?: true
+    maxFee?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PaymentSetupCountAggregateInputType = {
+    id?: true
+    restaurantId?: true
+    fixedfee?: true
+    precentagefee?: true
+    minFee?: true
+    maxFee?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PaymentSetupAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PaymentSetup to aggregate.
+     */
+    where?: PaymentSetupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PaymentSetups to fetch.
+     */
+    orderBy?: PaymentSetupOrderByWithRelationInput | PaymentSetupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PaymentSetupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PaymentSetups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PaymentSetups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PaymentSetups
+    **/
+    _count?: true | PaymentSetupCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PaymentSetupAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PaymentSetupSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PaymentSetupMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PaymentSetupMaxAggregateInputType
+  }
+
+  export type GetPaymentSetupAggregateType<T extends PaymentSetupAggregateArgs> = {
+        [P in keyof T & keyof AggregatePaymentSetup]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePaymentSetup[P]>
+      : GetScalarType<T[P], AggregatePaymentSetup[P]>
+  }
+
+
+
+
+  export type PaymentSetupGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentSetupWhereInput
+    orderBy?: PaymentSetupOrderByWithAggregationInput | PaymentSetupOrderByWithAggregationInput[]
+    by: PaymentSetupScalarFieldEnum[] | PaymentSetupScalarFieldEnum
+    having?: PaymentSetupScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PaymentSetupCountAggregateInputType | true
+    _avg?: PaymentSetupAvgAggregateInputType
+    _sum?: PaymentSetupSumAggregateInputType
+    _min?: PaymentSetupMinAggregateInputType
+    _max?: PaymentSetupMaxAggregateInputType
+  }
+
+  export type PaymentSetupGroupByOutputType = {
+    id: number
+    restaurantId: number
+    fixedfee: Decimal
+    precentagefee: Decimal
+    minFee: Decimal
+    maxFee: Decimal
+    createdAt: Date
+    updatedAt: Date
+    _count: PaymentSetupCountAggregateOutputType | null
+    _avg: PaymentSetupAvgAggregateOutputType | null
+    _sum: PaymentSetupSumAggregateOutputType | null
+    _min: PaymentSetupMinAggregateOutputType | null
+    _max: PaymentSetupMaxAggregateOutputType | null
+  }
+
+  type GetPaymentSetupGroupByPayload<T extends PaymentSetupGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PaymentSetupGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PaymentSetupGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PaymentSetupGroupByOutputType[P]>
+            : GetScalarType<T[P], PaymentSetupGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PaymentSetupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    restaurantId?: boolean
+    fixedfee?: boolean
+    precentagefee?: boolean
+    minFee?: boolean
+    maxFee?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    restaurant?: boolean | RestaurantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["paymentSetup"]>
+
+  export type PaymentSetupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    restaurantId?: boolean
+    fixedfee?: boolean
+    precentagefee?: boolean
+    minFee?: boolean
+    maxFee?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    restaurant?: boolean | RestaurantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["paymentSetup"]>
+
+  export type PaymentSetupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    restaurantId?: boolean
+    fixedfee?: boolean
+    precentagefee?: boolean
+    minFee?: boolean
+    maxFee?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    restaurant?: boolean | RestaurantDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["paymentSetup"]>
+
+  export type PaymentSetupSelectScalar = {
+    id?: boolean
+    restaurantId?: boolean
+    fixedfee?: boolean
+    precentagefee?: boolean
+    minFee?: boolean
+    maxFee?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PaymentSetupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "restaurantId" | "fixedfee" | "precentagefee" | "minFee" | "maxFee" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentSetup"]>
+  export type PaymentSetupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    restaurant?: boolean | RestaurantDefaultArgs<ExtArgs>
+  }
+  export type PaymentSetupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    restaurant?: boolean | RestaurantDefaultArgs<ExtArgs>
+  }
+  export type PaymentSetupIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    restaurant?: boolean | RestaurantDefaultArgs<ExtArgs>
+  }
+
+  export type $PaymentSetupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PaymentSetup"
+    objects: {
+      restaurant: Prisma.$RestaurantPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      restaurantId: number
+      fixedfee: Prisma.Decimal
+      precentagefee: Prisma.Decimal
+      minFee: Prisma.Decimal
+      maxFee: Prisma.Decimal
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["paymentSetup"]>
+    composites: {}
+  }
+
+  type PaymentSetupGetPayload<S extends boolean | null | undefined | PaymentSetupDefaultArgs> = $Result.GetResult<Prisma.$PaymentSetupPayload, S>
+
+  type PaymentSetupCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PaymentSetupFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PaymentSetupCountAggregateInputType | true
+    }
+
+  export interface PaymentSetupDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PaymentSetup'], meta: { name: 'PaymentSetup' } }
+    /**
+     * Find zero or one PaymentSetup that matches the filter.
+     * @param {PaymentSetupFindUniqueArgs} args - Arguments to find a PaymentSetup
+     * @example
+     * // Get one PaymentSetup
+     * const paymentSetup = await prisma.paymentSetup.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PaymentSetupFindUniqueArgs>(args: SelectSubset<T, PaymentSetupFindUniqueArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PaymentSetup that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PaymentSetupFindUniqueOrThrowArgs} args - Arguments to find a PaymentSetup
+     * @example
+     * // Get one PaymentSetup
+     * const paymentSetup = await prisma.paymentSetup.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PaymentSetupFindUniqueOrThrowArgs>(args: SelectSubset<T, PaymentSetupFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PaymentSetup that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentSetupFindFirstArgs} args - Arguments to find a PaymentSetup
+     * @example
+     * // Get one PaymentSetup
+     * const paymentSetup = await prisma.paymentSetup.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PaymentSetupFindFirstArgs>(args?: SelectSubset<T, PaymentSetupFindFirstArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PaymentSetup that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentSetupFindFirstOrThrowArgs} args - Arguments to find a PaymentSetup
+     * @example
+     * // Get one PaymentSetup
+     * const paymentSetup = await prisma.paymentSetup.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PaymentSetupFindFirstOrThrowArgs>(args?: SelectSubset<T, PaymentSetupFindFirstOrThrowArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PaymentSetups that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentSetupFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PaymentSetups
+     * const paymentSetups = await prisma.paymentSetup.findMany()
+     * 
+     * // Get first 10 PaymentSetups
+     * const paymentSetups = await prisma.paymentSetup.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const paymentSetupWithIdOnly = await prisma.paymentSetup.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PaymentSetupFindManyArgs>(args?: SelectSubset<T, PaymentSetupFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PaymentSetup.
+     * @param {PaymentSetupCreateArgs} args - Arguments to create a PaymentSetup.
+     * @example
+     * // Create one PaymentSetup
+     * const PaymentSetup = await prisma.paymentSetup.create({
+     *   data: {
+     *     // ... data to create a PaymentSetup
+     *   }
+     * })
+     * 
+     */
+    create<T extends PaymentSetupCreateArgs>(args: SelectSubset<T, PaymentSetupCreateArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PaymentSetups.
+     * @param {PaymentSetupCreateManyArgs} args - Arguments to create many PaymentSetups.
+     * @example
+     * // Create many PaymentSetups
+     * const paymentSetup = await prisma.paymentSetup.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PaymentSetupCreateManyArgs>(args?: SelectSubset<T, PaymentSetupCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PaymentSetups and returns the data saved in the database.
+     * @param {PaymentSetupCreateManyAndReturnArgs} args - Arguments to create many PaymentSetups.
+     * @example
+     * // Create many PaymentSetups
+     * const paymentSetup = await prisma.paymentSetup.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PaymentSetups and only return the `id`
+     * const paymentSetupWithIdOnly = await prisma.paymentSetup.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PaymentSetupCreateManyAndReturnArgs>(args?: SelectSubset<T, PaymentSetupCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PaymentSetup.
+     * @param {PaymentSetupDeleteArgs} args - Arguments to delete one PaymentSetup.
+     * @example
+     * // Delete one PaymentSetup
+     * const PaymentSetup = await prisma.paymentSetup.delete({
+     *   where: {
+     *     // ... filter to delete one PaymentSetup
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PaymentSetupDeleteArgs>(args: SelectSubset<T, PaymentSetupDeleteArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PaymentSetup.
+     * @param {PaymentSetupUpdateArgs} args - Arguments to update one PaymentSetup.
+     * @example
+     * // Update one PaymentSetup
+     * const paymentSetup = await prisma.paymentSetup.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PaymentSetupUpdateArgs>(args: SelectSubset<T, PaymentSetupUpdateArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PaymentSetups.
+     * @param {PaymentSetupDeleteManyArgs} args - Arguments to filter PaymentSetups to delete.
+     * @example
+     * // Delete a few PaymentSetups
+     * const { count } = await prisma.paymentSetup.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PaymentSetupDeleteManyArgs>(args?: SelectSubset<T, PaymentSetupDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PaymentSetups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentSetupUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PaymentSetups
+     * const paymentSetup = await prisma.paymentSetup.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PaymentSetupUpdateManyArgs>(args: SelectSubset<T, PaymentSetupUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PaymentSetups and returns the data updated in the database.
+     * @param {PaymentSetupUpdateManyAndReturnArgs} args - Arguments to update many PaymentSetups.
+     * @example
+     * // Update many PaymentSetups
+     * const paymentSetup = await prisma.paymentSetup.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PaymentSetups and only return the `id`
+     * const paymentSetupWithIdOnly = await prisma.paymentSetup.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PaymentSetupUpdateManyAndReturnArgs>(args: SelectSubset<T, PaymentSetupUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PaymentSetup.
+     * @param {PaymentSetupUpsertArgs} args - Arguments to update or create a PaymentSetup.
+     * @example
+     * // Update or create a PaymentSetup
+     * const paymentSetup = await prisma.paymentSetup.upsert({
+     *   create: {
+     *     // ... data to create a PaymentSetup
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PaymentSetup we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PaymentSetupUpsertArgs>(args: SelectSubset<T, PaymentSetupUpsertArgs<ExtArgs>>): Prisma__PaymentSetupClient<$Result.GetResult<Prisma.$PaymentSetupPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PaymentSetups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentSetupCountArgs} args - Arguments to filter PaymentSetups to count.
+     * @example
+     * // Count the number of PaymentSetups
+     * const count = await prisma.paymentSetup.count({
+     *   where: {
+     *     // ... the filter for the PaymentSetups we want to count
+     *   }
+     * })
+    **/
+    count<T extends PaymentSetupCountArgs>(
+      args?: Subset<T, PaymentSetupCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PaymentSetupCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PaymentSetup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentSetupAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PaymentSetupAggregateArgs>(args: Subset<T, PaymentSetupAggregateArgs>): Prisma.PrismaPromise<GetPaymentSetupAggregateType<T>>
+
+    /**
+     * Group by PaymentSetup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PaymentSetupGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PaymentSetupGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PaymentSetupGroupByArgs['orderBy'] }
+        : { orderBy?: PaymentSetupGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PaymentSetupGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPaymentSetupGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PaymentSetup model
+   */
+  readonly fields: PaymentSetupFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PaymentSetup.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PaymentSetupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    restaurant<T extends RestaurantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RestaurantDefaultArgs<ExtArgs>>): Prisma__RestaurantClient<$Result.GetResult<Prisma.$RestaurantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PaymentSetup model
+   */
+  interface PaymentSetupFieldRefs {
+    readonly id: FieldRef<"PaymentSetup", 'Int'>
+    readonly restaurantId: FieldRef<"PaymentSetup", 'Int'>
+    readonly fixedfee: FieldRef<"PaymentSetup", 'Decimal'>
+    readonly precentagefee: FieldRef<"PaymentSetup", 'Decimal'>
+    readonly minFee: FieldRef<"PaymentSetup", 'Decimal'>
+    readonly maxFee: FieldRef<"PaymentSetup", 'Decimal'>
+    readonly createdAt: FieldRef<"PaymentSetup", 'DateTime'>
+    readonly updatedAt: FieldRef<"PaymentSetup", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PaymentSetup findUnique
+   */
+  export type PaymentSetupFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * Filter, which PaymentSetup to fetch.
+     */
+    where: PaymentSetupWhereUniqueInput
+  }
+
+  /**
+   * PaymentSetup findUniqueOrThrow
+   */
+  export type PaymentSetupFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * Filter, which PaymentSetup to fetch.
+     */
+    where: PaymentSetupWhereUniqueInput
+  }
+
+  /**
+   * PaymentSetup findFirst
+   */
+  export type PaymentSetupFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * Filter, which PaymentSetup to fetch.
+     */
+    where?: PaymentSetupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PaymentSetups to fetch.
+     */
+    orderBy?: PaymentSetupOrderByWithRelationInput | PaymentSetupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PaymentSetups.
+     */
+    cursor?: PaymentSetupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PaymentSetups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PaymentSetups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PaymentSetups.
+     */
+    distinct?: PaymentSetupScalarFieldEnum | PaymentSetupScalarFieldEnum[]
+  }
+
+  /**
+   * PaymentSetup findFirstOrThrow
+   */
+  export type PaymentSetupFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * Filter, which PaymentSetup to fetch.
+     */
+    where?: PaymentSetupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PaymentSetups to fetch.
+     */
+    orderBy?: PaymentSetupOrderByWithRelationInput | PaymentSetupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PaymentSetups.
+     */
+    cursor?: PaymentSetupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PaymentSetups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PaymentSetups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PaymentSetups.
+     */
+    distinct?: PaymentSetupScalarFieldEnum | PaymentSetupScalarFieldEnum[]
+  }
+
+  /**
+   * PaymentSetup findMany
+   */
+  export type PaymentSetupFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * Filter, which PaymentSetups to fetch.
+     */
+    where?: PaymentSetupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PaymentSetups to fetch.
+     */
+    orderBy?: PaymentSetupOrderByWithRelationInput | PaymentSetupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PaymentSetups.
+     */
+    cursor?: PaymentSetupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PaymentSetups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PaymentSetups.
+     */
+    skip?: number
+    distinct?: PaymentSetupScalarFieldEnum | PaymentSetupScalarFieldEnum[]
+  }
+
+  /**
+   * PaymentSetup create
+   */
+  export type PaymentSetupCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PaymentSetup.
+     */
+    data: XOR<PaymentSetupCreateInput, PaymentSetupUncheckedCreateInput>
+  }
+
+  /**
+   * PaymentSetup createMany
+   */
+  export type PaymentSetupCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PaymentSetups.
+     */
+    data: PaymentSetupCreateManyInput | PaymentSetupCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PaymentSetup createManyAndReturn
+   */
+  export type PaymentSetupCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * The data used to create many PaymentSetups.
+     */
+    data: PaymentSetupCreateManyInput | PaymentSetupCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PaymentSetup update
+   */
+  export type PaymentSetupUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PaymentSetup.
+     */
+    data: XOR<PaymentSetupUpdateInput, PaymentSetupUncheckedUpdateInput>
+    /**
+     * Choose, which PaymentSetup to update.
+     */
+    where: PaymentSetupWhereUniqueInput
+  }
+
+  /**
+   * PaymentSetup updateMany
+   */
+  export type PaymentSetupUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PaymentSetups.
+     */
+    data: XOR<PaymentSetupUpdateManyMutationInput, PaymentSetupUncheckedUpdateManyInput>
+    /**
+     * Filter which PaymentSetups to update
+     */
+    where?: PaymentSetupWhereInput
+    /**
+     * Limit how many PaymentSetups to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PaymentSetup updateManyAndReturn
+   */
+  export type PaymentSetupUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * The data used to update PaymentSetups.
+     */
+    data: XOR<PaymentSetupUpdateManyMutationInput, PaymentSetupUncheckedUpdateManyInput>
+    /**
+     * Filter which PaymentSetups to update
+     */
+    where?: PaymentSetupWhereInput
+    /**
+     * Limit how many PaymentSetups to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PaymentSetup upsert
+   */
+  export type PaymentSetupUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PaymentSetup to update in case it exists.
+     */
+    where: PaymentSetupWhereUniqueInput
+    /**
+     * In case the PaymentSetup found by the `where` argument doesn't exist, create a new PaymentSetup with this data.
+     */
+    create: XOR<PaymentSetupCreateInput, PaymentSetupUncheckedCreateInput>
+    /**
+     * In case the PaymentSetup was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PaymentSetupUpdateInput, PaymentSetupUncheckedUpdateInput>
+  }
+
+  /**
+   * PaymentSetup delete
+   */
+  export type PaymentSetupDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
+    /**
+     * Filter which PaymentSetup to delete.
+     */
+    where: PaymentSetupWhereUniqueInput
+  }
+
+  /**
+   * PaymentSetup deleteMany
+   */
+  export type PaymentSetupDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PaymentSetups to delete
+     */
+    where?: PaymentSetupWhereInput
+    /**
+     * Limit how many PaymentSetups to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PaymentSetup without action
+   */
+  export type PaymentSetupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentSetup
+     */
+    select?: PaymentSetupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PaymentSetup
+     */
+    omit?: PaymentSetupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentSetupInclude<ExtArgs> | null
   }
 
 
@@ -25611,6 +26876,20 @@ export namespace Prisma {
   export type PhoneOTPScalarFieldEnum = (typeof PhoneOTPScalarFieldEnum)[keyof typeof PhoneOTPScalarFieldEnum]
 
 
+  export const PaymentSetupScalarFieldEnum: {
+    id: 'id',
+    restaurantId: 'restaurantId',
+    fixedfee: 'fixedfee',
+    precentagefee: 'precentagefee',
+    minFee: 'minFee',
+    maxFee: 'maxFee',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PaymentSetupScalarFieldEnum = (typeof PaymentSetupScalarFieldEnum)[keyof typeof PaymentSetupScalarFieldEnum]
+
+
   export const RestaurantAdminScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -26085,6 +27364,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFilter<"Restaurant"> | number
     createdAt?: DateTimeFilter<"Restaurant"> | Date | string
     updatedAt?: DateTimeFilter<"Restaurant"> | Date | string
+    paymentSetup?: XOR<PaymentSetupNullableScalarRelationFilter, PaymentSetupWhereInput> | null
     admins?: RestaurantAdminListRelationFilter
     chefs?: RestaurantChefListRelationFilter
     menuItems?: MenuItemListRelationFilter
@@ -26107,6 +27387,7 @@ export namespace Prisma {
     fixedAdditionalTime?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    paymentSetup?: PaymentSetupOrderByWithRelationInput
     admins?: RestaurantAdminOrderByRelationAggregateInput
     chefs?: RestaurantChefOrderByRelationAggregateInput
     menuItems?: MenuItemOrderByRelationAggregateInput
@@ -26132,6 +27413,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFilter<"Restaurant"> | number
     createdAt?: DateTimeFilter<"Restaurant"> | Date | string
     updatedAt?: DateTimeFilter<"Restaurant"> | Date | string
+    paymentSetup?: XOR<PaymentSetupNullableScalarRelationFilter, PaymentSetupWhereInput> | null
     admins?: RestaurantAdminListRelationFilter
     chefs?: RestaurantChefListRelationFilter
     menuItems?: MenuItemListRelationFilter
@@ -26374,6 +27656,78 @@ export namespace Prisma {
     verified?: BoolWithAggregatesFilter<"PhoneOTP"> | boolean
     attempts?: IntWithAggregatesFilter<"PhoneOTP"> | number
     createdAt?: DateTimeWithAggregatesFilter<"PhoneOTP"> | Date | string
+  }
+
+  export type PaymentSetupWhereInput = {
+    AND?: PaymentSetupWhereInput | PaymentSetupWhereInput[]
+    OR?: PaymentSetupWhereInput[]
+    NOT?: PaymentSetupWhereInput | PaymentSetupWhereInput[]
+    id?: IntFilter<"PaymentSetup"> | number
+    restaurantId?: IntFilter<"PaymentSetup"> | number
+    fixedfee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"PaymentSetup"> | Date | string
+    updatedAt?: DateTimeFilter<"PaymentSetup"> | Date | string
+    restaurant?: XOR<RestaurantScalarRelationFilter, RestaurantWhereInput>
+  }
+
+  export type PaymentSetupOrderByWithRelationInput = {
+    id?: SortOrder
+    restaurantId?: SortOrder
+    fixedfee?: SortOrder
+    precentagefee?: SortOrder
+    minFee?: SortOrder
+    maxFee?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    restaurant?: RestaurantOrderByWithRelationInput
+  }
+
+  export type PaymentSetupWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    restaurantId?: number
+    AND?: PaymentSetupWhereInput | PaymentSetupWhereInput[]
+    OR?: PaymentSetupWhereInput[]
+    NOT?: PaymentSetupWhereInput | PaymentSetupWhereInput[]
+    fixedfee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"PaymentSetup"> | Date | string
+    updatedAt?: DateTimeFilter<"PaymentSetup"> | Date | string
+    restaurant?: XOR<RestaurantScalarRelationFilter, RestaurantWhereInput>
+  }, "id" | "restaurantId">
+
+  export type PaymentSetupOrderByWithAggregationInput = {
+    id?: SortOrder
+    restaurantId?: SortOrder
+    fixedfee?: SortOrder
+    precentagefee?: SortOrder
+    minFee?: SortOrder
+    maxFee?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PaymentSetupCountOrderByAggregateInput
+    _avg?: PaymentSetupAvgOrderByAggregateInput
+    _max?: PaymentSetupMaxOrderByAggregateInput
+    _min?: PaymentSetupMinOrderByAggregateInput
+    _sum?: PaymentSetupSumOrderByAggregateInput
+  }
+
+  export type PaymentSetupScalarWhereWithAggregatesInput = {
+    AND?: PaymentSetupScalarWhereWithAggregatesInput | PaymentSetupScalarWhereWithAggregatesInput[]
+    OR?: PaymentSetupScalarWhereWithAggregatesInput[]
+    NOT?: PaymentSetupScalarWhereWithAggregatesInput | PaymentSetupScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PaymentSetup"> | number
+    restaurantId?: IntWithAggregatesFilter<"PaymentSetup"> | number
+    fixedfee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeWithAggregatesFilter<"PaymentSetup"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PaymentSetup"> | Date | string
   }
 
   export type RestaurantAdminWhereInput = {
@@ -27634,6 +28988,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemCreateNestedManyWithoutRestaurantInput
@@ -27656,6 +29011,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefUncheckedCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemUncheckedCreateNestedManyWithoutRestaurantInput
@@ -27677,6 +29033,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUpdateManyWithoutRestaurantNestedInput
@@ -27699,6 +29056,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUncheckedUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUncheckedUpdateManyWithoutRestaurantNestedInput
@@ -27974,6 +29332,79 @@ export namespace Prisma {
     verified?: BoolFieldUpdateOperationsInput | boolean
     attempts?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentSetupCreateInput = {
+    fixedfee?: Decimal | DecimalJsLike | number | string
+    precentagefee?: Decimal | DecimalJsLike | number | string
+    minFee?: Decimal | DecimalJsLike | number | string
+    maxFee?: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    restaurant?: RestaurantCreateNestedOneWithoutPaymentSetupInput
+  }
+
+  export type PaymentSetupUncheckedCreateInput = {
+    id?: number
+    restaurantId?: number
+    fixedfee?: Decimal | DecimalJsLike | number | string
+    precentagefee?: Decimal | DecimalJsLike | number | string
+    minFee?: Decimal | DecimalJsLike | number | string
+    maxFee?: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentSetupUpdateInput = {
+    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    restaurant?: RestaurantUpdateOneRequiredWithoutPaymentSetupNestedInput
+  }
+
+  export type PaymentSetupUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    restaurantId?: IntFieldUpdateOperationsInput | number
+    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentSetupCreateManyInput = {
+    id?: number
+    restaurantId?: number
+    fixedfee?: Decimal | DecimalJsLike | number | string
+    precentagefee?: Decimal | DecimalJsLike | number | string
+    minFee?: Decimal | DecimalJsLike | number | string
+    maxFee?: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentSetupUpdateManyMutationInput = {
+    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentSetupUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    restaurantId?: IntFieldUpdateOperationsInput | number
+    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RestaurantAdminCreateInput = {
@@ -29311,6 +30742,11 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type PaymentSetupNullableScalarRelationFilter = {
+    is?: PaymentSetupWhereInput | null
+    isNot?: PaymentSetupWhereInput | null
+  }
+
   export type RestaurantAdminListRelationFilter = {
     every?: RestaurantAdminWhereInput
     some?: RestaurantAdminWhereInput
@@ -29772,6 +31208,57 @@ export namespace Prisma {
   export type RestaurantScalarRelationFilter = {
     is?: RestaurantWhereInput
     isNot?: RestaurantWhereInput
+  }
+
+  export type PaymentSetupCountOrderByAggregateInput = {
+    id?: SortOrder
+    restaurantId?: SortOrder
+    fixedfee?: SortOrder
+    precentagefee?: SortOrder
+    minFee?: SortOrder
+    maxFee?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PaymentSetupAvgOrderByAggregateInput = {
+    id?: SortOrder
+    restaurantId?: SortOrder
+    fixedfee?: SortOrder
+    precentagefee?: SortOrder
+    minFee?: SortOrder
+    maxFee?: SortOrder
+  }
+
+  export type PaymentSetupMaxOrderByAggregateInput = {
+    id?: SortOrder
+    restaurantId?: SortOrder
+    fixedfee?: SortOrder
+    precentagefee?: SortOrder
+    minFee?: SortOrder
+    maxFee?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PaymentSetupMinOrderByAggregateInput = {
+    id?: SortOrder
+    restaurantId?: SortOrder
+    fixedfee?: SortOrder
+    precentagefee?: SortOrder
+    minFee?: SortOrder
+    maxFee?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PaymentSetupSumOrderByAggregateInput = {
+    id?: SortOrder
+    restaurantId?: SortOrder
+    fixedfee?: SortOrder
+    precentagefee?: SortOrder
+    minFee?: SortOrder
+    maxFee?: SortOrder
   }
 
   export type RestaurantAdminCountOrderByAggregateInput = {
@@ -30766,6 +32253,12 @@ export namespace Prisma {
     userId?: SortOrder
   }
 
+  export type PaymentSetupCreateNestedOneWithoutRestaurantInput = {
+    create?: XOR<PaymentSetupCreateWithoutRestaurantInput, PaymentSetupUncheckedCreateWithoutRestaurantInput>
+    connectOrCreate?: PaymentSetupCreateOrConnectWithoutRestaurantInput
+    connect?: PaymentSetupWhereUniqueInput
+  }
+
   export type RestaurantAdminCreateNestedManyWithoutRestaurantInput = {
     create?: XOR<RestaurantAdminCreateWithoutRestaurantInput, RestaurantAdminUncheckedCreateWithoutRestaurantInput> | RestaurantAdminCreateWithoutRestaurantInput[] | RestaurantAdminUncheckedCreateWithoutRestaurantInput[]
     connectOrCreate?: RestaurantAdminCreateOrConnectWithoutRestaurantInput | RestaurantAdminCreateOrConnectWithoutRestaurantInput[]
@@ -30806,6 +32299,12 @@ export namespace Prisma {
     connectOrCreate?: CommissionCreateOrConnectWithoutRestaurantInput | CommissionCreateOrConnectWithoutRestaurantInput[]
     createMany?: CommissionCreateManyRestaurantInputEnvelope
     connect?: CommissionWhereUniqueInput | CommissionWhereUniqueInput[]
+  }
+
+  export type PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput = {
+    create?: XOR<PaymentSetupCreateWithoutRestaurantInput, PaymentSetupUncheckedCreateWithoutRestaurantInput>
+    connectOrCreate?: PaymentSetupCreateOrConnectWithoutRestaurantInput
+    connect?: PaymentSetupWhereUniqueInput
   }
 
   export type RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput = {
@@ -30890,6 +32389,16 @@ export namespace Prisma {
     set?: Date | string
   }
 
+  export type PaymentSetupUpdateOneWithoutRestaurantNestedInput = {
+    create?: XOR<PaymentSetupCreateWithoutRestaurantInput, PaymentSetupUncheckedCreateWithoutRestaurantInput>
+    connectOrCreate?: PaymentSetupCreateOrConnectWithoutRestaurantInput
+    upsert?: PaymentSetupUpsertWithoutRestaurantInput
+    disconnect?: PaymentSetupWhereInput | boolean
+    delete?: PaymentSetupWhereInput | boolean
+    connect?: PaymentSetupWhereUniqueInput
+    update?: XOR<XOR<PaymentSetupUpdateToOneWithWhereWithoutRestaurantInput, PaymentSetupUpdateWithoutRestaurantInput>, PaymentSetupUncheckedUpdateWithoutRestaurantInput>
+  }
+
   export type RestaurantAdminUpdateManyWithoutRestaurantNestedInput = {
     create?: XOR<RestaurantAdminCreateWithoutRestaurantInput, RestaurantAdminUncheckedCreateWithoutRestaurantInput> | RestaurantAdminCreateWithoutRestaurantInput[] | RestaurantAdminUncheckedCreateWithoutRestaurantInput[]
     connectOrCreate?: RestaurantAdminCreateOrConnectWithoutRestaurantInput | RestaurantAdminCreateOrConnectWithoutRestaurantInput[]
@@ -30972,6 +32481,16 @@ export namespace Prisma {
     update?: CommissionUpdateWithWhereUniqueWithoutRestaurantInput | CommissionUpdateWithWhereUniqueWithoutRestaurantInput[]
     updateMany?: CommissionUpdateManyWithWhereWithoutRestaurantInput | CommissionUpdateManyWithWhereWithoutRestaurantInput[]
     deleteMany?: CommissionScalarWhereInput | CommissionScalarWhereInput[]
+  }
+
+  export type PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput = {
+    create?: XOR<PaymentSetupCreateWithoutRestaurantInput, PaymentSetupUncheckedCreateWithoutRestaurantInput>
+    connectOrCreate?: PaymentSetupCreateOrConnectWithoutRestaurantInput
+    upsert?: PaymentSetupUpsertWithoutRestaurantInput
+    disconnect?: PaymentSetupWhereInput | boolean
+    delete?: PaymentSetupWhereInput | boolean
+    connect?: PaymentSetupWhereUniqueInput
+    update?: XOR<XOR<PaymentSetupUpdateToOneWithWhereWithoutRestaurantInput, PaymentSetupUpdateWithoutRestaurantInput>, PaymentSetupUncheckedUpdateWithoutRestaurantInput>
   }
 
   export type RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput = {
@@ -31468,6 +32987,20 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutPhoneOTPsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPhoneOTPsInput, UserUpdateWithoutPhoneOTPsInput>, UserUncheckedUpdateWithoutPhoneOTPsInput>
+  }
+
+  export type RestaurantCreateNestedOneWithoutPaymentSetupInput = {
+    create?: XOR<RestaurantCreateWithoutPaymentSetupInput, RestaurantUncheckedCreateWithoutPaymentSetupInput>
+    connectOrCreate?: RestaurantCreateOrConnectWithoutPaymentSetupInput
+    connect?: RestaurantWhereUniqueInput
+  }
+
+  export type RestaurantUpdateOneRequiredWithoutPaymentSetupNestedInput = {
+    create?: XOR<RestaurantCreateWithoutPaymentSetupInput, RestaurantUncheckedCreateWithoutPaymentSetupInput>
+    connectOrCreate?: RestaurantCreateOrConnectWithoutPaymentSetupInput
+    upsert?: RestaurantUpsertWithoutPaymentSetupInput
+    connect?: RestaurantWhereUniqueInput
+    update?: XOR<XOR<RestaurantUpdateToOneWithWhereWithoutPaymentSetupInput, RestaurantUpdateWithoutPaymentSetupInput>, RestaurantUncheckedUpdateWithoutPaymentSetupInput>
   }
 
   export type UserCreateNestedOneWithoutAdminOfInput = {
@@ -32509,6 +34042,30 @@ export namespace Prisma {
     _max?: NestedEnumNotificationTypeFilter<$PrismaModel>
   }
 
+  export type PaymentSetupCreateWithoutRestaurantInput = {
+    fixedfee?: Decimal | DecimalJsLike | number | string
+    precentagefee?: Decimal | DecimalJsLike | number | string
+    minFee?: Decimal | DecimalJsLike | number | string
+    maxFee?: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentSetupUncheckedCreateWithoutRestaurantInput = {
+    id?: number
+    fixedfee?: Decimal | DecimalJsLike | number | string
+    precentagefee?: Decimal | DecimalJsLike | number | string
+    minFee?: Decimal | DecimalJsLike | number | string
+    maxFee?: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentSetupCreateOrConnectWithoutRestaurantInput = {
+    where: PaymentSetupWhereUniqueInput
+    create: XOR<PaymentSetupCreateWithoutRestaurantInput, PaymentSetupUncheckedCreateWithoutRestaurantInput>
+  }
+
   export type RestaurantAdminCreateWithoutRestaurantInput = {
     assignedAt?: Date | string
     isActive?: boolean
@@ -32729,6 +34286,36 @@ export namespace Prisma {
   export type CommissionCreateManyRestaurantInputEnvelope = {
     data: CommissionCreateManyRestaurantInput | CommissionCreateManyRestaurantInput[]
     skipDuplicates?: boolean
+  }
+
+  export type PaymentSetupUpsertWithoutRestaurantInput = {
+    update: XOR<PaymentSetupUpdateWithoutRestaurantInput, PaymentSetupUncheckedUpdateWithoutRestaurantInput>
+    create: XOR<PaymentSetupCreateWithoutRestaurantInput, PaymentSetupUncheckedCreateWithoutRestaurantInput>
+    where?: PaymentSetupWhereInput
+  }
+
+  export type PaymentSetupUpdateToOneWithWhereWithoutRestaurantInput = {
+    where?: PaymentSetupWhereInput
+    data: XOR<PaymentSetupUpdateWithoutRestaurantInput, PaymentSetupUncheckedUpdateWithoutRestaurantInput>
+  }
+
+  export type PaymentSetupUpdateWithoutRestaurantInput = {
+    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentSetupUncheckedUpdateWithoutRestaurantInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RestaurantAdminUpsertWithWhereUniqueWithoutRestaurantInput = {
@@ -33596,6 +35183,108 @@ export namespace Prisma {
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   }
 
+  export type RestaurantCreateWithoutPaymentSetupInput = {
+    name: string
+    description?: string | null
+    address?: string | null
+    contactNumber?: string | null
+    imageUrl?: string | null
+    isActive?: boolean
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
+    baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
+    fixedAdditionalTime?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    admins?: RestaurantAdminCreateNestedManyWithoutRestaurantInput
+    chefs?: RestaurantChefCreateNestedManyWithoutRestaurantInput
+    menuItems?: MenuItemCreateNestedManyWithoutRestaurantInput
+    orders?: OrderCreateNestedManyWithoutRestaurantInput
+    categories?: CategoryCreateNestedManyWithoutRestaurantInput
+    commissions?: CommissionCreateNestedManyWithoutRestaurantInput
+  }
+
+  export type RestaurantUncheckedCreateWithoutPaymentSetupInput = {
+    id?: number
+    name: string
+    description?: string | null
+    address?: string | null
+    contactNumber?: string | null
+    imageUrl?: string | null
+    isActive?: boolean
+    commissionRate?: Decimal | DecimalJsLike | number | string
+    taxRate?: number | null
+    baseWaitingTimeMultiplier?: Decimal | DecimalJsLike | number | string
+    fixedAdditionalTime?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    admins?: RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput
+    chefs?: RestaurantChefUncheckedCreateNestedManyWithoutRestaurantInput
+    menuItems?: MenuItemUncheckedCreateNestedManyWithoutRestaurantInput
+    orders?: OrderUncheckedCreateNestedManyWithoutRestaurantInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutRestaurantInput
+    commissions?: CommissionUncheckedCreateNestedManyWithoutRestaurantInput
+  }
+
+  export type RestaurantCreateOrConnectWithoutPaymentSetupInput = {
+    where: RestaurantWhereUniqueInput
+    create: XOR<RestaurantCreateWithoutPaymentSetupInput, RestaurantUncheckedCreateWithoutPaymentSetupInput>
+  }
+
+  export type RestaurantUpsertWithoutPaymentSetupInput = {
+    update: XOR<RestaurantUpdateWithoutPaymentSetupInput, RestaurantUncheckedUpdateWithoutPaymentSetupInput>
+    create: XOR<RestaurantCreateWithoutPaymentSetupInput, RestaurantUncheckedCreateWithoutPaymentSetupInput>
+    where?: RestaurantWhereInput
+  }
+
+  export type RestaurantUpdateToOneWithWhereWithoutPaymentSetupInput = {
+    where?: RestaurantWhereInput
+    data: XOR<RestaurantUpdateWithoutPaymentSetupInput, RestaurantUncheckedUpdateWithoutPaymentSetupInput>
+  }
+
+  export type RestaurantUpdateWithoutPaymentSetupInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    contactNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
+    baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admins?: RestaurantAdminUpdateManyWithoutRestaurantNestedInput
+    chefs?: RestaurantChefUpdateManyWithoutRestaurantNestedInput
+    menuItems?: MenuItemUpdateManyWithoutRestaurantNestedInput
+    orders?: OrderUpdateManyWithoutRestaurantNestedInput
+    categories?: CategoryUpdateManyWithoutRestaurantNestedInput
+    commissions?: CommissionUpdateManyWithoutRestaurantNestedInput
+  }
+
+  export type RestaurantUncheckedUpdateWithoutPaymentSetupInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    contactNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    commissionRate?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    taxRate?: NullableFloatFieldUpdateOperationsInput | number | null
+    baseWaitingTimeMultiplier?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admins?: RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput
+    chefs?: RestaurantChefUncheckedUpdateManyWithoutRestaurantNestedInput
+    menuItems?: MenuItemUncheckedUpdateManyWithoutRestaurantNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutRestaurantNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutRestaurantNestedInput
+    commissions?: CommissionUncheckedUpdateManyWithoutRestaurantNestedInput
+  }
+
   export type UserCreateWithoutAdminOfInput = {
     email: string
     passwordHash: string
@@ -33663,6 +35352,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupCreateNestedOneWithoutRestaurantInput
     chefs?: RestaurantChefCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemCreateNestedManyWithoutRestaurantInput
     orders?: OrderCreateNestedManyWithoutRestaurantInput
@@ -33684,6 +35374,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput
     chefs?: RestaurantChefUncheckedCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemUncheckedCreateNestedManyWithoutRestaurantInput
     orders?: OrderUncheckedCreateNestedManyWithoutRestaurantInput
@@ -33780,6 +35471,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUpdateOneWithoutRestaurantNestedInput
     chefs?: RestaurantChefUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUpdateManyWithoutRestaurantNestedInput
     orders?: OrderUpdateManyWithoutRestaurantNestedInput
@@ -33801,6 +35493,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput
     chefs?: RestaurantChefUncheckedUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUncheckedUpdateManyWithoutRestaurantNestedInput
     orders?: OrderUncheckedUpdateManyWithoutRestaurantNestedInput
@@ -33875,6 +35568,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemCreateNestedManyWithoutRestaurantInput
     orders?: OrderCreateNestedManyWithoutRestaurantInput
@@ -33896,6 +35590,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemUncheckedCreateNestedManyWithoutRestaurantInput
     orders?: OrderUncheckedCreateNestedManyWithoutRestaurantInput
@@ -33992,6 +35687,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUpdateManyWithoutRestaurantNestedInput
     orders?: OrderUpdateManyWithoutRestaurantNestedInput
@@ -34013,6 +35709,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUncheckedUpdateManyWithoutRestaurantNestedInput
     orders?: OrderUncheckedUpdateManyWithoutRestaurantNestedInput
@@ -34033,6 +35730,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemCreateNestedManyWithoutRestaurantInput
@@ -34054,6 +35752,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefUncheckedCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemUncheckedCreateNestedManyWithoutRestaurantInput
@@ -34133,6 +35832,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUpdateManyWithoutRestaurantNestedInput
@@ -34154,6 +35854,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUncheckedUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUncheckedUpdateManyWithoutRestaurantNestedInput
@@ -34190,6 +35891,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefCreateNestedManyWithoutRestaurantInput
     orders?: OrderCreateNestedManyWithoutRestaurantInput
@@ -34211,6 +35913,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefUncheckedCreateNestedManyWithoutRestaurantInput
     orders?: OrderUncheckedCreateNestedManyWithoutRestaurantInput
@@ -34327,6 +36030,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUpdateManyWithoutRestaurantNestedInput
     orders?: OrderUpdateManyWithoutRestaurantNestedInput
@@ -34348,6 +36052,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUncheckedUpdateManyWithoutRestaurantNestedInput
     orders?: OrderUncheckedUpdateManyWithoutRestaurantNestedInput
@@ -34798,6 +36503,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemCreateNestedManyWithoutRestaurantInput
@@ -34819,6 +36525,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefUncheckedCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemUncheckedCreateNestedManyWithoutRestaurantInput
@@ -35026,6 +36733,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUpdateManyWithoutRestaurantNestedInput
@@ -35047,6 +36755,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUncheckedUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUncheckedUpdateManyWithoutRestaurantNestedInput
@@ -35914,6 +37623,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemCreateNestedManyWithoutRestaurantInput
@@ -35935,6 +37645,7 @@ export namespace Prisma {
     fixedAdditionalTime?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentSetup?: PaymentSetupUncheckedCreateNestedOneWithoutRestaurantInput
     admins?: RestaurantAdminUncheckedCreateNestedManyWithoutRestaurantInput
     chefs?: RestaurantChefUncheckedCreateNestedManyWithoutRestaurantInput
     menuItems?: MenuItemUncheckedCreateNestedManyWithoutRestaurantInput
@@ -36025,6 +37736,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUpdateManyWithoutRestaurantNestedInput
@@ -36046,6 +37758,7 @@ export namespace Prisma {
     fixedAdditionalTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentSetup?: PaymentSetupUncheckedUpdateOneWithoutRestaurantNestedInput
     admins?: RestaurantAdminUncheckedUpdateManyWithoutRestaurantNestedInput
     chefs?: RestaurantChefUncheckedUpdateManyWithoutRestaurantNestedInput
     menuItems?: MenuItemUncheckedUpdateManyWithoutRestaurantNestedInput

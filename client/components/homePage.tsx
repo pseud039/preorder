@@ -152,6 +152,15 @@ export default function FoodOrderPage() {
             router.push('/login');
             return;
           }
+          else if (response.status === 403) {
+          const errorData = await response.json();
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userId');
+          toast.error(errorData.message || "Your account has been deactivated");
+          router.push('/signup');
+          return;
+        }
           throw new Error('Failed to fetch menu');
         }
 

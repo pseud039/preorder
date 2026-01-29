@@ -67,7 +67,9 @@ import {
   getCommissionSummary,
   settleCommissions,
   updateCommissionStatus,
-  getPlatformAnalytics
+  getPlatformAnalytics,
+  getPaymentSetup,
+  updatePaymentSetup
 } from "../controllers/superadmin/superadmin.controller.js";
 
 const router = express.Router();
@@ -132,5 +134,7 @@ router.post("/superadmin/commissions/settle", verifyJWT, isSuperAdmin, settleCom
 router.patch("/superadmin/commissions/:id/status", verifyJWT, isSuperAdmin, updateCommissionStatus);
 
 router.get("/superadmin/analytics/overview", verifyJWT, isSuperAdmin, getPlatformAnalytics);
+router.get("/superadmin/commissions", verifyJWT,isSuperAdmin,getPaymentSetup);
+router.post("/superadmin/commissions", verifyJWT,isSuperAdmin,updatePaymentSetup);
 
 export default router;

@@ -466,6 +466,9 @@ const handleUpdateProfile = async () => {
       setUpdating(false);
     }
   };
+  const handleDeletion = async() =>{
+    router.push('/deletion');
+  }
   
   const handleLogout = async () => {
     try {
@@ -692,7 +695,7 @@ const handleUpdateProfile = async () => {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button> */}
         </div>
-
+<button onClick={handleDeletion} className='w-full mt-8 bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-center gap-3 hover:bg-red-100 transition-colors'>Deactivate Account</button>
         {/* Logout Button */}
         <button
           onClick={handleLogout}

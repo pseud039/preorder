@@ -336,7 +336,7 @@ const login = asyncHandler(async (req, res) => {
   });
 
   res.cookie("accessToken", accessToken, {
-    domain: ".predine.in",
+    // domain: ".predine.in",
     httpOnly: true,
     secure: true, // process.env.NODE_ENV === "production",
     sameSite: "Lax",
@@ -669,6 +669,17 @@ export const deleteUser = asyncHandler(async (req, res) => {
     where: { id: userId },
     data: { isActive: false },
   });
+    res.cookie("accessToken", "", {
+      
+    httpOnly: true,
+    secure: true,
+    sameSite: "Lax",
+    maxAge: 0, // This expires the cookie immediately
+    path: "/",
+  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "User account deactivated successfully"));
 });
 
 export {

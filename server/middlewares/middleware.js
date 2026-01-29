@@ -87,6 +87,9 @@ export const isCustomer = asyncHandler(async (req, res, next) => {
   if (req.user.role !== "customer") {
     throw new ApiError(403, "This action is only available to customers");
   }
+  if (!req.user.isActive) {
+    throw new ApiError(403, "Your customer account is deactivated");
+  }
   next();
 });
 

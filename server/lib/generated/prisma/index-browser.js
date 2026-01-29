@@ -163,6 +163,17 @@ exports.Prisma.PhoneOTPScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PaymentSetupScalarFieldEnum = {
+  id: 'id',
+  restaurantId: 'restaurantId',
+  fixedfee: 'fixedfee',
+  precentagefee: 'precentagefee',
+  minFee: 'minFee',
+  maxFee: 'maxFee',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.RestaurantAdminScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -427,6 +438,7 @@ exports.Prisma.ModelName = {
   Restaurant: 'Restaurant',
   User: 'User',
   PhoneOTP: 'PhoneOTP',
+  PaymentSetup: 'PaymentSetup',
   RestaurantAdmin: 'RestaurantAdmin',
   RestaurantChef: 'RestaurantChef',
   Category: 'Category',

@@ -95,7 +95,37 @@ export const getAllRestaurants = asyncHandler(async (req, res) => {
     )
   );
 });
-
+ export const getPaymentSetup = asyncHandler(async(req,res)=>{
+  const paymentConfig  = await prisma.paymentSetup.find({
+    where:{restaurantId:3}
+  });
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      paymentConfig,
+      "Payment config fetched successfully"
+    )
+  );
+ })
+ export const updatePaymentSetup = asyncHandler(async(req,res)=>{
+  const {fixedfee, precentagefee,minFee,maxFee} = req.body;
+  const updatedConfig = await prisma.paymentSetup.update({
+    where:{restaurantId:3},
+    data:{
+      fixedfee,
+      precentagefee,
+      minFee,
+      maxFee
+    }
+  });
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      updatedConfig,
+      "Payment config updated successfully"
+    )
+  );
+ })
 /**
  * @route GET /api/superadmin/restaurants/:id
  * @desc Get restaurant details with full stats
