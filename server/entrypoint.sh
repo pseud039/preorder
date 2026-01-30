@@ -9,5 +9,7 @@ if [ "$(id -u)" = "0" ]; then
   exec su-exec node "$@"
 fi
 
+exec "npx prisma migrate deploy"
+
 # Already non-root
 exec "$@"
