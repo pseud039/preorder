@@ -467,7 +467,7 @@ const handleUpdateProfile = async () => {
     }
   };
   const handleDeletion = async() =>{
-    router.push('/deletion');
+    router.push('/account-deletion');
   }
   
   const handleLogout = async () => {

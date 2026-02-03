@@ -30,7 +30,7 @@ export default function DeletionComponent() {
     setIsDeleting(true);
 
     try {
-      const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/client/delete-account`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/client/delete-account`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -40,24 +40,29 @@ export default function DeletionComponent() {
 
       if (response.ok) {
         toast.success('Account deleted successfully.');
-        // Clear any local storage/session data
         localStorage.clear();
         sessionStorage.clear()
         deleteAllCookies();
         setIsDeleting(false);
-        // Redirect to homepage or goodbye page
         router.push('/');
-
         // router.push('/goodbye');
       } else {
         const errorData = await response.json();
         toast.error(`Error: ${errorData.message || 'Failed to delete account'}`);
         setIsDeleting(false);
       }
+      // if(response.status === 401) {
+      //   toast.error('Session expired. Please log in again.');
+      //   setIsDeleting(false);
+      // }
+      //   router.push('/login');
     } catch (error) {
+      
       console.error('Account deletion error:', error);
-      toast.error('An unexpected error occurred. Please try again.');
+        toast.error('Session expired. Please log in again.');
       setIsDeleting(false);
+      router.push('/login');
+
     }
   };
 
