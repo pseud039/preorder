@@ -572,14 +572,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
     where: { id: userId },
     data: { isActive: false },
   });
-  res.cookie("accessToken", "", {
-    domain: ".predine.in",
-    httpOnly: true,
-    secure: true,
-    sameSite: "Lax",
-    maxAge: 0,
-    // path: "/",
-  });
+  res.clearCookie("accessToken");
   return res
     .status(200)
     .json(new ApiResponse(200, null, "User account deactivated successfully"));
