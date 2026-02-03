@@ -17,7 +17,21 @@ async function main() {
       commissionRate: 2
     },
   });
+  const client = await prisma.user.upsert({
+    where:{ email:"test@gmail.com"},
+    update:{},
+    create:{
+      email:"test@gmail.com",
+      passwordHash: await bcrypt.hash("Test@123",10),
+      role:"customer",
+      name:"Test_User",
+      isActive:true,
+      emailVerified:true,
+      phoneVerified:true,
+      phone:"9876543210"
+    }
 
+  })
   const admin = await prisma.user.upsert({
     where: { email: "predine.dev@gmail.com" },
     update: {},
@@ -28,6 +42,8 @@ async function main() {
       name: "SuperAdmin_01",
       isActive: true,
       emailVerified: true,
+      // phoneVerified: true,
+      // phone: "9876543210",
     },
   });
 const paymentconfig = await prisma.paymentSetup.upsert({
@@ -51,7 +67,7 @@ const paymentconfig = await prisma.paymentSetup.upsert({
   },
 });
 
-  console.log({ greenChili, admin, paymentconfig });
+  console.log({ greenChili, admin, paymentconfig, client });
 }
 main()
   .then(async () => {

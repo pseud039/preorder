@@ -196,103 +196,6 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Verification email sent successfully"));
 });
 
-// export const sendPhoneOTP = asyncHandler(async (req, res) => {
-//   const { phone } = req.body;
-
-//   if (!phone) {
-//     throw new ApiError(400, "Phone number is required");
-//   }
-
-//   const user = await prisma.user.findUnique({
-//     where: { phone }
-//   });
-
-//   if (!user) {
-//     throw new ApiError(404, "User not found");
-//   }
-
-//   if (user.isPhoneVerified) {
-//     throw new ApiError(400, "Phone is already verified");
-//   }
-
-//   // Generate 6-digit OTP
-//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-//   const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-//   await prisma.user.update({
-//     where: { id: user.id },
-//     data: {
-//       phoneOTP: otp,
-//       phoneOTPExpiry: otpExpiry,
-//       phoneOTPAttempts: 0
-//     }
-//   });
-
-//   // Send OTP via SMS
-//   await SMSService.sendOTP(phone, otp);
-
-//   res.status(200).json(
-//     new ApiResponse(200, null, "OTP sent successfully")
-//   );
-// });
-
-// export const verifyPhoneOTP = asyncHandler(async (req, res) => {
-//   const { phone, otp } = req.body;
-
-//   if (!phone || !otp) {
-//     throw new ApiError(400, "Phone and OTP are required");
-//   }
-
-//   const user = await prisma.user.findUnique({
-//     where: { phone }
-//   });
-
-//   if (!user) {
-//     throw new ApiError(404, "User not found");
-//   }
-
-//   if (user.isPhoneVerified) {
-//     throw new ApiError(400, "Phone is already verified");
-//   }
-
-//   if (!user.phoneOTP || !user.phoneOTPExpiry) {
-//     throw new ApiError(400, "No OTP found. Please request a new OTP");
-//   }
-
-//   if (new Date() > user.phoneOTPExpiry) {
-//     throw new ApiError(400, "OTP has expired. Please request a new OTP");
-//   }
-
-//   if (user.phoneOTPAttempts >= 3) {
-//     throw new ApiError(429, "Maximum OTP attempts exceeded. Please request a new OTP");
-//   }
-
-//   if (user.phoneOTP !== otp) {
-//     await prisma.user.update({
-//       where: { id: user.id },
-//       data: {
-//         phoneOTPAttempts: user.phoneOTPAttempts + 1
-//       }
-//     });
-
-//     throw new ApiError(400, "Invalid OTP");
-//   }
-
-//   await prisma.user.update({
-//     where: { id: user.id },
-//     data: {
-//       isPhoneVerified: true,
-//       phoneOTP: null,
-//       phoneOTPExpiry: null,
-//       phoneOTPAttempts: 0
-//     }
-//   });
-
-//   res.status(200).json(
-//     new ApiResponse(200, null, "Phone verified successfully")
-//   );
-// });
-
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -336,7 +239,7 @@ const login = asyncHandler(async (req, res) => {
   });
 
   res.cookie("accessToken", accessToken, {
-    // domain: ".predine.in",
+    domain: ".predine.in",
     httpOnly: true,
     secure: true, // process.env.NODE_ENV === "production",
     sameSite: "Lax",
@@ -669,13 +572,13 @@ export const deleteUser = asyncHandler(async (req, res) => {
     where: { id: userId },
     data: { isActive: false },
   });
-    res.cookie("accessToken", "", {
-      
+  res.cookie("accessToken", "", {
+    domain: ".predine.in",
     httpOnly: true,
     secure: true,
     sameSite: "Lax",
-    maxAge: 0, // This expires the cookie immediately
-    path: "/",
+    maxAge: 0,
+    // path: "/",
   });
   return res
     .status(200)

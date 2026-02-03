@@ -84,7 +84,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   });
 
   res.cookie("accessToken", accessToken, {
-    // domain: ".predine.in",
+    domain: ".predine.in",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -94,7 +94,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   });
 
   res.cookie("refreshToken", refreshToken, {
-    // domain: ".predine.in",
+    domain: ".predine.in",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
