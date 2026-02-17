@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "in.predine.predine",
       "sha256_cert_fingerprints": [
-        "BF:D1:FD:90:E0:4F:78:62:6C:05:53:1A:CE:62:F7:98:7E:A9:CA:CA:A8:18:75:73:AA:04:25:AB:E6:4F:21:DE"
+        "BF:D1:FD:90:E0:4F:78:62:6C:05:53:1A:CE:62:F7:98:7E:A9:CA:CA:A8:18:75:73:AA:04:25:AB:E6:4F:21:DE",
+        "1D:E8:41:67:8F:41:A0:5D:D2:FA:37:7A:FE:DE:AF:E6:61:45:29:AF:3F:B6:97:11:F3:13:6E:FF:3B:D6:11:22"
       ]
     }
   }
