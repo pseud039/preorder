@@ -6997,8 +6997,8 @@ export namespace Prisma {
   export type PaymentSetupAvgAggregateOutputType = {
     id: number | null
     restaurantId: number | null
-    fixedfee: Decimal | null
-    precentagefee: Decimal | null
+    fixedFee: Decimal | null
+    percentageFee: Decimal | null
     minFee: Decimal | null
     maxFee: Decimal | null
   }
@@ -7006,8 +7006,8 @@ export namespace Prisma {
   export type PaymentSetupSumAggregateOutputType = {
     id: number | null
     restaurantId: number | null
-    fixedfee: Decimal | null
-    precentagefee: Decimal | null
+    fixedFee: Decimal | null
+    percentageFee: Decimal | null
     minFee: Decimal | null
     maxFee: Decimal | null
   }
@@ -7015,8 +7015,8 @@ export namespace Prisma {
   export type PaymentSetupMinAggregateOutputType = {
     id: number | null
     restaurantId: number | null
-    fixedfee: Decimal | null
-    precentagefee: Decimal | null
+    fixedFee: Decimal | null
+    percentageFee: Decimal | null
     minFee: Decimal | null
     maxFee: Decimal | null
     createdAt: Date | null
@@ -7026,8 +7026,8 @@ export namespace Prisma {
   export type PaymentSetupMaxAggregateOutputType = {
     id: number | null
     restaurantId: number | null
-    fixedfee: Decimal | null
-    precentagefee: Decimal | null
+    fixedFee: Decimal | null
+    percentageFee: Decimal | null
     minFee: Decimal | null
     maxFee: Decimal | null
     createdAt: Date | null
@@ -7037,8 +7037,8 @@ export namespace Prisma {
   export type PaymentSetupCountAggregateOutputType = {
     id: number
     restaurantId: number
-    fixedfee: number
-    precentagefee: number
+    fixedFee: number
+    percentageFee: number
     minFee: number
     maxFee: number
     createdAt: number
@@ -7050,8 +7050,8 @@ export namespace Prisma {
   export type PaymentSetupAvgAggregateInputType = {
     id?: true
     restaurantId?: true
-    fixedfee?: true
-    precentagefee?: true
+    fixedFee?: true
+    percentageFee?: true
     minFee?: true
     maxFee?: true
   }
@@ -7059,8 +7059,8 @@ export namespace Prisma {
   export type PaymentSetupSumAggregateInputType = {
     id?: true
     restaurantId?: true
-    fixedfee?: true
-    precentagefee?: true
+    fixedFee?: true
+    percentageFee?: true
     minFee?: true
     maxFee?: true
   }
@@ -7068,8 +7068,8 @@ export namespace Prisma {
   export type PaymentSetupMinAggregateInputType = {
     id?: true
     restaurantId?: true
-    fixedfee?: true
-    precentagefee?: true
+    fixedFee?: true
+    percentageFee?: true
     minFee?: true
     maxFee?: true
     createdAt?: true
@@ -7079,8 +7079,8 @@ export namespace Prisma {
   export type PaymentSetupMaxAggregateInputType = {
     id?: true
     restaurantId?: true
-    fixedfee?: true
-    precentagefee?: true
+    fixedFee?: true
+    percentageFee?: true
     minFee?: true
     maxFee?: true
     createdAt?: true
@@ -7090,8 +7090,8 @@ export namespace Prisma {
   export type PaymentSetupCountAggregateInputType = {
     id?: true
     restaurantId?: true
-    fixedfee?: true
-    precentagefee?: true
+    fixedFee?: true
+    percentageFee?: true
     minFee?: true
     maxFee?: true
     createdAt?: true
@@ -7188,8 +7188,8 @@ export namespace Prisma {
   export type PaymentSetupGroupByOutputType = {
     id: number
     restaurantId: number
-    fixedfee: Decimal
-    precentagefee: Decimal
+    fixedFee: Decimal
+    percentageFee: Decimal
     minFee: Decimal
     maxFee: Decimal
     createdAt: Date
@@ -7218,8 +7218,8 @@ export namespace Prisma {
   export type PaymentSetupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     restaurantId?: boolean
-    fixedfee?: boolean
-    precentagefee?: boolean
+    fixedFee?: boolean
+    percentageFee?: boolean
     minFee?: boolean
     maxFee?: boolean
     createdAt?: boolean
@@ -7230,8 +7230,8 @@ export namespace Prisma {
   export type PaymentSetupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     restaurantId?: boolean
-    fixedfee?: boolean
-    precentagefee?: boolean
+    fixedFee?: boolean
+    percentageFee?: boolean
     minFee?: boolean
     maxFee?: boolean
     createdAt?: boolean
@@ -7242,8 +7242,8 @@ export namespace Prisma {
   export type PaymentSetupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     restaurantId?: boolean
-    fixedfee?: boolean
-    precentagefee?: boolean
+    fixedFee?: boolean
+    percentageFee?: boolean
     minFee?: boolean
     maxFee?: boolean
     createdAt?: boolean
@@ -7254,15 +7254,15 @@ export namespace Prisma {
   export type PaymentSetupSelectScalar = {
     id?: boolean
     restaurantId?: boolean
-    fixedfee?: boolean
-    precentagefee?: boolean
+    fixedFee?: boolean
+    percentageFee?: boolean
     minFee?: boolean
     maxFee?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PaymentSetupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "restaurantId" | "fixedfee" | "precentagefee" | "minFee" | "maxFee" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentSetup"]>
+  export type PaymentSetupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "restaurantId" | "fixedFee" | "percentageFee" | "minFee" | "maxFee" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentSetup"]>
   export type PaymentSetupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     restaurant?: boolean | RestaurantDefaultArgs<ExtArgs>
   }
@@ -7281,8 +7281,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       restaurantId: number
-      fixedfee: Prisma.Decimal
-      precentagefee: Prisma.Decimal
+      fixedFee: Prisma.Decimal
+      percentageFee: Prisma.Decimal
       minFee: Prisma.Decimal
       maxFee: Prisma.Decimal
       createdAt: Date
@@ -7713,8 +7713,8 @@ export namespace Prisma {
   interface PaymentSetupFieldRefs {
     readonly id: FieldRef<"PaymentSetup", 'Int'>
     readonly restaurantId: FieldRef<"PaymentSetup", 'Int'>
-    readonly fixedfee: FieldRef<"PaymentSetup", 'Decimal'>
-    readonly precentagefee: FieldRef<"PaymentSetup", 'Decimal'>
+    readonly fixedFee: FieldRef<"PaymentSetup", 'Decimal'>
+    readonly percentageFee: FieldRef<"PaymentSetup", 'Decimal'>
     readonly minFee: FieldRef<"PaymentSetup", 'Decimal'>
     readonly maxFee: FieldRef<"PaymentSetup", 'Decimal'>
     readonly createdAt: FieldRef<"PaymentSetup", 'DateTime'>
@@ -26879,8 +26879,8 @@ export namespace Prisma {
   export const PaymentSetupScalarFieldEnum: {
     id: 'id',
     restaurantId: 'restaurantId',
-    fixedfee: 'fixedfee',
-    precentagefee: 'precentagefee',
+    fixedFee: 'fixedFee',
+    percentageFee: 'percentageFee',
     minFee: 'minFee',
     maxFee: 'maxFee',
     createdAt: 'createdAt',
@@ -27664,8 +27664,8 @@ export namespace Prisma {
     NOT?: PaymentSetupWhereInput | PaymentSetupWhereInput[]
     id?: IntFilter<"PaymentSetup"> | number
     restaurantId?: IntFilter<"PaymentSetup"> | number
-    fixedfee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFilter<"PaymentSetup"> | Date | string
@@ -27676,8 +27676,8 @@ export namespace Prisma {
   export type PaymentSetupOrderByWithRelationInput = {
     id?: SortOrder
     restaurantId?: SortOrder
-    fixedfee?: SortOrder
-    precentagefee?: SortOrder
+    fixedFee?: SortOrder
+    percentageFee?: SortOrder
     minFee?: SortOrder
     maxFee?: SortOrder
     createdAt?: SortOrder
@@ -27691,8 +27691,8 @@ export namespace Prisma {
     AND?: PaymentSetupWhereInput | PaymentSetupWhereInput[]
     OR?: PaymentSetupWhereInput[]
     NOT?: PaymentSetupWhereInput | PaymentSetupWhereInput[]
-    fixedfee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFilter<"PaymentSetup"> | Date | string
@@ -27703,8 +27703,8 @@ export namespace Prisma {
   export type PaymentSetupOrderByWithAggregationInput = {
     id?: SortOrder
     restaurantId?: SortOrder
-    fixedfee?: SortOrder
-    precentagefee?: SortOrder
+    fixedFee?: SortOrder
+    percentageFee?: SortOrder
     minFee?: SortOrder
     maxFee?: SortOrder
     createdAt?: SortOrder
@@ -27722,8 +27722,8 @@ export namespace Prisma {
     NOT?: PaymentSetupScalarWhereWithAggregatesInput | PaymentSetupScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"PaymentSetup"> | number
     restaurantId?: IntWithAggregatesFilter<"PaymentSetup"> | number
-    fixedfee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     minFee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalWithAggregatesFilter<"PaymentSetup"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeWithAggregatesFilter<"PaymentSetup"> | Date | string
@@ -29335,8 +29335,8 @@ export namespace Prisma {
   }
 
   export type PaymentSetupCreateInput = {
-    fixedfee?: Decimal | DecimalJsLike | number | string
-    precentagefee?: Decimal | DecimalJsLike | number | string
+    fixedFee?: Decimal | DecimalJsLike | number | string
+    percentageFee?: Decimal | DecimalJsLike | number | string
     minFee?: Decimal | DecimalJsLike | number | string
     maxFee?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
@@ -29347,8 +29347,8 @@ export namespace Prisma {
   export type PaymentSetupUncheckedCreateInput = {
     id?: number
     restaurantId?: number
-    fixedfee?: Decimal | DecimalJsLike | number | string
-    precentagefee?: Decimal | DecimalJsLike | number | string
+    fixedFee?: Decimal | DecimalJsLike | number | string
+    percentageFee?: Decimal | DecimalJsLike | number | string
     minFee?: Decimal | DecimalJsLike | number | string
     maxFee?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
@@ -29356,8 +29356,8 @@ export namespace Prisma {
   }
 
   export type PaymentSetupUpdateInput = {
-    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29368,8 +29368,8 @@ export namespace Prisma {
   export type PaymentSetupUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     restaurantId?: IntFieldUpdateOperationsInput | number
-    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29379,8 +29379,8 @@ export namespace Prisma {
   export type PaymentSetupCreateManyInput = {
     id?: number
     restaurantId?: number
-    fixedfee?: Decimal | DecimalJsLike | number | string
-    precentagefee?: Decimal | DecimalJsLike | number | string
+    fixedFee?: Decimal | DecimalJsLike | number | string
+    percentageFee?: Decimal | DecimalJsLike | number | string
     minFee?: Decimal | DecimalJsLike | number | string
     maxFee?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
@@ -29388,8 +29388,8 @@ export namespace Prisma {
   }
 
   export type PaymentSetupUpdateManyMutationInput = {
-    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29399,8 +29399,8 @@ export namespace Prisma {
   export type PaymentSetupUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     restaurantId?: IntFieldUpdateOperationsInput | number
-    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31213,8 +31213,8 @@ export namespace Prisma {
   export type PaymentSetupCountOrderByAggregateInput = {
     id?: SortOrder
     restaurantId?: SortOrder
-    fixedfee?: SortOrder
-    precentagefee?: SortOrder
+    fixedFee?: SortOrder
+    percentageFee?: SortOrder
     minFee?: SortOrder
     maxFee?: SortOrder
     createdAt?: SortOrder
@@ -31224,8 +31224,8 @@ export namespace Prisma {
   export type PaymentSetupAvgOrderByAggregateInput = {
     id?: SortOrder
     restaurantId?: SortOrder
-    fixedfee?: SortOrder
-    precentagefee?: SortOrder
+    fixedFee?: SortOrder
+    percentageFee?: SortOrder
     minFee?: SortOrder
     maxFee?: SortOrder
   }
@@ -31233,8 +31233,8 @@ export namespace Prisma {
   export type PaymentSetupMaxOrderByAggregateInput = {
     id?: SortOrder
     restaurantId?: SortOrder
-    fixedfee?: SortOrder
-    precentagefee?: SortOrder
+    fixedFee?: SortOrder
+    percentageFee?: SortOrder
     minFee?: SortOrder
     maxFee?: SortOrder
     createdAt?: SortOrder
@@ -31244,8 +31244,8 @@ export namespace Prisma {
   export type PaymentSetupMinOrderByAggregateInput = {
     id?: SortOrder
     restaurantId?: SortOrder
-    fixedfee?: SortOrder
-    precentagefee?: SortOrder
+    fixedFee?: SortOrder
+    percentageFee?: SortOrder
     minFee?: SortOrder
     maxFee?: SortOrder
     createdAt?: SortOrder
@@ -31255,8 +31255,8 @@ export namespace Prisma {
   export type PaymentSetupSumOrderByAggregateInput = {
     id?: SortOrder
     restaurantId?: SortOrder
-    fixedfee?: SortOrder
-    precentagefee?: SortOrder
+    fixedFee?: SortOrder
+    percentageFee?: SortOrder
     minFee?: SortOrder
     maxFee?: SortOrder
   }
@@ -34043,8 +34043,8 @@ export namespace Prisma {
   }
 
   export type PaymentSetupCreateWithoutRestaurantInput = {
-    fixedfee?: Decimal | DecimalJsLike | number | string
-    precentagefee?: Decimal | DecimalJsLike | number | string
+    fixedFee?: Decimal | DecimalJsLike | number | string
+    percentageFee?: Decimal | DecimalJsLike | number | string
     minFee?: Decimal | DecimalJsLike | number | string
     maxFee?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
@@ -34053,8 +34053,8 @@ export namespace Prisma {
 
   export type PaymentSetupUncheckedCreateWithoutRestaurantInput = {
     id?: number
-    fixedfee?: Decimal | DecimalJsLike | number | string
-    precentagefee?: Decimal | DecimalJsLike | number | string
+    fixedFee?: Decimal | DecimalJsLike | number | string
+    percentageFee?: Decimal | DecimalJsLike | number | string
     minFee?: Decimal | DecimalJsLike | number | string
     maxFee?: Decimal | DecimalJsLike | number | string
     createdAt?: Date | string
@@ -34300,8 +34300,8 @@ export namespace Prisma {
   }
 
   export type PaymentSetupUpdateWithoutRestaurantInput = {
-    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34310,8 +34310,8 @@ export namespace Prisma {
 
   export type PaymentSetupUncheckedUpdateWithoutRestaurantInput = {
     id?: IntFieldUpdateOperationsInput | number
-    fixedfee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    precentagefee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    fixedFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    percentageFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     minFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     maxFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -166,8 +166,8 @@ exports.Prisma.PhoneOTPScalarFieldEnum = {
 exports.Prisma.PaymentSetupScalarFieldEnum = {
   id: 'id',
   restaurantId: 'restaurantId',
-  fixedfee: 'fixedfee',
-  precentagefee: 'precentagefee',
+  fixedFee: 'fixedFee',
+  percentageFee: 'percentageFee',
   minFee: 'minFee',
   maxFee: 'maxFee',
   createdAt: 'createdAt',
