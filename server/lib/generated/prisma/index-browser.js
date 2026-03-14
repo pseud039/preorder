@@ -359,6 +359,26 @@ exports.Prisma.PushSubscriptionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.EmailQueueScalarFieldEnum = {
+  id: 'id',
+  to: 'to',
+  confirmationLinkToken: 'confirmationLinkToken',
+  subject: 'subject',
+  body: 'body',
+  template: 'template',
+  templateData: 'templateData',
+  status: 'status',
+  attempts: 'attempts',
+  maxAttempts: 'maxAttempts',
+  lastAttemptAt: 'lastAttemptAt',
+  errorMessage: 'errorMessage',
+  sentAt: 'sentAt',
+  userId: 'userId',
+  orderId: 'orderId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -434,6 +454,13 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   PAYMENT_EXPIRED: 'PAYMENT_EXPIRED'
 };
 
+exports.EmailStatus = exports.$Enums.EmailStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  sent: 'sent',
+  failed: 'failed'
+};
+
 exports.Prisma.ModelName = {
   Restaurant: 'Restaurant',
   User: 'User',
@@ -454,7 +481,8 @@ exports.Prisma.ModelName = {
   PasswordReset: 'PasswordReset',
   Commission: 'Commission',
   Notification: 'Notification',
-  PushSubscription: 'PushSubscription'
+  PushSubscription: 'PushSubscription',
+  EmailQueue: 'EmailQueue'
 };
 
 /**

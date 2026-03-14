@@ -6,8 +6,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { emailTemplates } from "../../utils/email/emailTemplates.js";
+import { sendEmail } from "../../utils/email/emailService.js";
 // import { SMSService } from "../../utils/sms.service.js";
-import { transporter } from "../../utils/email/emailConfig.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -73,23 +73,8 @@ const signup = asyncHandler(async (req, res) => {
     },
   });
   const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
-  console.log("Sending email via ZeptoMail:", {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    host: `${process.env.EMAIL_HOST}`,
-  });
-  try {
-    const mailTemp = emailTemplates.emailConformation(email, confirmationLink);
-    const info = await transporter.sendMail({
-      ...mailTemp,
-      to: email,
-      from: process.env.EMAIL_FROM,
-    });
-  } catch (error) {
-    console.error("Failed to send booking link", error);
-    throw new ApiError(400, "Bad Request");
-  }
-
+  await sendEmail({ to: email, template:"emailConformation", userId: user.id, templateData: { link: confirmationLink },});
+console.log("WORKS!");
   res
     .status(201)
     .json(
@@ -180,17 +165,8 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
   });
 
   const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
-  try {
-    const mailTemp = emailTemplates.emailConformation(email, confirmationLink);
-    const info = await transporter.sendMail({
-      ...mailTemp,
-      to: email,
-    });
-  } catch (error) {
-    console.error("Failed to send booking link", error);
-    throw new ApiError(400, "Bad Request");
-  }
-
+  const mailTemp = emailTemplates.emailConformation(email, confirmationLink);
+  await sendEmail({ to: email, template:"emailConformation", userId: user.id, templateData: { link: confirmationLink },});
   res
     .status(200)
     .json(new ApiResponse(200, null, "Verification email sent successfully"));
@@ -371,8 +347,9 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     },
   });
 
-  await transporter.sendPasswordResetEmail(email, resetToken);
-
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  const mailTemp = emailTemplates.ForgotPassword(email, resetLink);
+  await sendEmail({ to: email, template:"ForgotPassword", userId: user.id, templateData: { link: resetLink },});
   res
     .status(200)
     .json(

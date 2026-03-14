@@ -40,6 +40,8 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+
+  const [forgotPass, setForgotPass] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const router = useRouter();
 
@@ -199,6 +201,7 @@ console.log(data.data.accessToken)
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
+              
             </div>
           </div>
 

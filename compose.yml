@@ -34,11 +34,14 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-preorder}
       MULTER_PATH: /usr/src/app/public/temp
       PORT: 8000
+      EMAIL_SERVER_URL: http://email-server:3001
     ports:
       - "${SERVER_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
+      email-server:
+        condition: service_started
     networks:
       - preorder-network
     volumes:
@@ -81,6 +84,23 @@ services:
       - "${CLIENT_PORT:-3000}:3000"
     depends_on:
       - server
+    networks:
+      - preorder-network
+
+  # Email Queue Service
+  email-server:
+    build:
+      context: ./email-server
+    container_name: preorder-email-server
+    restart: unless-stopped
+    env_file:
+      - ./email-server/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-preorder}
+      EMAIL_SERVER_PORT: 3001
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - preorder-network
 

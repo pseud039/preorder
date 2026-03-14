@@ -5,8 +5,8 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
-import { transporter } from "../../utils/email/emailConfig.js";
 import { emailTemplates } from "../../utils/email/emailTemplates.js";
+import { sendEmail } from "../../utils/email/emailService.js";
 import Restraunt_ID from "../../utils/constant.js";
 import { parseDuration } from "../user.controller.js";
 
@@ -285,11 +285,8 @@ export const createAdmin = asyncHandler(async (req, res) => {
   });
 
   try {
-    const mailTemp = emailTemplates.InviteAdmin(email,password);
-    await transporter.sendMail({
-      ...mailTemp,
-      to: email,
-    });
+    const mailTemp = emailTemplates.InviteAdmin(email, password);
+    await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
   } catch (error) {
     console.error("Failed to send welcome email:", error);
   }
@@ -375,14 +372,10 @@ export const createChef = asyncHandler(async (req, res) => {
     return { user: newUser, chef: restaurantChef };
   });
 
-  try{
-    const mailTemp = emailTemplates.InviteChef(email,password);
-    await transporter.sendMail({
-      ...mailTemp,
-      to: email,
-
-    });
-  }catch(error){
+  try {
+    const mailTemp = emailTemplates.InviteChef(email, password);
+    await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
+  } catch (error) {
     throw new ApiError(500, "Failed to send invite email");
   }
   return res.status(201).json(
@@ -460,11 +453,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetLink = `${process.env.FRONTEND_URL}/admin/reset-password/${resetToken}`;
 
   try {
-    const mailTemp = emailTemplates.ForgotPassword(email,resetLink);
-    await transporter.sendMail({
-      ...mailTemp,
-      to: email,
-    });
+    const mailTemp = emailTemplates.ForgotPassword(email, resetLink);
+    await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
   } catch (error) {
     console.error("Failed to send reset email:", error);
     throw new ApiError(500, "Failed to send reset email");

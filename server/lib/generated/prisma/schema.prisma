@@ -430,7 +430,44 @@ model PushSubscription {
   @@index([userId, isActive])
 }
 
+// Email Queue System
+model EmailQueue {
+  id                    Int     @id @default(autoincrement())
+  to                    String // Recipient email
+  confirmationLinkToken String? // For verification emails
+  subject               String?
+  body                  String? // HTML body
+  template              String? // Template name if using templates
+  templateData          Json? // Template variables
+
+  status EmailStatus @default(pending)
+
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(3)
+  lastAttemptAt DateTime?
+
+  errorMessage String?
+  sentAt       DateTime?
+
+  // Optional: Link to user/order for tracking
+  userId  Int?
+  orderId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 // Enums
+enum EmailStatus {
+  pending
+  processing
+  sent
+  failed
+}
+
 enum Role {
   superadmin
   admin

@@ -29,6 +29,8 @@
     "pg": "^8.16.3",
     "postgres": "^3.4.7",
     "prisma": "^6.18.0",
+    "PubSub": "^4.0.1",
+    "pubsub-js": "^1.9.5",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1",
     "supabase": "^2.54.10",
