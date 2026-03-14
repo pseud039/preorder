@@ -228,7 +228,6 @@ export default function SignUpPage() {
                     <FieldLabel htmlFor="terms-checkbox-desc">
                       Accept
                       <TnCDialog />
-                      {/* <a href="/policies" className="hover:underline"></a> */}
                     </FieldLabel>
                     <FieldDescription className="text-xs">
                       By clicking this checkbox, you agree to the terms and
