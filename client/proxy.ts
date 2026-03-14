@@ -4,7 +4,16 @@ export default function proxy(request: NextRequest) {
   const reqUrl = new URL(request.url);
 
   // These routes would redirect to /dashboard if the user is authenticated
-  const publicRoutes = ["/", "/login", "/signup", "/get-started", "/account-deletion", "/policies","/refund-policy","/privacy-policy","/return-policy"];
+  const publicRoutes = [
+    "/",
+    "/login",
+    "/signup",
+    "/get-started",
+    "/account-deletion",
+    "/terms-and-conditions",
+    "/refund-policy",
+    "/privacy-policy",
+  ];
   const publicRegex = [/\/verify-email\/[0-9a-fA-Z]*/];
 
   const isFile = reqUrl.pathname.includes(".");
@@ -18,7 +27,7 @@ export default function proxy(request: NextRequest) {
     publicRegex.some((rx) => reqUrl.pathname.match(rx))
   ) {
     // if (request.cookies.get("accessToken"))
-      // return NextResponse.redirect(new URL("/dashboard", request.url));
+    // return NextResponse.redirect(new URL("/dashboard", request.url));
   } else {
     if (!request.cookies.get("accessToken"))
       return NextResponse.redirect(new URL("/login", request.url));

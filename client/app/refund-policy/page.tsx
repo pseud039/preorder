@@ -1,152 +1,345 @@
-import React from 'react';
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Refund Policy | Predine",
+};
 
 export default function RefundPolicy() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="border-b border-gray-300">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <p className="text-sm text-orange-500 uppercase tracking-widest mb-2">Predine</p>
-          <h1 className="text-4xl font-bold text-gray-900">Refund Policy</h1>
-        </div>
-      </div>
+    <main className="prose max-w-md mx-auto font-[inter] pt-8 px-4 [&_table]:w-full [&_table]:border [&_table]:border-collapse [&_th]:border [&_td]:border [&_th]:px-3 [&_th]:py-2 [&_td]:px-3 [&_td]:py-2">
+      <Button variant="ghost" asChild>
+        <Link href="/" className="no-underline">
+          <ChevronLeft />
+          Home
+        </Link>
+      </Button>
 
-      {/* Content */}
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="prose max-w-none">
-          <p className="text-gray-700 mb-8">
-            At Predine, we strive to provide the best possible experience for our users. This Refund Policy outlines the terms under which refunds may be requested and processed. Please read this policy carefully before placing any orders.
-          </p>
+      <h2>Refund Policy</h2>
 
-          {/* Section 1 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">1. General Refund Policy</h2>
-            <p className="text-gray-700 mb-4">
-              Due to the perishable nature of food products and the immediate preparation that begins upon order confirmation, <strong>all sales are final</strong>. Once payment is processed and an order is confirmed on the Predine platform, refunds will not be issued as a general rule.
-            </p>
-            <p className="text-gray-700">
-              This policy ensures fairness to our restaurant partners, reduces food wastage, and encourages responsible ordering habits among our users.
-            </p>
-          </section>
+      <p>
+        <strong>Effective Date:</strong> June 1, 2025
+      </p>
+      <p>
+        <strong>Last Updated:</strong> June 1, 2025
+      </p>
+      <p>
+        <strong>Jurisdiction:</strong> Ghaziabad, Uttar Pradesh, India
+      </p>
+      <p>
+        <strong>Governed by:</strong> Consumer Protection Act 2019 & Allied
+        Indian Laws
+      </p>
 
-          {/* Section 2 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Eligible Refund Circumstances</h2>
-            <p className="text-gray-700 mb-4">
-              Predine will consider refund requests strictly under the following exceptional circumstances:
-            </p>
+      <h3>1. Overview & Legal Framework</h3>
+      <p>
+        This Refund Policy governs all refund and cancellation requests made by
+        users of the Predine mobile application. It has been formulated in
+        compliance with applicable Indian consumer protection and e-commerce
+        laws.
+      </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">2.1 Technical Failures</h3>
-            <p className="text-gray-700 mb-2">A refund may be issued if:</p>
-            <ul className="list-disc ml-6 text-gray-700 space-y-1">
-              <li>A technical error on our platform results in a failed or non-fulfilled order</li>
-              <li>A system glitch causes a duplicate charge on your payment method</li>
-              <li>Payment is deducted but no order confirmation is generated</li>
-            </ul>
+      <table>
+        <tbody>
+          <tr>
+            <th>Statute</th>
+            <th>Relevance to Refund Policy</th>
+          </tr>
+          <tr>
+            <td>Consumer Protection Act, 2019</td>
+            <td>
+              Defines unfair trade practices and entitles consumers to refunds
+              for deficient services.
+            </td>
+          </tr>
+          <tr>
+            <td>E-Commerce Rules, 2020</td>
+            <td>
+              Mandates disclosure of refund timelines and cancellation policies.
+            </td>
+          </tr>
+          <tr>
+            <td>Information Technology Act, 2000</td>
+            <td>Governs digital transactions and electronic contracts.</td>
+          </tr>
+          <tr>
+            <td>Indian Contract Act, 1872</td>
+            <td>Provides the legal basis for binding contracts.</td>
+          </tr>
+          <tr>
+            <td>Payment & Settlement Systems Act, 2007</td>
+            <td>Governs digital payment systems.</td>
+          </tr>
+          <tr>
+            <td>RBI Guidelines on Failed Transactions</td>
+            <td>
+              Mandates auto-reversal timelines for failed digital payments.
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">2.2 Restaurant-Side Issues</h3>
-            <p className="text-gray-700 mb-2">A refund may be considered if:</p>
-            <ul className="list-disc ml-6 text-gray-700 space-y-1">
-              <li>The restaurant partner is unable to fulfill a confirmed order due to sudden closure or operational failure</li>
-              <li>The establishment is unable to prepare the ordered items due to ingredient unavailability after confirmation</li>
-            </ul>
+      <p>
+        Under Section 2(11) of the Consumer Protection Act 2019, a consumer may
+        seek remedies if services are found to be deficient. Predine's refund
+        framework reflects these statutory rights while accounting for the
+        perishable nature of food products.
+      </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">2.3 Incorrect Charges</h3>
-            <p className="text-gray-700">
-              If a system error results in an incorrect amount being charged — different from what was displayed at checkout — the difference will be refunded after verification.
-            </p>
-          </section>
+      <h3>2. General Refund Position — No Refund Policy</h3>
 
-          {/* Section 3 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Non-Refundable Situations</h2>
-            <p className="text-gray-700 mb-2">Refunds will <strong>not</strong> be issued in the following situations:</p>
-            <ul className="list-disc ml-6 text-gray-700 space-y-2">
-              <li>Change of mind after payment confirmation</li>
-              <li>Failure to collect an order within the designated 5-minute pickup window</li>
-              <li>Food quality dissatisfaction (quality responsibility lies with the restaurant partner)</li>
-              <li>Incorrect delivery address provided by the user</li>
-              <li>User unavailability at the time of delivery</li>
-              <li>Delays caused by traffic, weather, or other factors outside Predine's control</li>
-              <li>Order quantity or item selection errors made by the user</li>
-            </ul>
-          </section>
+      <p>
+        Predine operates a strict no-refund, no-cancellation policy once an
+        order is confirmed and payment is processed.
+      </p>
 
-          {/* Section 4 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">4. How to Request a Refund</h2>
-            <p className="text-gray-700 mb-4">
-              If you believe you qualify for a refund under the eligible circumstances listed above, follow these steps:
-            </p>
-            <ul className="list-disc ml-6 text-gray-700 space-y-2">
-              <li><strong>Step 1:</strong> Contact our support team within <strong>24 hours</strong> of the incident at <a href="mailto:support@predine.com" className="text-blue-600 underline">support@predine.com</a></li>
-              <li><strong>Step 2:</strong> Provide your order ID, registered phone number or email, and a brief description of the issue</li>
-              <li><strong>Step 3:</strong> Attach any supporting evidence such as screenshots, error messages, or payment receipts</li>
-              <li><strong>Step 4:</strong> Our support team will review your request and respond within 3–5 business days</li>
-            </ul>
+      <ul>
+        <li>Food items are perishable and preparation begins immediately.</li>
+        <li>
+          Restaurant partners allocate ingredients and staff upon confirmation.
+        </li>
+        <li>
+          Cancellation causes direct financial loss to restaurant partners.
+        </li>
+        <li>
+          This policy aligns with Section 2(47) of the Consumer Protection Act
+          2019.
+        </li>
+      </ul>
 
-            <p className="text-gray-700 mt-6">
-              Refund requests submitted after the 24-hour window will not be entertained, regardless of circumstances.
-            </p>
-          </section>
+      <p>
+        Users should carefully review order details before completing payment.
+        Orders cannot be modified or cancelled once payment is confirmed.
+      </p>
 
-          {/* Section 5 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Refund Processing</h2>
-            <p className="text-gray-700 mb-4">
-              If a refund is approved, it will be processed as follows:
-            </p>
-            <ul className="list-disc ml-6 text-gray-700 space-y-1">
-              <li>Refunds will be credited to the original payment method used during the transaction</li>
-              <li>Processing time is typically <strong>5–10 business days</strong>, depending on your bank or payment provider</li>
-              <li>Predine is not responsible for delays caused by financial institutions</li>
-              <li>You will be notified via email or in-app notification once the refund is initiated</li>
-            </ul>
-          </section>
+      <h3>3. Circumstances Where Refunds Apply</h3>
 
-          {/* Section 6 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Dispute Escalation</h2>
-            <p className="text-gray-700 mb-4">
-              If your refund request is denied and you believe the decision is incorrect, you may escalate the matter by:
-            </p>
-            <ul className="list-disc ml-6 text-gray-700 space-y-1">
-              <li>Replying to the support thread with additional supporting evidence</li>
-              <li>Requesting a review by our senior support team</li>
-            </ul>
-            <p className="text-gray-700 mt-4">
-              All decisions made by Predine's senior support team are final. Disputes unresolved through our support process are subject to the governing law and jurisdiction outlined in our Terms and Conditions.
-            </p>
-          </section>
+      <table>
+        <tbody>
+          <tr>
+            <th>Circumstance</th>
+            <th>Eligibility</th>
+            <th>Refund Amount</th>
+          </tr>
 
-          {/* Section 7 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Policy Updates</h2>
-            <p className="text-gray-700">
-              Predine reserves the right to amend this Refund Policy at any time. Changes will be communicated through the application or via email. Continued use of the platform after any modification constitutes your acceptance of the revised policy.
-            </p>
-          </section>
+          <tr>
+            <td>Technical platform failure resulting in non-fulfilment</td>
+            <td>Eligible</td>
+            <td>100% of order value</td>
+          </tr>
 
-          {/* Section 8 */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Contact Us</h2>
-            <p className="text-gray-700 mb-3">For refund-related queries, reach out to us via:</p>
-            <ul className="list-disc ml-6 text-gray-700 space-y-1">
-              <li>Email: <a href="mailto:support@predine.com" className="text-blue-600 underline">support@predine.com</a></li>
-              <li>Phone: [Contact Number]</li>
-            </ul>
-          </section>
-        </div>
-      </div>
+          <tr>
+            <td>Restaurant partner closure after order confirmation</td>
+            <td>Eligible</td>
+            <td>100% of order value</td>
+          </tr>
 
-      {/* Footer */}
-      <div className="border-t border-gray-300 bg-gray-50 py-4">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-gray-600 mx-auto">
-            Thank you for choosing Predine. We are committed to resolving your concerns fairly and promptly.
-          </p>
-        </div>
-      </div>
-    </div>
+          <tr>
+            <td>Duplicate charge or erroneous billing</td>
+            <td>Eligible</td>
+            <td>Amount overcharged</td>
+          </tr>
+
+          <tr>
+            <td>Payment debited but order not confirmed</td>
+            <td>Eligible</td>
+            <td>100% auto-reversed</td>
+          </tr>
+
+          <tr>
+            <td>Order significantly different from description</td>
+            <td>Case by Case</td>
+            <td>Partial or full refund</td>
+          </tr>
+
+          <tr>
+            <td>Food quality or safety complaint</td>
+            <td>Case by Case</td>
+            <td>Partial or full refund</td>
+          </tr>
+
+          <tr>
+            <td>User cancellation after confirmation</td>
+            <td>Not Eligible</td>
+            <td>No refund</td>
+          </tr>
+
+          <tr>
+            <td>Order not collected within pickup window</td>
+            <td>Not Eligible</td>
+            <td>No refund</td>
+          </tr>
+
+          <tr>
+            <td>Failed delivery due to incorrect address</td>
+            <td>Not Eligible</td>
+            <td>No refund</td>
+          </tr>
+
+          <tr>
+            <td>Change of mind after confirmation</td>
+            <td>Not Eligible</td>
+            <td>No refund</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>4. Failed & Erroneous Transactions</h3>
+
+      <p>
+        In accordance with RBI guidelines on failed digital transactions, the
+        following auto-reversal timelines apply when payment is debited but the
+        order is not confirmed.
+      </p>
+
+      <table>
+        <tbody>
+          <tr>
+            <th>Payment Mode</th>
+            <th>Auto-Reversal Timeline</th>
+          </tr>
+
+          <tr>
+            <td>UPI</td>
+            <td>Within 24 hours (T+1)</td>
+          </tr>
+
+          <tr>
+            <td>Credit / Debit Card</td>
+            <td>5-7 business days</td>
+          </tr>
+
+          <tr>
+            <td>Net Banking</td>
+            <td>5-7 business days</td>
+          </tr>
+
+          <tr>
+            <td>Digital Wallet</td>
+            <td>Within 24 hours (T+1)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        If your account is debited and no order confirmation is received within
+        15 minutes, contact support@predine.in.
+      </p>
+
+      <h3>5. How to Submit a Refund Request</h3>
+
+      <p>To submit a refund request:</p>
+
+      <ol>
+        <li>
+          Email support@predine.in with subject "Refund Request — [Order ID]".
+        </li>
+        <li>Submit the request within 24 hours of the incident.</li>
+        <li>
+          Include Order ID, registered contact details, issue description, and
+          supporting evidence.
+        </li>
+      </ol>
+
+      <p>
+        Predine may request additional evidence to verify claims. Fraudulent
+        claims may result in account suspension or legal action.
+      </p>
+
+      <h3>6. Refund Processing Timelines</h3>
+
+      <table>
+        <tbody>
+          <tr>
+            <th>Payment Method</th>
+            <th>Processing Timeline</th>
+          </tr>
+
+          <tr>
+            <td>UPI</td>
+            <td>2-3 business days</td>
+          </tr>
+
+          <tr>
+            <td>Credit Card</td>
+            <td>5-7 business days</td>
+          </tr>
+
+          <tr>
+            <td>Debit Card</td>
+            <td>5-7 business days</td>
+          </tr>
+
+          <tr>
+            <td>Net Banking</td>
+            <td>5-7 business days</td>
+          </tr>
+
+          <tr>
+            <td>Digital Wallet</td>
+            <td>2-3 business days</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Actual credit timing may vary depending on your bank or payment
+        provider.
+      </p>
+
+      <h3>7. Consumer Grievance Redressal</h3>
+
+      <p>
+        If your refund request is not resolved within 15 business days, you may
+        escalate:
+      </p>
+
+      <ul>
+        <li>Grievance Officer: support@predine.in</li>
+        <li>National Consumer Helpline: 1800-11-4000</li>
+        <li>CONSUMER mobile application</li>
+        <li>District Consumer Disputes Redressal Commission (DCDRC)</li>
+        <li>State Consumer Commission</li>
+        <li>National Consumer Commission</li>
+      </ul>
+
+      <h3>8. Chargebacks & Payment Disputes</h3>
+
+      <p>
+        If a user raises a chargeback without first contacting Predine support,
+        Predine reserves the right to dispute the chargeback, suspend the
+        account, or recover funds in cases of fraudulent claims.
+      </p>
+
+      <h3>9. Modifications to This Policy</h3>
+
+      <p>
+        Predine may update this Refund Policy at any time in accordance with
+        changes in law. Users will be notified via app notification or email.
+      </p>
+
+      <h3>10. Governing Law & Jurisdiction</h3>
+
+      <p>
+        <strong>Jurisdiction:</strong> Ghaziabad, Uttar Pradesh
+      </p>
+      <p>
+        <strong>Governing Law:</strong> Republic of India
+      </p>
+
+      <p>
+        <strong>Refund Queries:</strong>{" "}
+        <a href="mailto:support@predine.in">support@predine.in</a>
+      </p>
+      <p>
+        <strong>Consumer Helpline:</strong> 1800-11-4000
+      </p>
+
+      <p>This Refund Policy forms part of Predine's Terms and Conditions.</p>
+
+      <p>© 2025 Predine. All rights reserved.</p>
+    </main>
   );
 }
