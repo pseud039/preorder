@@ -46,34 +46,48 @@ const signup = asyncHandler(async (req, res) => {
   const expirationDate = new Date();
   expirationDate.setMinutes(expirationDate.getMinutes() + 15);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      passwordHash: hashedPassword,
-      role,
-      emailVerified: false,
-      phoneVerified: false,
-      isActive: true,
-    },
-    select: {
-      id: true,
-      email: true,
-      phone: true,
-      role: true,
-      emailVerified: true,
-      phoneVerified: true,
-    },
-  });
+const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        email,
+        passwordHash: hashedPassword,
+        role,
+        emailVerified: false,
+        phoneVerified: false,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        role: true,
+        emailVerified: true,
+        phoneVerified: true,
+      },
+    })
 
-  const emailToken = await prisma.emailVerification.create({
-    data: {
+    const expirationTime = new Date(Date.now() + 15 * 60 * 1000)
+
+    const emailToken = await tx.emailVerification.create({
+      data: {
+        userId: user.id,  
+        token: verificationToken,
+        expiresAt: expirationTime,
+      },
+    })
+
+    const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`
+
+    await sendEmail({
+      to: email,
+      template: 'emailConformation',
+      templateData: { link: confirmationLink },
       userId: user.id,
-      token: verificationToken,
-      expiresAt: expirationDate,
-    },
-  });
-  const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
-  await sendEmail({ to: email, template:"emailConformation", userId: user.id, templateData: { link: confirmationLink },});
+    })
+
+    return { user, confirmationLink }
+  })
+
 console.log("WORKS!");
   res
     .status(201)
@@ -215,7 +229,7 @@ const login = asyncHandler(async (req, res) => {
   });
 
   res.cookie("accessToken", accessToken, {
-    domain: ".predine.in",
+    // domain: ".predine.in",
     httpOnly: true,
     secure: true, // process.env.NODE_ENV === "production",
     sameSite: "Lax",

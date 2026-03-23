@@ -8,7 +8,7 @@ export class PaymentService {
   static CHANNEL_ID = process.env.PAYTM_CHANNEL_ID || "WEB";
   static BASE_URL = process.env.NODE_ENV === "production"
     ? "https://securegw.paytm.in"
-    : "https://securegw-stage.paytm.in";
+    : "https://securestage.paytmpayments.com";
 
   static async createPaytmOrder({ orderId, amount, customerInfo }) {
     try {
@@ -20,7 +20,7 @@ export class PaymentService {
           mid: this.MERCHANT_ID,
           websiteName: this.WEBSITE,
           orderId: paytmOrderId,
-          callbackUrl: `${process.env.NEXT_PUBLIC_API_URL}/client/payment/callback`,
+          callbackUrl: `${process.env.NEXT_PUBLIC_API_URL}/payment/callback`,
           txnAmount: {
             value: amount.toFixed(2),
             currency: "INR",
@@ -36,7 +36,7 @@ export class PaymentService {
       // Generate checksum for the body
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        this.MERCHANT_KEY
+        process.env.PAYTM_MERCHANT_KEY
       );
 
       paytmParams.head = {
@@ -45,7 +45,7 @@ export class PaymentService {
 
       // Initiate transaction to get txnToken
       const response = await fetch(
-        `${this.BASE_URL}/theia/api/v1/initiateTransaction?mid=${this.MERCHANT_ID}&orderId=${paytmOrderId}`,
+        `${this.BASE_URL}/theia/api/v1/initiateTransaction?mid=${process.env.PAYTM_MERCHANT_KEY}&orderId=${paytmOrderId}`,
         {
           method: "POST",
           headers: {
@@ -56,6 +56,8 @@ export class PaymentService {
       );
 
       const data = await response.json();
+      console.log("Paytm raw response:", JSON.stringify(data, null, 2));
+      console.log(data);
 
       if (data.body.resultInfo.resultStatus === "S") {
         return {

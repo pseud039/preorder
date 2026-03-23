@@ -200,7 +200,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   );
 
   res.cookie("accessToken", newAccessToken, {
-    domain: ".predine.in",
+    // domain: ".predine.in",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

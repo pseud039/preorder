@@ -7,16 +7,18 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
   try {
     // let token = req.headers.authorization?.replace("Bearer ", "");
 
-    // if (!token) {
-    const token = req.cookies?.accessToken;
+    // // if (!token) {
+    console.log(req.cookies);
+    // console.log(req.cookies.accessToken);
+    const token = req.cookies.accessToken || req.headers.authorization?.replace("Bearer ", "");
     // }
-    // console.log(token);
+    console.log(token);
     if (!token) {
       throw new ApiError(401, "Access token is required");
     }
-
+console.log(token);
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
+    console.log(decoded);
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {

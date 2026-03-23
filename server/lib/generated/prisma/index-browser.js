@@ -128,12 +128,12 @@ exports.Prisma.RestaurantScalarFieldEnum = {
   contactNumber: 'contactNumber',
   imageUrl: 'imageUrl',
   isActive: 'isActive',
-  commissionRate: 'commissionRate',
-  taxRate: 'taxRate',
-  baseWaitingTimeMultiplier: 'baseWaitingTimeMultiplier',
-  fixedAdditionalTime: 'fixedAdditionalTime',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  baseWaitingTimeMultiplier: 'baseWaitingTimeMultiplier',
+  commissionRate: 'commissionRate',
+  fixedAdditionalTime: 'fixedAdditionalTime',
+  taxRate: 'taxRate'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -145,11 +145,11 @@ exports.Prisma.UserScalarFieldEnum = {
   phone: 'phone',
   emailVerified: 'emailVerified',
   emailVerifiedAt: 'emailVerifiedAt',
-  phoneVerified: 'phoneVerified',
-  phoneVerifiedAt: 'phoneVerifiedAt',
   isActive: 'isActive',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  phoneVerified: 'phoneVerified',
+  phoneVerifiedAt: 'phoneVerifiedAt'
 };
 
 exports.Prisma.PhoneOTPScalarFieldEnum = {
@@ -166,8 +166,8 @@ exports.Prisma.PhoneOTPScalarFieldEnum = {
 exports.Prisma.PaymentSetupScalarFieldEnum = {
   id: 'id',
   restaurantId: 'restaurantId',
-  fixedFee: 'fixedFee',
-  percentageFee: 'percentageFee',
+  fixedfee: 'fixedfee',
+  precentagefee: 'precentagefee',
   minFee: 'minFee',
   maxFee: 'maxFee',
   createdAt: 'createdAt',
@@ -208,17 +208,17 @@ exports.Prisma.CategoryScalarFieldEnum = {
 exports.Prisma.MenuItemScalarFieldEnum = {
   id: 'id',
   restaurantId: 'restaurantId',
-  categoryId: 'categoryId',
   name: 'name',
   description: 'description',
   price: 'price',
   imageUrl: 'imageUrl',
-  isVeg: 'isVeg',
   isAvailable: 'isAvailable',
   isActive: 'isActive',
-  waitingTime: 'waitingTime',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  isVeg: 'isVeg',
+  categoryId: 'categoryId',
+  waitingTime: 'waitingTime'
 };
 
 exports.Prisma.CartScalarFieldEnum = {
@@ -248,18 +248,18 @@ exports.Prisma.OrderScalarFieldEnum = {
   timeSlotId: 'timeSlotId',
   paymentStatus: 'paymentStatus',
   notes: 'notes',
-  restaurantStatus: 'restaurantStatus',
-  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   acceptedAt: 'acceptedAt',
+  actualPickupTime: 'actualPickupTime',
+  estimatedReadyTime: 'estimatedReadyTime',
+  estimatedWaitingTime: 'estimatedWaitingTime',
+  expiresAt: 'expiresAt',
+  paymentExpiresAt: 'paymentExpiresAt',
+  paymentOrderId: 'paymentOrderId',
   rejectedAt: 'rejectedAt',
   rejectionReason: 'rejectionReason',
-  paymentExpiresAt: 'paymentExpiresAt',
-  estimatedWaitingTime: 'estimatedWaitingTime',
-  estimatedReadyTime: 'estimatedReadyTime',
-  actualPickupTime: 'actualPickupTime',
-  paymentOrderId: 'paymentOrderId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  restaurantStatus: 'restaurantStatus'
 };
 
 exports.Prisma.OrderItemScalarFieldEnum = {
@@ -275,25 +275,25 @@ exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   paymentGateway: 'paymentGateway',
-  gatewayPaymentId: 'gatewayPaymentId',
-  gatewayOrderId: 'gatewayOrderId',
-  gatewaySignature: 'gatewaySignature',
   amount: 'amount',
   status: 'status',
-  failureReason: 'failureReason',
-  gatewayResponse: 'gatewayResponse',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  failureReason: 'failureReason',
+  gatewayOrderId: 'gatewayOrderId',
+  gatewayPaymentId: 'gatewayPaymentId',
+  gatewayResponse: 'gatewayResponse',
+  gatewaySignature: 'gatewaySignature'
 };
 
 exports.Prisma.TimeSlotScalarFieldEnum = {
   id: 'id',
-  dayOfWeek: 'dayOfWeek',
   slotStart: 'slotStart',
   slotEnd: 'slotEnd',
-  bookedCount: 'bookedCount',
   isAvailable: 'isAvailable',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  bookedCount: 'bookedCount',
+  dayOfWeek: 'dayOfWeek'
 };
 
 exports.Prisma.RefreshTokenScalarFieldEnum = {
@@ -405,10 +405,10 @@ exports.Prisma.JsonNullValueFilter = {
   AnyNull: Prisma.AnyNull
 };
 exports.Role = exports.$Enums.Role = {
-  superadmin: 'superadmin',
   admin: 'admin',
-  chef: 'chef',
-  customer: 'customer'
+  customer: 'customer',
+  superadmin: 'superadmin',
+  chef: 'chef'
 };
 
 exports.OrderStatus = exports.$Enums.OrderStatus = {
@@ -427,12 +427,12 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
 
 exports.RestaurantOrderStatus = exports.$Enums.RestaurantOrderStatus = {
   Pending: 'Pending',
-  Updated: 'Updated',
   Accepted: 'Accepted',
   Rejected: 'Rejected',
   Preparing: 'Preparing',
   Ready: 'Ready',
-  Completed: 'Completed'
+  Completed: 'Completed',
+  Updated: 'Updated'
 };
 
 exports.CommissionStatus = exports.$Enums.CommissionStatus = {

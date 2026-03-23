@@ -144,7 +144,7 @@ export default function PaymentPage() {
       console.log("Initiating payment for order:", orderDetails.id);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/client/payment/create`,
+        `${process.env.NEXT_PUBLIC_API_URL}/client/payment/create-order`,
         {
           method: "POST",
           headers: {
@@ -251,7 +251,7 @@ export default function PaymentPage() {
                 Amount to Pay
               </p>
               <p className="text-5xl font-bold text-primary">
-                ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount).toFixed(2)}
+                ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount)}
               </p>
             </div>
           </div>
@@ -360,25 +360,25 @@ export default function PaymentPage() {
                 <div className="flex justify-between items-center text-gray-600">
                   <span>Subtotal</span>
                   <span>
-                    ₹{(orderDetails.priceBreakdown?.itemsTotal ?? orderDetails.subtotal ?? orderDetails.totalAmount).toFixed(2)}
+                    ₹{(orderDetails.priceBreakdown?.itemsTotal ?? orderDetails.subtotal ?? orderDetails.totalAmount)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-gray-600">
                   <span>{orderDetails.priceBreakdown?.taxLabel ?? `GST (${orderDetails.taxPercentage ?? 5}%)`}</span>
                   <span>
-                    ₹{(orderDetails.priceBreakdown?.taxAmount ?? orderDetails.tax ?? 0).toFixed(2)}
+                    ₹{(orderDetails.priceBreakdown?.taxAmount ?? orderDetails.tax ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-gray-600">
                   <span>{orderDetails.priceBreakdown?.platformFeeLabel ?? "Platform Fee"}</span>
                   <span>
-                    ₹{(orderDetails.priceBreakdown?.platformFeeAmount ?? orderDetails.platformFee ?? 0).toFixed(2)}
+                    ₹{(orderDetails.priceBreakdown?.platformFeeAmount ?? orderDetails.platformFee ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-lg pt-2 border-t">
                   <span className="font-semibold text-gray-900">Total</span>
                   <span className="font-bold text-orange-600">
-                    ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount).toFixed(2)}
+                    ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount)}
                   </span>
                 </div>
               </div>
@@ -401,7 +401,7 @@ export default function PaymentPage() {
             ) : (
               <>
                 <CreditCard className="w-5 h-5" />
-                Pay ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount).toFixed(2)} with Paytm
+                Pay ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount)} with Paytm
               </>
             )}
           </button>

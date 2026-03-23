@@ -411,9 +411,9 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
 };
 
 export const calculatePriceBreakdown = (subtotal, taxRate = 0.05) => {
-  let platformFee = PLATFORM_FEE_CONFIG.fixedFee + (subtotal * PLATFORM_FEE_CONFIG.percentageFee);
+  let platformFee = PLATFORM_FEE_CONFIG.fixedfee + (subtotal * PLATFORM_FEE_CONFIG.precentagefee);
   platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));
-  platformFee = Math.round(platformFee * 100) / 100;
+  platformFee = Math.round(platformFee * 100) / 100;  
 
   const tax = Math.round(subtotal * taxRate * 100) / 100;
 

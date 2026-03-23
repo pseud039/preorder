@@ -13,6 +13,7 @@ export default function verifyEmailPage({ id }: VerifyEmailProps) {
   const router = useRouter();
   
   useEffect(() => {
+      if (!id) return;  // guard against undefined
     async function verifyEmail() {
       try {
         const response = await fetch(
