@@ -796,7 +796,7 @@ export const getOrderForEdit = asyncHandler(async (req, res) => {
     },
     orderBy: [
       { dayOfWeek: "asc" },
-      { slotStart: "asc" },
+      { startTime: "asc" },
     ],
   });
 

@@ -75,29 +75,20 @@ export default function TimeSlotManagement() {
         const data = await response.json();
         if (data.success && data.data) {
           const grouped: DaySlots = {};
-          data.data.forEach((slot: any) => {
-            if (!grouped[slot.dayOfWeek]) {
-              grouped[slot.dayOfWeek] = [];
+          data.data.forEach((dayGroup: any) => {
+            if (!grouped[dayGroup.dayOfWeek]) {
+              grouped[dayGroup.dayOfWeek] = [];
             }
-            
-            // Parse the date strings properly
-            const slotStartDate = new Date(slot.slotStart);
-            const slotEndDate = new Date(slot.slotEnd);
-            
-            grouped[slot.dayOfWeek].push({
-              id: slot.id,
-              dayOfWeek: slot.dayOfWeek,
-              slotStart: slotStartDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }),
-              slotEnd: slotEndDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }),
-              isAvailable: slot.isAvailable,
+
+            const slots = Array.isArray(dayGroup.slots) ? dayGroup.slots : [];
+            slots.forEach((slot: any) => {
+              grouped[dayGroup.dayOfWeek].push({
+                id: slot.id,
+                dayOfWeek: dayGroup.dayOfWeek,
+                slotStart: slot.startTime,
+                slotEnd: slot.endTime,
+                isAvailable: slot.isAvailable,
+              });
             });
           });
           setDaySlots(grouped);
@@ -302,26 +293,11 @@ export default function TimeSlotManagement() {
 
     setLoading(true);
     try {
-      const today = new Date();
-      
       const slotsToSave = allSlots.map((slot) => {
-        const nextDay = new Date(today);
-        const daysUntilTarget = (slot.dayOfWeek - today.getDay() + 7) % 7;
-        nextDay.setDate(today.getDate() + daysUntilTarget);
-
-        const [startHour, startMin] = slot.slotStart.split(":").map(Number);
-        const [endHour, endMin] = slot.slotEnd.split(":").map(Number);
-
-        const slotStart = new Date(nextDay);
-        slotStart.setHours(startHour, startMin, 0, 0);
-
-        const slotEnd = new Date(nextDay);
-        slotEnd.setHours(endHour, endMin, 0, 0);
-
         return {
           dayOfWeek: slot.dayOfWeek,
-          slotStart: slotStart.toISOString(),
-          slotEnd: slotEnd.toISOString(),
+          startTime: slot.slotStart,
+          endTime: slot.slotEnd,
           isAvailable: slot.isAvailable,
         };
       });

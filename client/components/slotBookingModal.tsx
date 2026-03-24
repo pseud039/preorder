@@ -1,20 +1,19 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Clock, Calendar, Users, Loader2, CheckCircle, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Calendar, CheckCircle, Clock, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/auth";
 
 interface TimeSlot {
   id: number;
-  slotStart: string;
-  slotEnd: string;
+  startTime: string;
+  endTime: string;
   isAvailable: boolean;
-  remainingSlots?: number;
-  isFull?: boolean;
+  bookedCount?: number;
 }
 
 interface DaySlots {
-  date: string;
+  dayOfWeek: number;
   dayLabel: string;
   slots: TimeSlot[];
 }
@@ -25,6 +24,16 @@ interface TimeSlotModalProps {
   onSlotSelect: (slotId: number) => void;
 }
 
+const DAY_LABELS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 export default function TimeSlotModal({
   isOpen,
   onClose,
@@ -33,7 +42,7 @@ export default function TimeSlotModal({
   const [slots, setSlots] = useState<DaySlots[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
-  const [submitting, setSubmitting] = useState(false);  
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -64,27 +73,33 @@ export default function TimeSlotModal({
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch slots");
       }
-    const flatSlots = data.data || [];
 
- const groupedByDay = flatSlots.reduce((acc: any, slot: any) => {
-      const slotDate = new Date(slot.slotStart);
-      const dateKey = slotDate.toISOString().split('T')[0];
-      
-      if (!acc[dateKey]) {
-        acc[dateKey] = {
-          date: dateKey,
-          dayLabel: slotDate.toLocaleDateString('en-US', { weekday: 'long' }),
-          slots: [],
-        };
-      }
-      
-      acc[dateKey].slots.push(slot);
-      return acc;
-    }, {});
+      const groupedSlots = Array.isArray(data?.data) ? data.data : [];
+      const normalizedSlots: DaySlots[] = groupedSlots
+        .map((dayGroup: any) => {
+          const dayOfWeek = Number(dayGroup.dayOfWeek);
 
-    setSlots(Object.values(groupedByDay));
-      } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load time slots";
+          return {
+            dayOfWeek,
+            dayLabel: DAY_LABELS[dayOfWeek] || `Day ${dayOfWeek}`,
+            slots: Array.isArray(dayGroup.slots)
+              ? dayGroup.slots.map((slot: any) => ({
+                  id: slot.id,
+                  startTime: slot.startTime,
+                  endTime: slot.endTime,
+                  isAvailable: Boolean(slot.isAvailable),
+                  bookedCount: slot.bookedCount,
+                }))
+              : [],
+          };
+        })
+        .sort((a: DaySlots, b: DaySlots) => a.dayOfWeek - b.dayOfWeek);
+
+      setSelectedSlot(null);
+      setSlots(normalizedSlots);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load time slots";
       console.error("Error fetching slots:", err);
       setError(errorMessage);
     } finally {
@@ -92,26 +107,22 @@ export default function TimeSlotModal({
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
+  const formatTime = (time: string) => {
+    const [hourStr, minuteStr] = time.split(":");
+    const hour = Number(hourStr);
+    const minute = Number(minuteStr);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
+    if (Number.isNaN(hour) || Number.isNaN(minute)) {
+      return time;
+    }
+
+    const suffix = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${String(minute).padStart(2, "0")} ${suffix}`;
   };
 
   const handleSlotClick = (slot: TimeSlot) => {
-    if (!slot.isFull) {
+    if (slot.isAvailable) {
       setSelectedSlot(slot);
       setError("");
     }
@@ -129,7 +140,8 @@ export default function TimeSlotModal({
       toast.success("Time slot selected!");
       onClose();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to select time slot";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to select time slot";
       console.error("Error selecting slot:", err);
       setError(errorMessage);
     } finally {
@@ -197,7 +209,7 @@ export default function TimeSlotModal({
               <div className="space-y-6">
                 {slots.map((daySlots) => (
                   <div
-                    key={daySlots.date}
+                    key={daySlots.dayOfWeek}
                     className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                   >
                     <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3">
@@ -206,31 +218,28 @@ export default function TimeSlotModal({
                         <h3 className="font-semibold">{daySlots.dayLabel}</h3>
                       </div>
                       <p className="text-orange-100 text-sm mt-1">
-                        {formatDate(daySlots.date)}
+                        Weekly recurring slots
                       </p>
                     </div>
 
                     <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
                       {daySlots.slots.map((slot) => {
                         const isSelected = selectedSlot?.id === slot.id;
-                        const isFull = slot.isFull || false;
-                        const remainingSlots = slot.remainingSlots || 0;
-                        const isLowAvailability =
-                          remainingSlots <= 3 && remainingSlots > 0;
+                        const isDisabled = !slot.isAvailable;
 
                         return (
                           <button
                             key={slot.id}
                             onClick={() => handleSlotClick(slot)}
-                            disabled={isFull}
+                            disabled={isDisabled}
                             className={`
                               relative p-4 rounded-lg border-2 transition-all text-left
                               ${
                                 isSelected
                                   ? "border-orange-500 bg-orange-50"
-                                  : isFull
-                                  ? "border-gray-200 bg-gray-50 cursor-not-allowed"
-                                  : "border-gray-200 hover:border-orange-300 bg-white"
+                                  : isDisabled
+                                    ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+                                    : "border-gray-200 hover:border-orange-300 bg-white"
                               }
                             `}
                           >
@@ -245,27 +254,23 @@ export default function TimeSlotModal({
                                 className={`w-4 h-4 ${
                                   isSelected
                                     ? "text-orange-500"
-                                    : isFull
-                                    ? "text-gray-400"
-                                    : "text-gray-500"
+                                    : isDisabled
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
                                 }`}
                               />
                               <span
                                 className={`font-semibold text-sm ${
-                                  isFull ? "text-gray-400" : "text-gray-900"
+                                  isDisabled ? "text-gray-400" : "text-gray-900"
                                 }`}
                               >
-                                {formatTime(slot.slotStart)}
+                                {formatTime(slot.startTime)}
                               </span>
                             </div>
 
                             <div className="text-xs text-gray-600">
-                              to {formatTime(slot.slotEnd)}
+                              to {formatTime(slot.endTime)}
                             </div>
-
-                          
-
-        
                           </button>
                         );
                       })}
@@ -288,8 +293,8 @@ export default function TimeSlotModal({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-700">Selected Time:</span>
                   <span className="font-semibold text-gray-900">
-                    {formatTime(selectedSlot.slotStart)} -{" "}
-                    {formatTime(selectedSlot.slotEnd)}
+                    {formatTime(selectedSlot.startTime)} -{" "}
+                    {formatTime(selectedSlot.endTime)}
                   </span>
                 </div>
               </div>

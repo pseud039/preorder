@@ -52,16 +52,16 @@ const paymentconfig = await prisma.paymentSetup.upsert({
   },
 
   update: {
-    fixedFee: 20.00,
-    percentageFee: 5.00,
+    fixedfee: 20.00,
+    precentagefee: 5.00,
     minFee: 10.00,
     maxFee: 20.00,
   },
 
   create: {
     restaurantId: 3,
-    fixedFee: 20.00,
-    percentageFee: 5.00,
+    fixedfee: 20.00,
+    precentagefee: 5.00,
     minFee: 5.00,
     maxFee: 15.00,
   },

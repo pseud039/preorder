@@ -288,8 +288,8 @@ exports.Prisma.PaymentScalarFieldEnum = {
 
 exports.Prisma.TimeSlotScalarFieldEnum = {
   id: 'id',
-  slotStart: 'slotStart',
-  slotEnd: 'slotEnd',
+  startTime: 'startTime',
+  endTime: 'endTime',
   isAvailable: 'isAvailable',
   createdAt: 'createdAt',
   bookedCount: 'bookedCount',

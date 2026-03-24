@@ -272,8 +272,8 @@ model Payment {
 
 model TimeSlot {
   id          Int      @id @default(autoincrement())
-  slotStart   DateTime
-  slotEnd     DateTime
+  startTime   String
+  endTime     String
   isAvailable Boolean  @default(true)
   createdAt   DateTime @default(now())
   bookedCount Int      @default(0)
@@ -281,7 +281,7 @@ model TimeSlot {
   orders      Order[]
 
   @@index([dayOfWeek])
-  @@index([slotStart, slotEnd])
+  @@index([startTime, endTime])
   @@index([isAvailable])
   @@index([dayOfWeek, isAvailable])
 }
