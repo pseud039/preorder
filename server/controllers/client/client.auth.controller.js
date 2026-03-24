@@ -229,7 +229,7 @@ const login = asyncHandler(async (req, res) => {
   });
 
   res.cookie("accessToken", accessToken, {
-    // domain: ".predine.in",
+    domain: ".predine.in",
     httpOnly: true,
     secure: true, // process.env.NODE_ENV === "production",
     sameSite: "Lax",
