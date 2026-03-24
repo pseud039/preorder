@@ -45,7 +45,7 @@ export class PaymentService {
 
       // Initiate transaction to get txnToken
       const response = await fetch(
-        `${this.BASE_URL}/theia/api/v1/initiateTransaction?mid=${process.env.PAYTM_MERCHANT_KEY}&orderId=${paytmOrderId}`,
+        `${this.BASE_URL}/theia/api/v1/initiateTransaction?mid=${process.env.PAYTM_MERCHANT_ID}&orderId=${paytmOrderId}`,
         {
           method: "POST",
           headers: {

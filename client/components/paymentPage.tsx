@@ -1,8 +1,18 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, CreditCard, ArrowLeft, AlertCircle, ShoppingBag, Store, MapPin, Clock } from "lucide-react";
+import {
+  Loader2,
+  CreditCard,
+  ArrowLeft,
+  AlertCircle,
+  ShoppingBag,
+  Store,
+  MapPin,
+  Clock,
+} from "lucide-react";
 import { toast } from "sonner";
+import Script from "next/script";
 
 interface MenuItem {
   name: string;
@@ -63,12 +73,14 @@ interface PaytmConfig {
 export default function PaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('orderId');
+  const orderId = searchParams.get("orderId");
 
   const [loading, setLoading] = useState<boolean>(true);
   const [processing, setProcessing] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [error, setError] = useState<string>("");
+
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   const fetchOrderDetails = useCallback(async () => {
     try {
@@ -81,7 +93,7 @@ export default function PaymentPage() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -95,7 +107,8 @@ export default function PaymentPage() {
       console.log("Fetched order:", order);
       setOrderDetails(order);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load order";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load order";
       console.error("Error:", err);
       setError(errorMessage);
       toast.error(errorMessage);
@@ -132,6 +145,8 @@ export default function PaymentPage() {
   };
 
   const initiatePayment = async (): Promise<void> => {
+    if (!scriptLoaded || !window.Paytm?.CheckoutJS) return;
+
     if (!orderDetails?.id) {
       toast.error("Order details not found");
       return;
@@ -152,7 +167,7 @@ export default function PaymentPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ orderId: orderDetails.id }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -162,34 +177,54 @@ export default function PaymentPage() {
       }
 
       const paytmConfig: PaytmConfig = data.data.paytmConfig;
-      
-      // Create and submit form dynamically
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = `${
-        paytmConfig.environment === "PROD"
-          ? "https://securegw.paytm.in"
-          : "https://securegw-stage.paytm.in"
-      }/theia/api/v1/showPaymentPage?mid=${paytmConfig.mid}&orderId=${paytmConfig.orderId}`;
 
-      const fields: Record<string, string> = {
-        mid: paytmConfig.mid,
-        orderId: paytmConfig.orderId,
-        txnToken: paytmConfig.txnToken
-      };
-
-      Object.keys(fields).forEach(key => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = fields[key];
-        form.appendChild(input);
+      window.Paytm.CheckoutJS.init({
+        data: {
+          orderId: paytmConfig.orderId,
+          amount: paytmConfig.amount,
+          tokenType: "TXN_TOKEN",
+          token: paytmConfig.txnToken,
+        },
+        handler: {
+          notifyMerchant: function (eventName: string, data: any) {
+            console.log("notifyMerchant handler function called");
+            console.log("eventName => ", eventName);
+            console.log("data => ", data);
+          },
+        },
       });
 
-      document.body.appendChild(form);
-      form.submit();
+      window.Paytm.CheckoutJS.invoke();
+      setProcessing(false);
+
+      // // Create and submit form dynamically
+      // const form = document.createElement('form');
+      // form.method = 'POST';
+      // form.action = `${
+      //   paytmConfig.environment === "PROD"
+      //     ? "https://securegw.paytm.in"
+      //     : "https://securegw-stage.paytm.in"
+      // }/theia/api/v1/showPaymentPage?mid=${paytmConfig.mid}&orderId=${paytmConfig.orderId}`;
+
+      // const fields: Record<string, string> = {
+      //   mid: paytmConfig.mid,
+      //   orderId: paytmConfig.orderId,
+      //   txnToken: paytmConfig.txnToken
+      // };
+
+      // Object.keys(fields).forEach(key => {
+      //   const input = document.createElement('input');
+      //   input.type = 'hidden';
+      //   input.name = key;
+      //   input.value = fields[key];
+      //   form.appendChild(input);
+      // });
+
+      // document.body.appendChild(form);
+      // form.submit();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to initiate payment";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to initiate payment";
       console.error("Payment error:", err);
       setError(errorMessage);
       toast.error(errorMessage);
@@ -230,187 +265,218 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <button
-          onClick={() => router.back()}
-          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-
-        {/* Payment Amount Card */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-orange-200">
-          <div className="bg-primary text-center p-3 text-white">
-            <p className="text-orange-100 text-xl font-semibold">Order #{orderDetails.id}</p>
-          </div>
-          <div className="p-6">
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
-              <p className="text-orange-700 text-sm font-medium mb-2">
-                Amount to Pay
-              </p>
-              <p className="text-5xl font-bold text-primary">
-                ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Order Details Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-orange-500" />
-            Order Details
-          </h2>
-
-          {/* Restaurant Info */}
-          {orderDetails.restaurant && (
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg mb-4">
-              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Store className="w-5 h-5 text-orange-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 truncate">
-                  {orderDetails.restaurant.name}
-                </p>
-                {orderDetails.restaurant.address && (
-                  <p className="text-sm text-gray-600 flex items-start gap-1 mt-1">
-                    <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                    <span className="line-clamp-2">
-                      {orderDetails.restaurant.address}
-                    </span>
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Time Slot */}
-          {orderDetails.timeSlot && (
-            <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200 mb-4">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900">Pickup Time</p>
-                <p className="text-sm text-gray-600">
-                  {formatDate(orderDetails.timeSlot.slotStart)}
-                </p>
-                <p className="text-sm font-medium text-orange-600">
-                  {formatTime(orderDetails.timeSlot.slotStart)} -{" "}
-                  {formatTime(orderDetails.timeSlot.slotEnd)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Order Items */}
-          {orderDetails.orderItems && orderDetails.orderItems.length > 0 && (
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">
-                Items ({orderDetails.orderItems.length})
-              </h3>
-              <div className="space-y-2 mb-4">
-                {orderDetails.orderItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-start p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="w-8 h-8 bg-orange-100 rounded flex items-center justify-center flex-shrink-0 font-semibold text-orange-600 text-sm">
-                        {item.quantity}×
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900 truncate">
-                            {item.menuItem.name}
-                          </p>
-                          {item.menuItem.isVeg !== undefined && (
-                            <span
-                              className={`w-4 h-4 border-2 flex items-center justify-center ${
-                                item.menuItem.isVeg
-                                  ? "border-green-600"
-                                  : "border-red-600"
-                              }`}
-                            >
-                              <span
-                                className={`w-2 h-2 rounded-full ${
-                                  item.menuItem.isVeg
-                                    ? "bg-green-600"
-                                    : "bg-red-600"
-                                }`}
-                              />
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          ₹{item.menuItem.price} each
-                        </p>
-                      </div>
-                    </div>
-                    <p className="font-semibold text-gray-900 ml-4">
-                      ₹{item.price * item.quantity}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>Subtotal</span>
-                  <span>
-                    ₹{(orderDetails.priceBreakdown?.itemsTotal ?? orderDetails.subtotal ?? orderDetails.totalAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>{orderDetails.priceBreakdown?.taxLabel ?? `GST (${orderDetails.taxPercentage ?? 5}%)`}</span>
-                  <span>
-                    ₹{(orderDetails.priceBreakdown?.taxAmount ?? orderDetails.tax ?? 0)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-gray-600">
-                  <span>{orderDetails.priceBreakdown?.platformFeeLabel ?? "Platform Fee"}</span>
-                  <span>
-                    ₹{(orderDetails.priceBreakdown?.platformFeeAmount ?? orderDetails.platformFee ?? 0)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-lg pt-2 border-t">
-                  <span className="font-semibold text-gray-900">Total</span>
-                  <span className="font-bold text-orange-600">
-                    ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Payment Button Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-orange-200">
+    <>
+      <Script
+        src={`https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/${process.env.NEXT_PUBLIC_PAYTM_MERCHANT_ID}.js`}
+        strategy="afterInteractive"
+        onLoad={() => setScriptLoaded(true)}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50 py-8 px-4">
+        <div className="max-w-3xl mx-auto space-y-6">
           <button
-            onClick={initiatePayment}
-            disabled={processing}
-            className="w-full bg-primary text-white py-4 rounded-lg font-semibold text-lg flex items-center justify-center gap-2 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+            onClick={() => router.back()}
+            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
-            {processing ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Redirecting to Paytm...
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-5 h-5" />
-                Pay ₹{(orderDetails.priceBreakdown?.grandTotal ?? orderDetails.totalAmount)} with Paytm
-              </>
-            )}
+            <ArrowLeft className="w-4 h-4" />
+            Back
           </button>
-          <p className="text-xs text-gray-500 text-center mt-3">
-            Secured by Paytm Payment Gateway
-          </p>
+
+          {/* Payment Amount Card */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-orange-200">
+            <div className="bg-primary text-center p-3 text-white">
+              <p className="text-orange-100 text-xl font-semibold">
+                Order #{orderDetails.id}
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
+                <p className="text-orange-700 text-sm font-medium mb-2">
+                  Amount to Pay
+                </p>
+                <p className="text-5xl font-bold text-primary">
+                  ₹
+                  {orderDetails.priceBreakdown?.grandTotal ??
+                    orderDetails.totalAmount}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Details Card */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-orange-500" />
+              Order Details
+            </h2>
+
+            {/* Restaurant Info */}
+            {orderDetails.restaurant && (
+              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg mb-4">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Store className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 truncate">
+                    {orderDetails.restaurant.name}
+                  </p>
+                  {orderDetails.restaurant.address && (
+                    <p className="text-sm text-gray-600 flex items-start gap-1 mt-1">
+                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      <span className="line-clamp-2">
+                        {orderDetails.restaurant.address}
+                      </span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Time Slot */}
+            {orderDetails.timeSlot && (
+              <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200 mb-4">
+                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Pickup Time</p>
+                  <p className="text-sm text-gray-600">
+                    {formatDate(orderDetails.timeSlot.slotStart)}
+                  </p>
+                  <p className="text-sm font-medium text-orange-600">
+                    {formatTime(orderDetails.timeSlot.slotStart)} -{" "}
+                    {formatTime(orderDetails.timeSlot.slotEnd)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Order Items */}
+            {orderDetails.orderItems && orderDetails.orderItems.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  Items ({orderDetails.orderItems.length})
+                </h3>
+                <div className="space-y-2 mb-4">
+                  {orderDetails.orderItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-start p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-8 h-8 bg-orange-100 rounded flex items-center justify-center flex-shrink-0 font-semibold text-orange-600 text-sm">
+                          {item.quantity}×
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900 truncate">
+                              {item.menuItem.name}
+                            </p>
+                            {item.menuItem.isVeg !== undefined && (
+                              <span
+                                className={`w-4 h-4 border-2 flex items-center justify-center ${
+                                  item.menuItem.isVeg
+                                    ? "border-green-600"
+                                    : "border-red-600"
+                                }`}
+                              >
+                                <span
+                                  className={`w-2 h-2 rounded-full ${
+                                    item.menuItem.isVeg
+                                      ? "bg-green-600"
+                                      : "bg-red-600"
+                                  }`}
+                                />
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            ₹{item.menuItem.price} each
+                          </p>
+                        </div>
+                      </div>
+                      <p className="font-semibold text-gray-900 ml-4">
+                        ₹{item.price * item.quantity}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Subtotal</span>
+                    <span>
+                      ₹
+                      {orderDetails.priceBreakdown?.itemsTotal ??
+                        orderDetails.subtotal ??
+                        orderDetails.totalAmount}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>
+                      {orderDetails.priceBreakdown?.taxLabel ??
+                        `GST (${orderDetails.taxPercentage ?? 5}%)`}
+                    </span>
+                    <span>
+                      ₹
+                      {orderDetails.priceBreakdown?.taxAmount ??
+                        orderDetails.tax ??
+                        0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>
+                      {orderDetails.priceBreakdown?.platformFeeLabel ??
+                        "Platform Fee"}
+                    </span>
+                    <span>
+                      ₹
+                      {orderDetails.priceBreakdown?.platformFeeAmount ??
+                        orderDetails.platformFee ??
+                        0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-lg pt-2 border-t">
+                    <span className="font-semibold text-gray-900">Total</span>
+                    <span className="font-bold text-orange-600">
+                      ₹
+                      {orderDetails.priceBreakdown?.grandTotal ??
+                        orderDetails.totalAmount}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Payment Button Card */}
+          <div className="bg-white rounded-lg shadow-lg p-6 border border-orange-200">
+            <button
+              onClick={initiatePayment}
+              disabled={processing}
+              className="w-full bg-primary text-white py-4 rounded-lg font-semibold text-lg flex items-center justify-center gap-2 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Redirecting to Paytm...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5" />
+                  Pay ₹
+                  {orderDetails.priceBreakdown?.grandTotal ??
+                    orderDetails.totalAmount}{" "}
+                  with Paytm
+                </>
+              )}
+            </button>
+            <p className="text-xs text-gray-500 text-center mt-3">
+              Secured by Paytm Payment Gateway
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -509,14 +575,14 @@ export default function PaymentPage() {
 
 //       const order = data.data?.order || data.data;
 //       console.log("Fetched order:", order);
-      
+
 //       // Validate order status before allowing payment
 //       if (order.paymentStatus === "paid") {
 //         setError("This order has already been paid");
 //         toast.error("This order has already been paid");
 //         return;
 //       }
-      
+
 //       if (order.restaurantStatus !== "Accepted") {
 //         let errorMessage = "Cannot process payment for this order";
 //         if (order.restaurantStatus === "Rejected") {
@@ -530,7 +596,7 @@ export default function PaymentPage() {
 //         toast.error(errorMessage);
 //         return;
 //       }
-      
+
 //       setOrderDetails(order);
 //     } catch (err) {
 //       const errorMessage = err instanceof Error ? err.message : "Failed to load order";
@@ -691,7 +757,7 @@ export default function PaymentPage() {
 
 //       // Open Razorpay checkout
 //       const paymentObject = new window.Razorpay(options);
-      
+
 //       paymentObject.on("payment.failed", function (response: any) {
 //         console.error("Payment failed:", response.error);
 //         toast.error(response.error.description || "Payment failed");

@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "./ui/button";
-import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/auth";
 
@@ -19,9 +18,7 @@ function OrderConfirmationContent() {
 
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [orderStatus, setOrderStatus] = useState<OrderStatus>("Pending");
-  const [isConnected, setIsConnected] = useState(false);
 
-  const socketRef = useRef<Socket | null>(null);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasRedirectedRef = useRef(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -82,15 +79,15 @@ function OrderConfirmationContent() {
             description: message || "The restaurant couldn't accept your order",
             duration: 5000,
           });
-          handleRedirect("/order-history", 3000);
+          handleRedirect("/", 3000);
           break;
 
         case "Expired":
-          toast.error("Order Confirmation Timeout", {
-            description: "The restaurant didn't respond in time",
+          toast.error("Order Rejected", {
+            description: message || "The order was not accepted",
             duration: 5000,
           });
-          handleRedirect("/order-history", 3000);
+          handleRedirect("/", 3000);
           break;
       }
     },
@@ -124,68 +121,6 @@ function OrderConfirmationContent() {
     }
   }, [orderId, router, handleStatusUpdate]);
 
-  // Setup Socket.IO for real-time order updates
-  useEffect(() => {
-    if (!orderId || orderStatus !== "Pending") return;
-
-    const accessToken = localStorage.getItem("accessToken");
-    const userId = localStorage.getItem("userId");
-
-    // if (!accessToken || !userId) {
-    //   toast.error("Please login to continue");
-    //   router.push("/login");
-    //   return;
-    // }
-
-    const newSocket = io(
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
-      {
-        auth: { token: accessToken },
-        transports: ["websocket", "polling"],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      }
-    );
-
-    socketRef.current = newSocket;
-
-    newSocket.on("connect", () => {
-      console.log("Socket connected:", newSocket.id);
-      setIsConnected(true);
-      newSocket.emit("join", userId);
-    });
-
-    newSocket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-      setIsConnected(false);
-    });
-
-    newSocket.on("disconnect", () => {
-      setIsConnected(false);
-    });
-
-    newSocket.on("notification", (notification) => {
-      console.log("Notification received:", notification);
-
-      // Check if this notification is for our order
-      if (notification.data?.orderId !== parseInt(orderId)) {
-        return;
-      }
-
-      if (notification.type === "ORDER_ACCEPTED") {
-        handleStatusUpdate("Accepted", notification.message);
-      } else if (notification.type === "ORDER_REJECTED") {
-        handleStatusUpdate("Rejected", notification.message);
-      }
-    });
-
-    return () => {
-      newSocket.close();
-      socketRef.current = null;
-    };
-  }, [orderId, orderStatus, router, handleStatusUpdate]);
-
   // Countdown timer
   useEffect(() => {
     if (orderStatus !== "Pending" || timeLeft <= 0) return;
@@ -207,7 +142,7 @@ function OrderConfirmationContent() {
     };
   }, [orderStatus, timeLeft, handleStatusUpdate]);
 
-  // Poll for order status as backup
+  // Poll order details every 5 seconds and react to restaurant status changes.
   useEffect(() => {
     if (!orderId || orderStatus !== "Pending") return;
 
@@ -225,12 +160,15 @@ function OrderConfirmationContent() {
 
         if (response.ok) {
           const data = await response.json();
-          const status = data.data?.restaurantStatus;
+          const order = data.data?.order || data.data;
+          const status = order?.restaurantStatus;
 
           if (status === "Accepted") {
             handleStatusUpdate("Accepted");
-          } else if (status === "Rejected") {
+          } else if (status === "Rejected" || status === "Cancelled") {
             handleStatusUpdate("Rejected");
+          } else if (status === "Expired") {
+            handleStatusUpdate("Expired");
           }
         }
       } catch (error) {
@@ -241,7 +179,7 @@ function OrderConfirmationContent() {
     // Initial check
     pollOrderStatus();
 
-    // Poll every 5 seconds as backup
+    // Poll every 5 seconds
     pollIntervalRef.current = setInterval(pollOrderStatus, 5000);
 
     return () => {
@@ -257,7 +195,6 @@ function OrderConfirmationContent() {
       if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-      if (socketRef.current) socketRef.current.close();
     };
   }, []);
 
