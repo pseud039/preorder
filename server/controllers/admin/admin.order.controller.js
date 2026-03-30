@@ -223,6 +223,35 @@ export const getOrderDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, order, "Order details fetched successfully"));
 });
 
+export async function markAsPaid(orderId){
+  const done = await prisma.order.update({
+    where: { id: parseInt(orderId) },
+    data: {
+      paymentStatus: "paid",
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+      orderItems: {
+        include: {
+          menuItem: true,
+        },
+      },
+      timeSlot: true,
+      payment: true,
+    },
+  });
+  if(done)
+    return true;
+    else
+    return false;
+}
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
   const { status, restaurantStatus, rejectionReason } = req.body;
@@ -329,6 +358,13 @@ if (restaurantStatus) {
       updateData.estimatedReadyTime = new Date(
         Date.now() + actualWaitingTime * 60 * 1000
       );
+      const paymentProcess = process.env.MANUAL_PAYMENT;
+      if(paymentProcess === "true"){
+        const markAsPaidResult = await markAsPaid(orderId);
+        if(!markAsPaidResult){
+          throw new ApiError(500, "Failed to mark order as paid");
+        }
+      }
     }
 
     if (restaurantStatus === "Completed") {
@@ -1396,3 +1432,4 @@ export const updateOrderItemQuantity = asyncHandler(async (req, res) => {
     )
   );
 });
+
