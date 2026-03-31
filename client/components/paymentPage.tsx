@@ -267,7 +267,7 @@ export default function PaymentPage() {
   return (
     <>
       <Script
-        src={`https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/${process.env.NEXT_PUBLIC_PAYTM_MERCHANT_ID}.js`}
+        src={`https://securestage.paytmpayments.com/merchantpgpui/checkoutjs/merchants/${process.env.NEXT_PUBLIC_PAYTM_MERCHANT_ID}.js`}
         strategy="afterInteractive"
         onLoad={() => setScriptLoaded(true)}
       />
