@@ -6,6 +6,8 @@ import { OrderService } from "../../utils/order.service.js";
 import bcrypt from "bcrypt";
 import Restraunt_ID from "../../utils/constant.js";
 
+const MAX_BOOKINGS_PER_SLOT = 30;
+
 // const updateDetails = asyncHandler(async (req, res) => {
 //   const userId = req.userId;
 //   const { name, phone } = req.body;
@@ -408,7 +410,7 @@ console.log('🚨 === BEFORE generateTimeSlots ===');
 
   // Calculate earliest available slot time for the message
   const earliestSlot = slots[0];
-  const earliestTime = new Date(earliestSlot.slotStart);
+  const earliestTime = new Date(earliestSlot.scheduledAt);
   const now = new Date();
   const minutesUntilEarliest = Math.round((earliestTime - now) / (60 * 1000));
 
@@ -418,7 +420,7 @@ console.log('🚨 === BEFORE generateTimeSlots ===');
       {
         slots,
         estimatedWaitingTime,
-        earliestAvailableAt: earliestSlot.slotStart,
+        earliestAvailableAt: earliestSlot.scheduledAt,
         message: `Earliest pickup: ${earliestSlot.dayLabel} at ${earliestSlot.label.split(' - ')[0]} (in ~${minutesUntilEarliest} mins)`,
       },
       "Time slots fetched successfully"
@@ -465,13 +467,8 @@ const selectTimeSlot = asyncHandler(async (req, res) => {
     throw new ApiError(400, "This time slot is no longer available");
   }
 
-  // Check if slot is in the future
-  if (new Date() > slot.slotStart) {
-    throw new ApiError(400, "Cannot book past time slots");
-  }
-
   // Check capacity
-  if (slot.bookedCount >= slot.capacity) {
+  if (slot.bookedCount >= MAX_BOOKINGS_PER_SLOT) {
     throw new ApiError(400, "This time slot is fully booked");
   }
 
@@ -481,9 +478,10 @@ const selectTimeSlot = asyncHandler(async (req, res) => {
       200,
       {
         slotId: slot.id,
-        slotStart: slot.slotStart,
-        slotEnd: slot.slotEnd,
-        remainingSlots: slot.capacity - slot.bookedCount,
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        remainingSlots: MAX_BOOKINGS_PER_SLOT - slot.bookedCount,
       },
       "Time slot selected successfully"
     )

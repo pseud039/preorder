@@ -1,148 +1,99 @@
 import { prisma } from "../lib/prisma.js";
 import Restraunt_ID from "./constant.js";
 
-export class OrderService {
+const MAX_BOOKINGS_PER_SLOT = 30;
 
-  // static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8, restaurantId = Restraunt_ID) {
-  //   const now = new Date();
-    
-  //   // Earliest possible pickup time = now + waiting time
-  //   const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
-    
-  //   // Get today's and tomorrow's day of week
-  //   const todayDayOfWeek = now.getDay();
-  //   const tomorrowDayOfWeek = (todayDayOfWeek + 1) % 7;
-    
-  //   // Get today's date at midnight (for combining with slot times)
-  //   const todayMidnight = new Date(now);
-  //   todayMidnight.setHours(0, 0, 0, 0);
-    
-  //   const tomorrowMidnight = new Date(todayMidnight);
-  //   tomorrowMidnight.setDate(tomorrowMidnight.getDate() + 1);
-    
-  //   // Fetch template slots for today and tomorrow from database
-  //   const templateSlots = await prisma.timeSlot.findMany({
-  //     where: {
-  //       dayOfWeek: { in: [todayDayOfWeek, tomorrowDayOfWeek] },
-  //       isAvailable: true,
-  //     },
-  //     orderBy: [
-  //       { dayOfWeek: 'asc' },
-  //       { slotStart: 'asc' },
-  //     ],
-  //   });
-    
-  //   if (templateSlots.length === 0) {
-  //     return [];
-  //   }
-    
-  //   const availableSlots = [];
-    
-  //   for (const template of templateSlots) {
-  //     // Determine which date to use based on dayOfWeek
-  //     const baseDate = template.dayOfWeek === todayDayOfWeek ? todayMidnight : tomorrowMidnight;
-      
-  //     // Extract hours and minutes from template slot times
-  //     const templateStart = new Date(template.slotStart);
-  //     const templateEnd = new Date(template.slotEnd);
-      
-  //     // Create actual slot times for today/tomorrow
-  //     const actualSlotStart = new Date(baseDate);
-  //     actualSlotStart.setHours(templateStart.getHours(), templateStart.getMinutes(), 0, 0);
-      
-  //     const actualSlotEnd = new Date(baseDate);
-  //     actualSlotEnd.setHours(templateEnd.getHours(), templateEnd.getMinutes(), 0, 0);
-      
-  //     // Skip if slot is in the past or before earliest pickup time
-  //     if (actualSlotStart < earliestPickupTime) {
-  //       continue;
-  //     }
-      
-  //     // Skip if fully booked
-  //     if (template.bookedCount >= 30) {
-  //       continue;
-  //     }
-      
-  //     availableSlots.push({
-  //       id: template.id,
-  //       slotStart: actualSlotStart.toISOString(),
-  //       slotEnd: actualSlotEnd.toISOString(),
-  //       label: this.formatTimeRange(actualSlotStart, actualSlotEnd),
-  //       isAvailable: true,
-  //       remainingSlots: Math.max(0, 30 - template.bookedCount),
-  //       isFull: template.bookedCount >= 30,
-  //       dayOfWeek: template.dayOfWeek,
-  //       isToday: template.dayOfWeek === todayDayOfWeek,
-  //       dayLabel: template.dayOfWeek === todayDayOfWeek ? 'Today' : 'Tomorrow',
-  //     });
-      
-  //     // Stop if we have enough slots
-  //     if (availableSlots.length >= slotsCount) {
-  //       break;
-  //     }
-  //   }
-    
-  //   return availableSlots;
-  // }
+export class OrderService {
   static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8, restaurantId = Restraunt_ID) {
-  const now = new Date();
-  
-  // Earliest possible pickup time = now + waiting time
-  const earliestPickupTime = new Date(now.getTime() + estimatedWaitingTime * 60 * 1000);
-  
-  const slots = await prisma.timeSlot.findMany({
-    where: {
-      // restaurantId: parseInt(restaurantId),
-      slotStart: {
-        gte: earliestPickupTime, 
+    const now = new Date();
+    const earliestPickupTime = new Date(
+      now.getTime() + estimatedWaitingTime * 60 * 1000
+    );
+
+    const templates = await prisma.timeSlot.findMany({
+      where: {
+        isAvailable: true,
+        bookedCount: {
+          lt: MAX_BOOKINGS_PER_SLOT,
+        },
       },
-      isAvailable: true,
-      bookedCount: {
-        lt: 30, 
-      }
-    },
-    orderBy: {
-      slotStart: 'asc',
-    },
-    take: slotsCount, 
-  });
-  
-  if (slots.length === 0) {
-    return [];
-  }
-  
-  const formattedSlots = slots.map(slot => {
-    const slotStart = new Date(slot.slotStart);
-    const slotEnd = new Date(slot.slotEnd);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const slotDate = new Date(slotStart);
-    slotDate.setHours(0, 0, 0, 0);
-    
-    const isToday = slotDate.getTime() === today.getTime();
-    const isTomorrow = slotDate.getTime() === today.getTime() + (24 * 60 * 60 * 1000);
-    
-    let dayLabel = 'Today';
-    if (isTomorrow) dayLabel = 'Tomorrow';
-    else if (!isToday) {
-      dayLabel = slotStart.toLocaleDateString('en-US', { weekday: 'long' });
+      orderBy: [
+        { dayOfWeek: "asc" },
+        { startTime: "asc" },
+      ],
+    });
+
+    if (templates.length === 0) {
+      return [];
     }
-    
-    return {
-      id: slot.id,
-      slotStart: slot.slotStart, // Use original datetime from DB
-      slotEnd: slot.slotEnd,     // Use original datetime from DB
-      label: this.formatTimeRange(slotStart, slotEnd),
-      isAvailable: true,
-      remainingSlots: Math.max(0, 30 - slot.bookedCount),
-      isFull: slot.bookedCount >= 30,
-      dayLabel,
-      isToday,
-    };
-  });
-  
-  return formattedSlots;
-}
+
+    const templatesByDay = new Map();
+    for (const template of templates) {
+      if (!templatesByDay.has(template.dayOfWeek)) {
+        templatesByDay.set(template.dayOfWeek, []);
+      }
+      templatesByDay.get(template.dayOfWeek).push(template);
+    }
+
+    const availableSlots = [];
+
+    for (let dayOffset = 0; dayOffset < 14 && availableSlots.length < slotsCount; dayOffset++) {
+      const dayDate = new Date(now);
+      dayDate.setHours(0, 0, 0, 0);
+      dayDate.setDate(dayDate.getDate() + dayOffset);
+
+      const dayOfWeek = dayDate.getDay();
+      const dayTemplates = templatesByDay.get(dayOfWeek) || [];
+
+      for (const template of dayTemplates) {
+        const startAt = this.combineDateAndTime(dayDate, template.startTime);
+        const endAt = this.combineDateAndTime(dayDate, template.endTime);
+
+        if (startAt < earliestPickupTime) {
+          continue;
+        }
+
+        availableSlots.push({
+          id: template.id,
+          dayOfWeek: template.dayOfWeek,
+          startTime: template.startTime,
+          endTime: template.endTime,
+          scheduledAt: startAt.toISOString(),
+          label: this.formatTimeRange(startAt, endAt),
+          isAvailable: true,
+          remainingSlots: Math.max(0, MAX_BOOKINGS_PER_SLOT - template.bookedCount),
+          isFull: template.bookedCount >= MAX_BOOKINGS_PER_SLOT,
+          isToday: dayOffset === 0,
+          dayLabel: this.getDayLabel(dayOffset, dayDate),
+        });
+
+        if (availableSlots.length >= slotsCount) {
+          break;
+        }
+      }
+    }
+
+    return availableSlots;
+  }
+
+  static combineDateAndTime(baseDate, time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    const mergedDate = new Date(baseDate);
+    mergedDate.setHours(hours, minutes, 0, 0);
+    return mergedDate;
+  }
+
+  static getDayLabel(dayOffset, date) {
+    if (dayOffset === 0) {
+      return "Today";
+    }
+
+    if (dayOffset === 1) {
+      return "Tomorrow";
+    }
+
+    return date.toLocaleDateString("en-US", { weekday: "long" });
+  }
 
   static formatTimeRange(start, end) {
     const formatTime = (date) => {

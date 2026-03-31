@@ -19008,8 +19008,8 @@ export namespace Prisma {
 
   export type TimeSlotMinAggregateOutputType = {
     id: number | null
-    slotStart: Date | null
-    slotEnd: Date | null
+    startTime: string | null
+    endTime: string | null
     isAvailable: boolean | null
     createdAt: Date | null
     bookedCount: number | null
@@ -19018,8 +19018,8 @@ export namespace Prisma {
 
   export type TimeSlotMaxAggregateOutputType = {
     id: number | null
-    slotStart: Date | null
-    slotEnd: Date | null
+    startTime: string | null
+    endTime: string | null
     isAvailable: boolean | null
     createdAt: Date | null
     bookedCount: number | null
@@ -19028,8 +19028,8 @@ export namespace Prisma {
 
   export type TimeSlotCountAggregateOutputType = {
     id: number
-    slotStart: number
-    slotEnd: number
+    startTime: number
+    endTime: number
     isAvailable: number
     createdAt: number
     bookedCount: number
@@ -19052,8 +19052,8 @@ export namespace Prisma {
 
   export type TimeSlotMinAggregateInputType = {
     id?: true
-    slotStart?: true
-    slotEnd?: true
+    startTime?: true
+    endTime?: true
     isAvailable?: true
     createdAt?: true
     bookedCount?: true
@@ -19062,8 +19062,8 @@ export namespace Prisma {
 
   export type TimeSlotMaxAggregateInputType = {
     id?: true
-    slotStart?: true
-    slotEnd?: true
+    startTime?: true
+    endTime?: true
     isAvailable?: true
     createdAt?: true
     bookedCount?: true
@@ -19072,8 +19072,8 @@ export namespace Prisma {
 
   export type TimeSlotCountAggregateInputType = {
     id?: true
-    slotStart?: true
-    slotEnd?: true
+    startTime?: true
+    endTime?: true
     isAvailable?: true
     createdAt?: true
     bookedCount?: true
@@ -19169,8 +19169,8 @@ export namespace Prisma {
 
   export type TimeSlotGroupByOutputType = {
     id: number
-    slotStart: Date
-    slotEnd: Date
+    startTime: string
+    endTime: string
     isAvailable: boolean
     createdAt: Date
     bookedCount: number
@@ -19198,8 +19198,8 @@ export namespace Prisma {
 
   export type TimeSlotSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    slotStart?: boolean
-    slotEnd?: boolean
+    startTime?: boolean
+    endTime?: boolean
     isAvailable?: boolean
     createdAt?: boolean
     bookedCount?: boolean
@@ -19210,8 +19210,8 @@ export namespace Prisma {
 
   export type TimeSlotSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    slotStart?: boolean
-    slotEnd?: boolean
+    startTime?: boolean
+    endTime?: boolean
     isAvailable?: boolean
     createdAt?: boolean
     bookedCount?: boolean
@@ -19220,8 +19220,8 @@ export namespace Prisma {
 
   export type TimeSlotSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    slotStart?: boolean
-    slotEnd?: boolean
+    startTime?: boolean
+    endTime?: boolean
     isAvailable?: boolean
     createdAt?: boolean
     bookedCount?: boolean
@@ -19230,15 +19230,15 @@ export namespace Prisma {
 
   export type TimeSlotSelectScalar = {
     id?: boolean
-    slotStart?: boolean
-    slotEnd?: boolean
+    startTime?: boolean
+    endTime?: boolean
     isAvailable?: boolean
     createdAt?: boolean
     bookedCount?: boolean
     dayOfWeek?: boolean
   }
 
-  export type TimeSlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slotStart" | "slotEnd" | "isAvailable" | "createdAt" | "bookedCount" | "dayOfWeek", ExtArgs["result"]["timeSlot"]>
+  export type TimeSlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "startTime" | "endTime" | "isAvailable" | "createdAt" | "bookedCount" | "dayOfWeek", ExtArgs["result"]["timeSlot"]>
   export type TimeSlotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     orders?: boolean | TimeSlot$ordersArgs<ExtArgs>
     _count?: boolean | TimeSlotCountOutputTypeDefaultArgs<ExtArgs>
@@ -19253,8 +19253,8 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      slotStart: Date
-      slotEnd: Date
+      startTime: string
+      endTime: string
       isAvailable: boolean
       createdAt: Date
       bookedCount: number
@@ -19684,8 +19684,8 @@ export namespace Prisma {
    */
   interface TimeSlotFieldRefs {
     readonly id: FieldRef<"TimeSlot", 'Int'>
-    readonly slotStart: FieldRef<"TimeSlot", 'DateTime'>
-    readonly slotEnd: FieldRef<"TimeSlot", 'DateTime'>
+    readonly startTime: FieldRef<"TimeSlot", 'String'>
+    readonly endTime: FieldRef<"TimeSlot", 'String'>
     readonly isAvailable: FieldRef<"TimeSlot", 'Boolean'>
     readonly createdAt: FieldRef<"TimeSlot", 'DateTime'>
     readonly bookedCount: FieldRef<"TimeSlot", 'Int'>
@@ -28333,8 +28333,8 @@ export namespace Prisma {
 
   export const TimeSlotScalarFieldEnum: {
     id: 'id',
-    slotStart: 'slotStart',
-    slotEnd: 'slotEnd',
+    startTime: 'startTime',
+    endTime: 'endTime',
     isAvailable: 'isAvailable',
     createdAt: 'createdAt',
     bookedCount: 'bookedCount',
@@ -29832,8 +29832,8 @@ export namespace Prisma {
     OR?: TimeSlotWhereInput[]
     NOT?: TimeSlotWhereInput | TimeSlotWhereInput[]
     id?: IntFilter<"TimeSlot"> | number
-    slotStart?: DateTimeFilter<"TimeSlot"> | Date | string
-    slotEnd?: DateTimeFilter<"TimeSlot"> | Date | string
+    startTime?: StringFilter<"TimeSlot"> | string
+    endTime?: StringFilter<"TimeSlot"> | string
     isAvailable?: BoolFilter<"TimeSlot"> | boolean
     createdAt?: DateTimeFilter<"TimeSlot"> | Date | string
     bookedCount?: IntFilter<"TimeSlot"> | number
@@ -29843,8 +29843,8 @@ export namespace Prisma {
 
   export type TimeSlotOrderByWithRelationInput = {
     id?: SortOrder
-    slotStart?: SortOrder
-    slotEnd?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
     bookedCount?: SortOrder
@@ -29857,8 +29857,8 @@ export namespace Prisma {
     AND?: TimeSlotWhereInput | TimeSlotWhereInput[]
     OR?: TimeSlotWhereInput[]
     NOT?: TimeSlotWhereInput | TimeSlotWhereInput[]
-    slotStart?: DateTimeFilter<"TimeSlot"> | Date | string
-    slotEnd?: DateTimeFilter<"TimeSlot"> | Date | string
+    startTime?: StringFilter<"TimeSlot"> | string
+    endTime?: StringFilter<"TimeSlot"> | string
     isAvailable?: BoolFilter<"TimeSlot"> | boolean
     createdAt?: DateTimeFilter<"TimeSlot"> | Date | string
     bookedCount?: IntFilter<"TimeSlot"> | number
@@ -29868,8 +29868,8 @@ export namespace Prisma {
 
   export type TimeSlotOrderByWithAggregationInput = {
     id?: SortOrder
-    slotStart?: SortOrder
-    slotEnd?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
     bookedCount?: SortOrder
@@ -29886,8 +29886,8 @@ export namespace Prisma {
     OR?: TimeSlotScalarWhereWithAggregatesInput[]
     NOT?: TimeSlotScalarWhereWithAggregatesInput | TimeSlotScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"TimeSlot"> | number
-    slotStart?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
-    slotEnd?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
+    startTime?: StringWithAggregatesFilter<"TimeSlot"> | string
+    endTime?: StringWithAggregatesFilter<"TimeSlot"> | string
     isAvailable?: BoolWithAggregatesFilter<"TimeSlot"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
     bookedCount?: IntWithAggregatesFilter<"TimeSlot"> | number
@@ -31630,8 +31630,8 @@ export namespace Prisma {
   }
 
   export type TimeSlotCreateInput = {
-    slotStart: Date | string
-    slotEnd: Date | string
+    startTime: string
+    endTime: string
     isAvailable?: boolean
     createdAt?: Date | string
     bookedCount?: number
@@ -31641,8 +31641,8 @@ export namespace Prisma {
 
   export type TimeSlotUncheckedCreateInput = {
     id?: number
-    slotStart: Date | string
-    slotEnd: Date | string
+    startTime: string
+    endTime: string
     isAvailable?: boolean
     createdAt?: Date | string
     bookedCount?: number
@@ -31651,8 +31651,8 @@ export namespace Prisma {
   }
 
   export type TimeSlotUpdateInput = {
-    slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
-    slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookedCount?: IntFieldUpdateOperationsInput | number
@@ -31662,8 +31662,8 @@ export namespace Prisma {
 
   export type TimeSlotUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
-    slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookedCount?: IntFieldUpdateOperationsInput | number
@@ -31673,8 +31673,8 @@ export namespace Prisma {
 
   export type TimeSlotCreateManyInput = {
     id?: number
-    slotStart: Date | string
-    slotEnd: Date | string
+    startTime: string
+    endTime: string
     isAvailable?: boolean
     createdAt?: Date | string
     bookedCount?: number
@@ -31682,8 +31682,8 @@ export namespace Prisma {
   }
 
   export type TimeSlotUpdateManyMutationInput = {
-    slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
-    slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookedCount?: IntFieldUpdateOperationsInput | number
@@ -31692,8 +31692,8 @@ export namespace Prisma {
 
   export type TimeSlotUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
-    slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookedCount?: IntFieldUpdateOperationsInput | number
@@ -33512,8 +33512,8 @@ export namespace Prisma {
 
   export type TimeSlotCountOrderByAggregateInput = {
     id?: SortOrder
-    slotStart?: SortOrder
-    slotEnd?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
     bookedCount?: SortOrder
@@ -33528,8 +33528,8 @@ export namespace Prisma {
 
   export type TimeSlotMaxOrderByAggregateInput = {
     id?: SortOrder
-    slotStart?: SortOrder
-    slotEnd?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
     bookedCount?: SortOrder
@@ -33538,8 +33538,8 @@ export namespace Prisma {
 
   export type TimeSlotMinOrderByAggregateInput = {
     id?: SortOrder
-    slotStart?: SortOrder
-    slotEnd?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
     isAvailable?: SortOrder
     createdAt?: SortOrder
     bookedCount?: SortOrder
@@ -38217,8 +38217,8 @@ export namespace Prisma {
   }
 
   export type TimeSlotCreateWithoutOrdersInput = {
-    slotStart: Date | string
-    slotEnd: Date | string
+    startTime: string
+    endTime: string
     isAvailable?: boolean
     createdAt?: Date | string
     bookedCount?: number
@@ -38227,8 +38227,8 @@ export namespace Prisma {
 
   export type TimeSlotUncheckedCreateWithoutOrdersInput = {
     id?: number
-    slotStart: Date | string
-    slotEnd: Date | string
+    startTime: string
+    endTime: string
     isAvailable?: boolean
     createdAt?: Date | string
     bookedCount?: number
@@ -38453,8 +38453,8 @@ export namespace Prisma {
   }
 
   export type TimeSlotUpdateWithoutOrdersInput = {
-    slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
-    slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookedCount?: IntFieldUpdateOperationsInput | number
@@ -38463,8 +38463,8 @@ export namespace Prisma {
 
   export type TimeSlotUncheckedUpdateWithoutOrdersInput = {
     id?: IntFieldUpdateOperationsInput | number
-    slotStart?: DateTimeFieldUpdateOperationsInput | Date | string
-    slotEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookedCount?: IntFieldUpdateOperationsInput | number
