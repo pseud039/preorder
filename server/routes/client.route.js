@@ -99,7 +99,6 @@
 // //   router.post("/notifications/test", testNotification);
 // // }
 
-
 import express from "express";
 import {
   forgotPassword,
@@ -121,11 +120,12 @@ import {
   getMyOrders,
   getOrderById,
 } from "../controllers/client/client.order.controller.js";
-import { 
-  createPaymentOrder, 
+import {
+  createPaymentOrder,
   // verifyPayment,
-  verifyPaymentStatus, 
+  verifyPaymentStatus,
   getPaymentStatus,
+  handlePaymentCallback,
   // handlePaymentWebhook
 } from "../utils/paymentgateway/payment.js";
 import { getCategories } from "../controllers/admin/admin.restraunt.controller.js";
@@ -140,6 +140,7 @@ import {
 import { isCustomer, verifyJWT } from "../middlewares/middleware.js";
 import { refreshToken } from "../controllers/user.controller.js";
 import { getTimeSlots } from "../controllers/admin/admin.timeslot.controller.js";
+import PaytmChecksum from "paytmchecksum";
 const router = express.Router();
 
 router.post("/signup", signup);
@@ -147,7 +148,7 @@ router.get("/verify-email/:token", verifyEmail);
 router.post("/login", login);
 router.post("/password", forgotPassword);
 router.post("/password/:token", resetPassword);
-router.post('/auth/refresh', refreshToken);
+router.post("/auth/refresh", refreshToken);
 router.get("/logout", verifyJWT, isCustomer, logout);
 router.delete("/delete-account", verifyJWT, isCustomer, deleteUser);
 
@@ -170,12 +171,9 @@ router.get("/available", verifyJWT, isCustomer, getAvailableTimeSlots);
 router.post("/select", verifyJWT, isCustomer, selectTimeSlot);
 router.get("/timeslots", verifyJWT, getTimeSlots);
 
-
-
 router.post("/create-order", verifyJWT, isCustomer, createOrder);
 router.get("/orders", verifyJWT, isCustomer, getMyOrders);
 router.get("/orders/:orderId", verifyJWT, isCustomer, getOrderById);
-
 
 // Create Razorpay order
 router.post("/payment/create-order", verifyJWT, isCustomer, createPaymentOrder);
@@ -184,7 +182,12 @@ router.post("/payment/create-order", verifyJWT, isCustomer, createPaymentOrder);
 // router.post("/payment/verify", verifyJWT, isCustomer, verifyPayment);
 
 // Check payment status
-router.post("/payment/verify-status", verifyJWT, isCustomer, verifyPaymentStatus);
+router.post(
+  "/payment/verify-status",
+  verifyJWT,
+  isCustomer,
+  verifyPaymentStatus,
+);
 
 // Get payment details by order ID
 router.get("/payment/status/:orderId", verifyJWT, isCustomer, getPaymentStatus);
@@ -192,7 +195,6 @@ router.get("/payment/status/:orderId", verifyJWT, isCustomer, getPaymentStatus);
 // Razorpay webhook (NO AUTH - Razorpay servers call this)
 // router.post("/payment/webhook", handlePaymentWebhook);
 
+router.all("/payment/callback", handlePaymentCallback);
 
 export default router;
-
-
