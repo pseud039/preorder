@@ -103,6 +103,21 @@ services:
         condition: service_healthy
     networks:
       - preorder-network
+  
+  # Prisma Migration Runner
+  prisma:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.prisma
+    container_name: preorder-prisma
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-preorder}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - preorder-network
 
 volumes:
   db-data:
