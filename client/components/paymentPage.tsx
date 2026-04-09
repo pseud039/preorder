@@ -6,10 +6,11 @@ import {
   CreditCard,
   ArrowLeft,
   AlertCircle,
-  ShoppingBag,
   Store,
   MapPin,
   Clock,
+  CheckCircle,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import Script from "next/script";
@@ -18,6 +19,7 @@ interface MenuItem {
   name: string;
   price: number;
   isVeg?: boolean;
+  imageUrl?: string;
 }
 
 interface OrderItem {
@@ -30,11 +32,16 @@ interface Restaurant {
   id: number;
   name: string;
   address?: string;
+  contactNumber?: string;
 }
 
 interface TimeSlot {
-  slotStart: string;
-  slotEnd: string;
+  id: number;
+  startTime?: string;
+  endTime?: string;
+  slotStart?: string;
+  slotEnd?: string;
+  dayOfWeek?: number;
 }
 
 interface PriceBreakdown {
@@ -60,6 +67,8 @@ interface OrderDetails {
   restaurant?: Restaurant;
   timeSlot?: TimeSlot;
   orderItems?: OrderItem[];
+  restaurantStatus?: string;
+  estimatedWaitingTime?: number;
 }
 
 interface PaytmConfig {
@@ -70,6 +79,26 @@ interface PaytmConfig {
   environment: "PROD" | "STAGING";
 }
 
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function formatSlotTime(timeStr: string): string {
+  // handles "HH:mm" plain strings
+  if (!timeStr) return "";
+  if (timeStr.includes("T") || timeStr.includes("-")) {
+    const d = new Date(timeStr);
+    return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+  }
+  const [h, m] = timeStr.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function formatSlotDay(dayOfWeek?: number): string {
+  if (dayOfWeek === undefined) return "";
+  return DAY_NAMES[dayOfWeek] ?? "";
+}
+
 export default function PaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,8 +107,8 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [processing, setProcessing] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  const [priceBreakdown, setPriceBreakdown] = useState<PriceBreakdown | null>(null);
   const [error, setError] = useState<string>("");
-
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
   const fetchOrderDetails = useCallback(async () => {
@@ -89,92 +118,55 @@ export default function PaymentPage() {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/client/orders/${orderId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to fetch order");
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch order");
-      }
-
-      // Handle nested order structure
       const order = data.data?.order || data.data;
-      console.log("Fetched order:", order);
+      const breakdown = data.data?.priceBreakdown || order.priceBreakdown || null;
+
       setOrderDetails(order);
+      if (breakdown) setPriceBreakdown(breakdown);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load order";
-      console.error("Error:", err);
-      setError(errorMessage);
-      toast.error(errorMessage);
+      const msg = err instanceof Error ? err.message : "Failed to load order";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   }, [orderId]);
 
   useEffect(() => {
-    if (orderId) {
-      fetchOrderDetails();
-    } else {
-      setError("Order ID not found");
-      setLoading(false);
-    }
+    if (orderId) fetchOrderDetails();
+    else { setError("Order ID not found"); setLoading(false); }
   }, [orderId, fetchOrderDetails]);
 
-  const formatTime = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const grandTotal = priceBreakdown?.grandTotal ?? orderDetails?.totalAmount;
 
   const initiatePayment = async (): Promise<void> => {
-    if (!scriptLoaded || !window.Paytm?.CheckoutJS) return;
-
-    if (!orderDetails?.id) {
-      toast.error("Order details not found");
+    if (!scriptLoaded || !window.Paytm?.CheckoutJS) {
+      toast.error("Payment gateway is still loading, please wait.");
       return;
     }
+    if (!orderDetails?.id) { toast.error("Order details not found"); return; }
 
     try {
       setProcessing(true);
       const token = localStorage.getItem("accessToken");
 
-      console.log("Initiating payment for order:", orderDetails.id);
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/client/payment/create-order`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({ orderId: orderDetails.id }),
-        },
+        }
       );
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to create payment");
-      }
+      if (!response.ok) throw new Error(data.message || "Failed to create payment");
 
       const paytmConfig: PaytmConfig = data.data.paytmConfig;
 
@@ -186,58 +178,42 @@ export default function PaymentPage() {
           token: paytmConfig.txnToken,
         },
         handler: {
+          transactionStatus: function (paymentData: any) {
+            if (paymentData.STATUS === "TXN_SUCCESS") {
+              toast.success("Payment successful!");
+              router.push(`/order-history/${orderDetails.id}`);
+            } else {
+              toast.error("Payment failed. Please try again.");
+              setProcessing(false);
+            }
+          },
           notifyMerchant: function (eventName: string, data: any) {
-            console.log("notifyMerchant handler function called");
-            console.log("eventName => ", eventName);
-            console.log("data => ", data);
+            if (eventName === "APP_CLOSED") {
+              toast.error("Payment cancelled.");
+              setProcessing(false);
+            }
+            if (eventName === "SESSION_EXPIRED") {
+              toast.error("Payment session expired. Please try again.");
+              setProcessing(false);
+            }
           },
         },
       });
 
       window.Paytm.CheckoutJS.invoke();
-      setProcessing(false);
-
-      // // Create and submit form dynamically
-      // const form = document.createElement('form');
-      // form.method = 'POST';
-      // form.action = `${
-      //   paytmConfig.environment === "PROD"
-      //     ? "https://securegw.paytm.in"
-      //     : "https://securegw-stage.paytm.in"
-      // }/theia/api/v1/showPaymentPage?mid=${paytmConfig.mid}&orderId=${paytmConfig.orderId}`;
-
-      // const fields: Record<string, string> = {
-      //   mid: paytmConfig.mid,
-      //   orderId: paytmConfig.orderId,
-      //   txnToken: paytmConfig.txnToken
-      // };
-
-      // Object.keys(fields).forEach(key => {
-      //   const input = document.createElement('input');
-      //   input.type = 'hidden';
-      //   input.name = key;
-      //   input.value = fields[key];
-      //   form.appendChild(input);
-      // });
-
-      // document.body.appendChild(form);
-      // form.submit();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to initiate payment";
-      console.error("Payment error:", err);
-      setError(errorMessage);
-      toast.error(errorMessage);
+      const msg = err instanceof Error ? err.message : "Failed to initiate payment";
+      toast.error(msg);
       setProcessing(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading order details...</p>
+          <Loader2 className="w-10 h-10 text-orange-500 animate-spin mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Loading order details...</p>
         </div>
       </div>
     );
@@ -245,24 +221,26 @@ export default function PaymentPage() {
 
   if (error || !orderDetails) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-red-50 to-white p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Unable to Process Payment
-          </h2>
-          <p className="text-gray-600 mb-6">{error || "Order not found"}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-sm w-full bg-white rounded-xl border border-gray-200 p-8 text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Unable to load order</h2>
+          <p className="text-sm text-gray-500 mb-6">{error || "Order not found"}</p>
           <button
             onClick={() => router.back()}
-            className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 flex items-center justify-center gap-2 transition-colors"
+            className="w-full bg-orange-500 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center justify-center gap-2 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Go Back
+            Go back
           </button>
         </div>
       </div>
     );
   }
+
+  const slot = orderDetails.timeSlot;
+  const startTime = slot?.startTime ?? slot?.slotStart ?? "";
+  const endTime = slot?.endTime ?? slot?.slotEnd ?? "";
 
   return (
     <>
@@ -271,707 +249,203 @@ export default function PaymentPage() {
         strategy="afterInteractive"
         onLoad={() => setScriptLoaded(true)}
       />
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50 py-8 px-4">
-        <div className="max-w-3xl mx-auto space-y-6">
+
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-5xl mx-auto pt-5">
+
+          {/* Back button */}
           <button
             onClick={() => router.back()}
-            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="mb-6 flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
 
-          {/* Payment Amount Card */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-orange-200">
-            <div className="bg-primary text-center p-3 text-white">
-              <p className="text-orange-100 text-xl font-semibold">
-                Order #{orderDetails.id}
-              </p>
-            </div>
-            <div className="p-6">
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
-                <p className="text-orange-700 text-sm font-medium mb-2">
-                  Amount to Pay
-                </p>
-                <p className="text-5xl font-bold text-primary">
-                  ₹
-                  {orderDetails.priceBreakdown?.grandTotal ??
-                    orderDetails.totalAmount}
-                </p>
-              </div>
-            </div>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
 
-          {/* Order Details Card */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-orange-500" />
-              Order Details
-            </h2>
-
-            {/* Restaurant Info */}
-            {orderDetails.restaurant && (
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg mb-4">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Store className="w-5 h-5 text-orange-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">
-                    {orderDetails.restaurant.name}
-                  </p>
-                  {orderDetails.restaurant.address && (
-                    <p className="text-sm text-gray-600 flex items-start gap-1 mt-1">
-                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                      <span className="line-clamp-2">
-                        {orderDetails.restaurant.address}
-                      </span>
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Time Slot */}
-            {orderDetails.timeSlot && (
-              <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200 mb-4">
-                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Pickup Time</p>
-                  <p className="text-sm text-gray-600">
-                    {formatDate(orderDetails.timeSlot.slotStart)}
-                  </p>
-                  <p className="text-sm font-medium text-orange-600">
-                    {formatTime(orderDetails.timeSlot.slotStart)} -{" "}
-                    {formatTime(orderDetails.timeSlot.slotEnd)}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Order Items */}
-            {orderDetails.orderItems && orderDetails.orderItems.length > 0 && (
+            {/* LEFT — Review info */}
+            <div className="space-y-4">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">
-                  Items ({orderDetails.orderItems.length})
-                </h3>
-                <div className="space-y-2 mb-4">
+                <h1 className="text-xl font-semibold text-gray-900">Complete your payment</h1>
+                <p className="text-sm text-gray-500 mt-1">Review the details below before paying.</p>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+
+                {/* Restaurant */}
+                {orderDetails.restaurant && (
+                  <div className="flex items-start gap-3 p-4">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <Store className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Restaurant</p>
+                      <p className="text-sm font-medium text-gray-900">{orderDetails.restaurant.name}</p>
+                      {orderDetails.restaurant.address && (
+                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          {orderDetails.restaurant.address}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pickup slot */}
+                {slot && (
+                  <div className="flex items-start gap-3 p-4">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Pickup slot</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {formatSlotDay(slot.dayOfWeek)}{slot.dayOfWeek !== undefined ? ", " : ""}
+                        {formatSlotTime(startTime)}-{formatSlotTime(endTime)}
+                      </p>
+                      {orderDetails.estimatedWaitingTime && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Est. ready in ~{orderDetails.estimatedWaitingTime} min
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Order status */}
+                <div className="flex items-start gap-3 p-4">
+                  <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Order status</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {orderDetails.restaurantStatus ?? "Accepted"} by restaurant
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">Order #{orderDetails.id}</p>
+                  </div>
+                </div>
+
+                {/* Payment method */}
+                <div className=" md:flex items-start gap-3 p-4 hidden ">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="w-4 h-4 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Payment via</p>
+                    <p className="text-sm font-medium text-gray-900">Paytm</p>
+                    <p className="text-xs text-gray-500 mt-0.5">UPI · Cards · Netbanking · Wallets</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* RIGHT — Order summary + pay */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden self-start">
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                <span className="text-sm font-medium text-gray-900">Order summary</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100">
+                  {orderDetails.restaurantStatus ?? "Accepted"}
+                </span>
+              </div>
+
+              {/* Items */}
+              {orderDetails.orderItems && orderDetails.orderItems.length > 0 && (
+                <div className="divide-y divide-gray-50">
                   {orderDetails.orderItems.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-start p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="w-8 h-8 bg-orange-100 rounded flex items-center justify-center flex-shrink-0 font-semibold text-orange-600 text-sm">
-                          {item.quantity}×
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-gray-900 truncate">
-                              {item.menuItem.name}
-                            </p>
-                            {item.menuItem.isVeg !== undefined && (
-                              <span
-                                className={`w-4 h-4 border-2 flex items-center justify-center ${
-                                  item.menuItem.isVeg
-                                    ? "border-green-600"
-                                    : "border-red-600"
-                                }`}
-                              >
-                                <span
-                                  className={`w-2 h-2 rounded-full ${
-                                    item.menuItem.isVeg
-                                      ? "bg-green-600"
-                                      : "bg-red-600"
-                                  }`}
-                                />
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-500">
-                            ₹{item.menuItem.price} each
-                          </p>
-                        </div>
+                    <div key={index} className="flex items-center gap-3 px-4 py-3">
+                      {item.menuItem.imageUrl ? (
+                        <img
+                          src={item.menuItem.imageUrl}
+                          alt={item.menuItem.name}
+                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-gray-100"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate flex items-center gap-1.5">
+                          {/* {item.menuItem.isVeg !== undefined && (
+                            <span
+                              className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
+                                item.menuItem.isVeg ? "bg-green-500" : "bg-red-500"
+                              }`}
+                            />
+                          )} */}
+                          {item.menuItem.name}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          ₹{item.menuItem.price} × {item.quantity}
+                        </p>
                       </div>
-                      <p className="font-semibold text-gray-900 ml-4">
-                        ₹{item.price * item.quantity}
+                      <p className="text-sm font-medium text-gray-900 ml-2">
+                        ₹{Number(item.price) * item.quantity}
                       </p>
                     </div>
                   ))}
                 </div>
+              )}
 
-                <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between items-center text-gray-600">
-                    <span>Subtotal</span>
-                    <span>
-                      ₹
-                      {orderDetails.priceBreakdown?.itemsTotal ??
-                        orderDetails.subtotal ??
-                        orderDetails.totalAmount}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-gray-600">
-                    <span>
-                      {orderDetails.priceBreakdown?.taxLabel ??
-                        `GST (${orderDetails.taxPercentage ?? 5}%)`}
-                    </span>
-                    <span>
-                      ₹
-                      {orderDetails.priceBreakdown?.taxAmount ??
-                        orderDetails.tax ??
-                        0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-gray-600">
-                    <span>
-                      {orderDetails.priceBreakdown?.platformFeeLabel ??
-                        "Platform Fee"}
-                    </span>
-                    <span>
-                      ₹
-                      {orderDetails.priceBreakdown?.platformFeeAmount ??
-                        orderDetails.platformFee ??
-                        0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-lg pt-2 border-t">
-                    <span className="font-semibold text-gray-900">Total</span>
-                    <span className="font-bold text-orange-600">
-                      ₹
-                      {orderDetails.priceBreakdown?.grandTotal ??
-                        orderDetails.totalAmount}
-                    </span>
-                  </div>
+              {/* Price breakdown */}
+              <div className="px-4 py-3 border-t border-gray-100 space-y-1.5">
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>Subtotal</span>
+                  <span>₹{priceBreakdown?.itemsTotal ?? orderDetails.subtotal ?? orderDetails.totalAmount}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>{priceBreakdown?.taxLabel ?? `GST (${orderDetails.taxPercentage ?? 5}%)`}</span>
+                  <span>₹{priceBreakdown?.taxAmount ?? orderDetails.tax ?? 0}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>{priceBreakdown?.platformFeeLabel ?? "Platform fee"}</span>
+                  <span>₹{priceBreakdown?.platformFeeAmount ?? orderDetails.platformFee ?? 0}</span>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Payment Button Card */}
-          <div className="bg-white rounded-lg shadow-lg p-6 border border-orange-200">
-            <button
-              onClick={initiatePayment}
-              disabled={processing}
-              className="w-full bg-primary text-white py-4 rounded-lg font-semibold text-lg flex items-center justify-center gap-2 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
-            >
-              {processing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Redirecting to Paytm...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-5 h-5" />
-                  Pay ₹
-                  {orderDetails.priceBreakdown?.grandTotal ??
-                    orderDetails.totalAmount}{" "}
-                  with Paytm
-                </>
-              )}
-            </button>
-            <p className="text-xs text-gray-500 text-center mt-3">
-              Secured by Paytm Payment Gateway
-            </p>
+              {/* Total */}
+              <div className="flex justify-between items-center px-4 py-3 border-t border-gray-200">
+                <span className="text-sm font-medium text-gray-900">Total</span>
+                <span className="text-base font-semibold text-orange-600">₹{grandTotal}</span>
+              </div>
+
+              {/* Pay button */}
+              <div className="px-4 pb-4 pt-1">
+                <button
+                  onClick={initiatePayment}
+                  disabled={processing || !scriptLoaded}
+                  className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Redirecting to Paytm...
+                    </>
+                  ) : !scriptLoaded ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Setting up payment...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      Pay ₹{grandTotal} with Paytm
+                    </>
+                  )}
+                </button>
+                <p className="flex items-center justify-center gap-1 text-xs text-gray-400 mt-2">
+                  <Lock className="w-3 h-3" />
+                  Secured by Paytm · 256-bit encryption
+                </p>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
     </>
   );
 }
-
-// "use client";
-// import { useState, useEffect, useCallback } from "react";
-// import { useSearchParams, useRouter } from "next/navigation";
-// import { Loader2, CreditCard, ArrowLeft, AlertCircle, ShoppingBag, Store, MapPin, Clock } from "lucide-react";
-// import { toast } from "sonner";
-// import { fetchWithAuth } from "@/lib/auth";
-
-// interface MenuItem {
-//   name: string;
-//   price: number;
-//   isVeg?: boolean;
-// }
-
-// interface OrderItem {
-//   menuItem: MenuItem;
-//   quantity: number;
-//   price: number;
-// }
-
-// interface Restaurant {
-//   id: number;
-//   name: string;
-//   address?: string;
-// }
-
-// interface TimeSlot {
-//   slotStart: string;
-//   slotEnd: string;
-// }
-
-// interface OrderDetails {
-//   id: number;
-//   totalAmount: number;
-//   restaurantId: number;
-//   timeSlotId?: number;
-//   notes?: string;
-//   restaurant?: Restaurant;
-//   timeSlot?: TimeSlot;
-//   orderItems?: OrderItem[];
-//   restaurantStatus?: string;
-//   paymentStatus?: string;
-// }
-
-// interface RazorpayConfig {
-//   orderId: string;
-//   amount: number;
-//   currency: string;
-//   key: string;
-//   name: string;
-//   description: string;
-//   prefill: {
-//     name: string;
-//     email: string;
-//     contact: string;
-//   };
-// }
-
-// declare global {
-//   interface Window {
-//     Razorpay: any;
-//   }
-// }
-
-// export default function PaymentPage() {
-//   const router = useRouter();
-//   const searchParams = useSearchParams();
-//   const orderId = searchParams.get('orderId');
-
-//   const [loading, setLoading] = useState<boolean>(true);
-//   const [processing, setProcessing] = useState<boolean>(false);
-//   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
-//   const [error, setError] = useState<string>("");
-
-//   const fetchOrderDetails = useCallback(async () => {
-//     try {
-//       setLoading(true);
-//       const token = localStorage.getItem("accessToken");
-
-//       const response = await fetchWithAuth(
-//         `${process.env.NEXT_PUBLIC_API_URL}/client/orders/${orderId}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-
-//       const data = await response.json();
-
-//       if (!response.ok) {
-//         throw new Error(data.message || "Failed to fetch order");
-//       }
-
-//       const order = data.data?.order || data.data;
-//       console.log("Fetched order:", order);
-
-//       // Validate order status before allowing payment
-//       if (order.paymentStatus === "paid") {
-//         setError("This order has already been paid");
-//         toast.error("This order has already been paid");
-//         return;
-//       }
-
-//       if (order.restaurantStatus !== "Accepted") {
-//         let errorMessage = "Cannot process payment for this order";
-//         if (order.restaurantStatus === "Rejected") {
-//           errorMessage = "This order was rejected by the restaurant";
-//         } else if (order.restaurantStatus === "Cancelled") {
-//           errorMessage = "This order has been cancelled";
-//         } else if (order.restaurantStatus === "Pending") {
-//           errorMessage = "Order is still pending restaurant approval. Please wait for confirmation.";
-//         }
-//         setError(errorMessage);
-//         toast.error(errorMessage);
-//         return;
-//       }
-
-//       setOrderDetails(order);
-//     } catch (err) {
-//       const errorMessage = err instanceof Error ? err.message : "Failed to load order";
-//       console.error("Error:", err);
-//       setError(errorMessage);
-//       toast.error(errorMessage);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, [orderId]);
-
-//   useEffect(() => {
-//     if (orderId) {
-//       fetchOrderDetails();
-//     } else {
-//       setError("Order ID not found");
-//       setLoading(false);
-//     }
-//   }, [orderId, fetchOrderDetails]);
-
-//   const loadRazorpayScript = (): Promise<boolean> => {
-//     return new Promise((resolve) => {
-//       if (window.Razorpay) {
-//         resolve(true);
-//         return;
-//       }
-
-//       const script = document.createElement("script");
-//       script.src = "https://checkout.razorpay.com/v1/checkout.js";
-//       script.onload = () => resolve(true);
-//       script.onerror = () => resolve(false);
-//       document.body.appendChild(script);
-//     });
-//   };
-
-//   const formatTime = (dateString: string): string => {
-//     const date = new Date(dateString);
-//     return date.toLocaleTimeString("en-US", {
-//       hour: "numeric",
-//       minute: "2-digit",
-//       hour12: true,
-//     });
-//   };
-
-//   const formatDate = (dateString: string): string => {
-//     const date = new Date(dateString);
-//     return date.toLocaleDateString("en-US", {
-//       weekday: "short",
-//       month: "short",
-//       day: "numeric",
-//     });
-//   };
-
-//   const verifyPayment = async (paymentData: any): Promise<void> => {
-//     try {
-//       const token = localStorage.getItem("accessToken");
-
-//       const response = await fetchWithAuth(
-//         `${process.env.NEXT_PUBLIC_API_URL}/client/payment/verify`,
-//         {
-//           method: "POST",
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//             "Content-Type": "application/json",
-//           },
-//           body: JSON.stringify({
-//             orderId: orderDetails?.id,
-//             razorpay_order_id: paymentData.razorpay_order_id,
-//             razorpay_payment_id: paymentData.razorpay_payment_id,
-//             razorpay_signature: paymentData.razorpay_signature,
-//           }),
-//         }
-//       );
-
-//       const data = await response.json();
-
-//       if (!response.ok) {
-//         throw new Error(data.message || "Payment verification failed");
-//       }
-
-//       toast.success("Payment successful!");
-//       router.push(`/order-history/${orderDetails?.id}`);
-//     } catch (err) {
-//       const errorMessage = err instanceof Error ? err.message : "Payment verification failed";
-//       console.error("Verification error:", err);
-//       toast.error(errorMessage);
-//       router.push(`/order-history/${orderDetails?.id}?payment=failed`);
-//     }
-//   };
-
-//   const initiatePayment = async (): Promise<void> => {
-//     if (!orderDetails?.id) {
-//       toast.error("Order details not found");
-//       return;
-//     }
-
-//     try {
-//       setProcessing(true);
-
-//       // Load Razorpay script
-//       const loaded = await loadRazorpayScript();
-//       if (!loaded) {
-//         throw new Error("Failed to load Razorpay SDK. Please check your internet connection.");
-//       }
-
-//       const token = localStorage.getItem("accessToken");
-
-//       console.log("Creating payment order for:", orderDetails.id);
-
-//       // Create payment order
-//       const response = await fetchWithAuth(
-//         `${process.env.NEXT_PUBLIC_API_URL}/client/payment/create-order`,
-//         {
-//           method: "POST",
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//             "Content-Type": "application/json",
-//           },
-//           body: JSON.stringify({ orderId: orderDetails.id }),
-//         }
-//       );
-
-//       const data = await response.json();
-
-//       if (!response.ok) {
-//         throw new Error(data.message || "Failed to create payment order");
-//       }
-
-//       const razorpayConfig: RazorpayConfig = data.data.razorpayConfig;
-
-//       // Razorpay payment options
-//       const options = {
-//         key: razorpayConfig.key,
-//         amount: razorpayConfig.amount * 100, // Convert to paise
-//         currency: razorpayConfig.currency,
-//         name: razorpayConfig.name,
-//         description: razorpayConfig.description,
-//         order_id: razorpayConfig.orderId,
-//         prefill: razorpayConfig.prefill,
-//         handler: async function (response: any) {
-//           console.log("Payment successful:", response);
-//           await verifyPayment(response);
-//         },
-//         modal: {
-//           ondismiss: function () {
-//             setProcessing(false);
-//             toast.error("Payment cancelled");
-//           },
-//         },
-//         theme: {
-//           color: "#f97316", // Orange color
-//         },
-//         retry: {
-//           enabled: true,
-//           max_count: 3,
-//         },
-//       };
-
-//       // Open Razorpay checkout
-//       const paymentObject = new window.Razorpay(options);
-
-//       paymentObject.on("payment.failed", function (response: any) {
-//         console.error("Payment failed:", response.error);
-//         toast.error(response.error.description || "Payment failed");
-//         setProcessing(false);
-//       });
-
-//       paymentObject.open();
-//     } catch (err) {
-//       const errorMessage = err instanceof Error ? err.message : "Failed to initiate payment";
-//       console.error("Payment error:", err);
-//       setError(errorMessage);
-//       toast.error(errorMessage);
-//       setProcessing(false);
-//     }
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white">
-//         <div className="text-center">
-//           <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-//           <p className="text-gray-600 font-medium">Loading order details...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   if (error || !orderDetails) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-red-50 to-white p-4">
-//         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-//           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-//           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-//             Unable to Process Payment
-//           </h2>
-//           <p className="text-gray-600 mb-6">{error || "Order not found"}</p>
-//           <button
-//             onClick={() => router.back()}
-//             className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 flex items-center justify-center gap-2 transition-colors"
-//           >
-//             <ArrowLeft className="w-4 h-4" />
-//             Go Back
-//           </button>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-gray-50 py-8 px-4">
-//       <div className="max-w-3xl mx-auto space-y-6">
-//         <button
-//           onClick={() => router.back()}
-//           className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-//         >
-//           <ArrowLeft className="w-4 h-4" />
-//           Back
-//         </button>
-
-//         {/* Payment Amount Card */}
-//         <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-orange-200">
-//           <div className="bg-primary text-center p-2 text-white">
-//             <p className="text-orange-100 font-semibold text-xl">Order #{orderDetails.id}</p>
-//           </div>
-//           <div className="p-3">
-//             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center border border-orange-200">
-//               <p className="text-orange-700 text-sm font-medium mb-2">
-//                 Amount to Pay
-//               </p>
-//               <p className="text-5xl font-bold text-orange-600">
-//                 ₹{orderDetails.totalAmount}
-//               </p>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Order Details Card */}
-//         <div className="bg-white rounded-lg shadow-lg p-6">
-//           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-//             <ShoppingBag className="w-5 h-5 text-orange-500" />
-//             Order Details
-//           </h2>
-
-//           {/* Restaurant Info */}
-//           {orderDetails.restaurant && (
-//             <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg mb-4">
-//               <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-//                 <Store className="w-5 h-5 text-orange-600" />
-//               </div>
-//               <div className="flex-1 min-w-0">
-//                 <p className="font-semibold text-gray-900 truncate">
-//                   {orderDetails.restaurant.name}
-//                 </p>
-//                 {orderDetails.restaurant.address && (
-//                   <p className="text-sm text-gray-600 flex items-start gap-1 mt-1">
-//                     <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-//                     <span className="line-clamp-2">
-//                       {orderDetails.restaurant.address}
-//                     </span>
-//                   </p>
-//                 )}
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Time Slot */}
-//           {orderDetails.timeSlot && (
-//             <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200 mb-4">
-//               <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-//                 <Clock className="w-5 h-5 text-white" />
-//               </div>
-//               <div>
-//                 <p className="font-semibold text-gray-900">Pickup Time</p>
-//                 <p className="text-sm text-gray-600">
-//                   {formatDate(orderDetails.timeSlot.slotStart)}
-//                 </p>
-//                 <p className="text-sm font-medium text-orange-600">
-//                   {formatTime(orderDetails.timeSlot.slotStart)} -{" "}
-//                   {formatTime(orderDetails.timeSlot.slotEnd)}
-//                 </p>
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Order Items */}
-//           {orderDetails.orderItems && orderDetails.orderItems.length > 0 && (
-//             <div>
-//               <h3 className="font-semibold text-gray-900 mb-3">
-//                 Items ({orderDetails.orderItems.length})
-//               </h3>
-//               <div className="space-y-2 mb-4">
-//                 {orderDetails.orderItems.map((item, index) => (
-//                   <div
-//                     key={index}
-//                     className="flex justify-between items-start p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-//                   >
-//                     <div className="flex items-start gap-3 flex-1">
-//                       <div className="w-8 h-8 bg-orange-100 rounded flex items-center justify-center flex-shrink-0 font-semibold text-orange-600 text-sm">
-//                         {item.quantity}×
-//                       </div>
-//                       <div className="flex-1 min-w-0">
-//                         <div className="flex items-center gap-2">
-//                           <p className="font-medium text-gray-900 truncate">
-//                             {item.menuItem.name}
-//                           </p>
-//                           {item.menuItem.isVeg !== undefined && (
-//                             <span
-//                               className={`w-4 h-4 border-2 flex items-center justify-center ${
-//                                 item.menuItem.isVeg
-//                                   ? "border-green-600"
-//                                   : "border-red-600"
-//                               }`}
-//                             >
-//                               <span
-//                                 className={`w-2 h-2 rounded-full ${
-//                                   item.menuItem.isVeg
-//                                     ? "bg-green-600"
-//                                     : "bg-red-600"
-//                                 }`}
-//                               />
-//                             </span>
-//                           )}
-//                         </div>
-//                         <p className="text-xs text-gray-500">
-//                           ₹{item.menuItem.price} each
-//                         </p>
-//                       </div>
-//                     </div>
-//                     <p className="font-semibold text-gray-900 ml-4">
-//                       ₹{item.price * item.quantity}
-//                     </p>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               <div className="border-t pt-4">
-//                 <div className="flex justify-between items-center text-lg">
-//                   <span className="font-semibold text-gray-900">Total</span>
-//                   <span className="font-bold text-orange-600">
-//                     ₹{orderDetails.totalAmount}
-//                   </span>
-//                 </div>
-//               </div>
-//             </div>
-//           )}
-//         </div>
-
-//         {/* Payment Button Card */}
-//         <div className="bg-white rounded-lg shadow-lg p-6 border border-orange-200">
-//           <button
-//             onClick={initiatePayment}
-//             disabled={processing}
-//             className="w-full bg-primary text-white py-4 rounded-lg font-semibold text-lg flex items-center justify-center gap-2 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
-//           >
-//             {processing ? (
-//               <>
-//                 <Loader2 className="w-5 h-5 animate-spin" />
-//                 Processing Payment...
-//               </>
-//             ) : (
-//               <>
-//                 <CreditCard className="w-5 h-5" />
-//                 Pay ₹{orderDetails.totalAmount} Securely
-//               </>
-//             )}
-//           </button>
-//           <p className="text-xs text-gray-500 text-center mt-3">
-//             🔒 Secured by Razorpay Payment Gateway
-//           </p>
-//           <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
-//             <span>Accepts UPI, Cards, Netbanking & More</span>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
