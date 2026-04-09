@@ -20,7 +20,7 @@ export class PaymentService {
           mid: this.MERCHANT_ID,
           websiteName: this.WEBSITE,
           orderId: paytmOrderId,
-          callbackUrl: `${process.env.NEXT_PUBLIC_API_URL}/payment/callback`,
+          callbackUrl: `${process.env.BASE_URL}/client/payment/callback`,
           txnAmount: {
             value: amount.toFixed(2),
             currency: "INR",
@@ -66,7 +66,7 @@ export class PaymentService {
           txnToken: data.body.txnToken,
           amount: amount,
           mid: this.MERCHANT_ID,
-          callbackUrl: `${process.env.NEXT_PUBLIC_API_URL}/client/payment/callback`,
+          callbackUrl: `${process.env.BASE_URL}/client/payment/callback`,
         };
       } else {
         throw new Error(data.body.resultInfo.resultMsg || "Failed to create payment");

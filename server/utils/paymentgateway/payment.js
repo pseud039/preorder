@@ -209,7 +209,7 @@ export const handlePaymentCallback = asyncHandler(async (req, res) => {
 
       console.log("Payment successful for order:", payment.orderId);
       return res.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/orders/${payment.orderId}?payment=success`
+        `${process.env.FRONTEND_URL}/order-history/${payment.orderId}?payment=success`
       );
     } catch (error) {
       console.error("Error processing payment:", error);
@@ -221,7 +221,7 @@ export const handlePaymentCallback = asyncHandler(async (req, res) => {
       });
 
       return res.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/payment/failed?reason=processing_error`
+        `${process.env.FRONTEND_URL}/payment/failed?reason=processing_error`
       );
     }
   } else {
