@@ -207,9 +207,9 @@ const login = asyncHandler(async (req, res) => {
       "Your account has been deactivated. Please contact support",
     );
   }
-  if (!user.emailVerified) {
-    throw new ApiError(401, "Please verify your email to login");
-  }
+  // if (!user.emailVerified) {
+  //   throw new ApiError(401, "Please verify your email to login");
+  // }
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
