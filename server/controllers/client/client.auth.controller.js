@@ -183,7 +183,11 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
 
   const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
   const mailTemp = emailTemplates.emailConformation(email, confirmationLink);
-  await sendEmail({ to: email, template:"emailConformation", userId: user.id, templateData: { link: confirmationLink },});
+  try {
+    await sendEmail({ to: email, template:"emailConformation", userId: user.id, templateData: { link: confirmationLink },});
+  } catch (emailError) {
+    console.error("Failed to send verification email:", emailError.message);
+  }
   res
     .status(200)
     .json(new ApiResponse(200, null, "Verification email sent successfully"));
@@ -366,7 +370,11 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
   const mailTemp = emailTemplates.ForgotPassword(email, resetLink);
-  await sendEmail({ to: email, template:"ForgotPassword", userId: user.id, templateData: { link: resetLink },});
+  try {
+    await sendEmail({ to: email, template:"ForgotPassword", userId: user.id, templateData: { link: resetLink },});
+  } catch (emailError) {
+    console.error("Failed to send password reset email:", emailError.message);
+  }
   res
     .status(200)
     .json(

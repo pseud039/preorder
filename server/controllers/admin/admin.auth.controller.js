@@ -376,7 +376,7 @@ export const createChef = asyncHandler(async (req, res) => {
     const mailTemp = emailTemplates.InviteChef(email, password);
     await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
   } catch (error) {
-    throw new ApiError(500, "Failed to send invite email");
+    console.error("Failed to send chef invite email:", error.message);
   }
   return res.status(201).json(
     new ApiResponse(
@@ -456,8 +456,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     const mailTemp = emailTemplates.ForgotPassword(email, resetLink);
     await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
   } catch (error) {
-    console.error("Failed to send reset email:", error);
-    throw new ApiError(500, "Failed to send reset email");
+    console.error("Failed to send reset email:", error.message);
   }
 
   return res

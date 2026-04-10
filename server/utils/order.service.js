@@ -4,10 +4,14 @@ import Restraunt_ID from "./constant.js";
 const MAX_BOOKINGS_PER_SLOT = 30;
 
 export class OrderService {
-  static async generateTimeSlots(estimatedWaitingTime, slotsCount = 8, restaurantId = Restraunt_ID) {
+  static async generateTimeSlots(
+    estimatedWaitingTime,
+    slotsCount = 8,
+    restaurantId = Restraunt_ID,
+  ) {
     const now = new Date();
     const earliestPickupTime = new Date(
-      now.getTime() + estimatedWaitingTime * 60 * 1000
+      now.getTime() + estimatedWaitingTime * 60 * 1000,
     );
 
     const templates = await prisma.timeSlot.findMany({
@@ -17,10 +21,7 @@ export class OrderService {
           lt: MAX_BOOKINGS_PER_SLOT,
         },
       },
-      orderBy: [
-        { dayOfWeek: "asc" },
-        { startTime: "asc" },
-      ],
+      orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     });
 
     if (templates.length === 0) {
@@ -37,7 +38,11 @@ export class OrderService {
 
     const availableSlots = [];
 
-    for (let dayOffset = 0; dayOffset < 14 && availableSlots.length < slotsCount; dayOffset++) {
+    for (
+      let dayOffset = 0;
+      dayOffset < 14 && availableSlots.length < slotsCount;
+      dayOffset++
+    ) {
       const dayDate = new Date(now);
       dayDate.setHours(0, 0, 0, 0);
       dayDate.setDate(dayDate.getDate() + dayOffset);
@@ -61,7 +66,10 @@ export class OrderService {
           scheduledAt: startAt.toISOString(),
           label: this.formatTimeRange(startAt, endAt),
           isAvailable: true,
-          remainingSlots: Math.max(0, MAX_BOOKINGS_PER_SLOT - template.bookedCount),
+          remainingSlots: Math.max(
+            0,
+            MAX_BOOKINGS_PER_SLOT - template.bookedCount,
+          ),
           isFull: template.bookedCount >= MAX_BOOKINGS_PER_SLOT,
           isToday: dayOffset === 0,
           dayLabel: this.getDayLabel(dayOffset, dayDate),
@@ -99,33 +107,32 @@ export class OrderService {
     const formatTime = (date) => {
       let hours = date.getHours();
       let minutes = date.getMinutes();
-      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const ampm = hours >= 12 ? "PM" : "AM";
       hours = hours % 12;
       hours = hours ? hours : 12;
-      minutes = minutes < 10 ? '0' + minutes : minutes;
+      minutes = minutes < 10 ? "0" + minutes : minutes;
       return `${hours}:${minutes} ${ampm}`;
     };
-    
+
     return `${formatTime(start)} - ${formatTime(end)}`;
   }
 
-
   static async calculateOrderDetails(cartItems, restaurant) {
     const totalAmount = cartItems.reduce(
-      (sum, item) => sum + (parseFloat(item.price) * item.quantity),
-      0
+      (sum, item) => sum + parseFloat(item.price) * item.quantity,
+      0,
     );
 
     const maxWaitingTime = cartItems.reduce((max, item) => {
-      const actualWaitingTime = 
-        (item.menuItem.waitingTime * restaurant.baseWaitingTimeMultiplier) + 
+      const actualWaitingTime =
+        item.menuItem.waitingTime * restaurant.baseWaitingTimeMultiplier +
         restaurant.fixedAdditionalTime;
       return Math.max(max, actualWaitingTime);
     }, 0);
 
     return {
       totalAmount,
-      estimatedWaitingTime: Math.round(maxWaitingTime)
+      estimatedWaitingTime: Math.round(maxWaitingTime),
     };
   }
 
@@ -135,13 +142,13 @@ export class OrderService {
 
     for (const item of cartItems) {
       const currentMenuItem = await prisma.menuItem.findUnique({
-        where: { id: item.menuItemId }
+        where: { id: item.menuItemId },
       });
 
       if (!currentMenuItem || !currentMenuItem.isAvailable) {
         unavailable.push({
           id: item.id,
-          name: item.menuItem.name
+          name: item.menuItem.name,
         });
       }
 
@@ -150,7 +157,7 @@ export class OrderService {
           id: item.id,
           name: item.menuItem.name,
           oldPrice: item.price,
-          newPrice: currentMenuItem.price
+          newPrice: currentMenuItem.price,
         });
       }
     }
@@ -158,7 +165,7 @@ export class OrderService {
     return {
       isValid: unavailable.length === 0,
       unavailable,
-      priceChanges
+      priceChanges,
     };
   }
 
@@ -166,14 +173,14 @@ export class OrderService {
     if (order.paymentStatus === "paid") {
       return {
         canCancel: false,
-        reason: "Cannot cancel paid orders. Please contact restaurant."
+        reason: "Cannot cancel paid orders. Please contact restaurant.",
       };
     }
 
     if (["Preparing", "Ready", "Completed"].includes(order.restaurantStatus)) {
       return {
         canCancel: false,
-        reason: "Order is already being prepared."
+        reason: "Order is already being prepared.",
       };
     }
 
@@ -189,7 +196,10 @@ export class OrderService {
   }
 
   static isPaymentExpired(order) {
-    if (order.paymentStatus !== "pending" || order.restaurantStatus !== "Accepted") {
+    if (
+      order.paymentStatus !== "pending" ||
+      order.restaurantStatus !== "Accepted"
+    ) {
       return false;
     }
 
@@ -206,48 +216,58 @@ export class OrderService {
         status: "Cancelled",
         message: order.rejectionReason || "Order was cancelled",
         color: "red",
-        progress: 0
+        progress: 0,
       };
     }
 
     if (order.restaurantStatus === "Pending") {
-      const expiresIn = Math.floor((new Date(order.expiresAt) - new Date()) / 1000);
+      const expiresIn = Math.floor(
+        (new Date(order.expiresAt) - new Date()) / 1000,
+      );
       return {
         status: "Waiting for Confirmation",
         message: `Restaurant has ${Math.max(0, expiresIn)} seconds to accept`,
         color: "yellow",
-        progress: 10
+        progress: 10,
       };
     }
 
-    if (order.restaurantStatus === "Accepted" && order.paymentStatus === "pending") {
-      const expiresIn = Math.floor((new Date(order.paymentExpiresAt) - new Date()) / 60000);
+    if (
+      order.restaurantStatus === "Accepted" &&
+      order.paymentStatus === "pending"
+    ) {
+      const expiresIn = Math.floor(
+        (new Date(order.paymentExpiresAt) - new Date()) / 60000,
+      );
       return {
         status: "Payment Required",
         message: `Complete payment within ${Math.max(0, expiresIn)} minutes`,
         color: "orange",
         progress: 25,
-        action: "PAY_NOW"
+        action: "PAY_NOW",
       };
     }
 
-    if (order.restaurantStatus === "Accepted" && order.paymentStatus === "paid") {
+    if (
+      order.restaurantStatus === "Accepted" &&
+      order.paymentStatus === "paid"
+    ) {
       return {
         status: "Payment Received",
         message: "Restaurant is preparing your order",
         color: "blue",
-        progress: 40
+        progress: 40,
       };
     }
 
     if (order.restaurantStatus === "Preparing") {
       return {
         status: "Preparing",
-        message: order.estimatedReadyTime 
+        message: order.estimatedReadyTime
           ? `Ready by ${new Date(order.estimatedReadyTime).toLocaleTimeString()}`
           : "Your order is being prepared",
         color: "blue",
-        progress: 60
+        progress: 60,
       };
     }
 
@@ -257,7 +277,7 @@ export class OrderService {
         message: "Your order is ready! Please collect it.",
         color: "green",
         progress: 90,
-        action: "VIEW_PICKUP_DETAILS"
+        action: "VIEW_PICKUP_DETAILS",
       };
     }
 
@@ -266,7 +286,7 @@ export class OrderService {
         status: "Completed",
         message: "Order completed. Thank you!",
         color: "green",
-        progress: 100
+        progress: 100,
       };
     }
 
@@ -274,7 +294,7 @@ export class OrderService {
       status: "Unknown",
       message: "Order status unknown",
       color: "gray",
-      progress: 0
+      progress: 0,
     };
   }
 
@@ -299,27 +319,27 @@ export class OrderService {
   }
 
   static calculateCommission(orderAmount, commissionRate) {
-    const commissionAmount = (parseFloat(orderAmount) * parseFloat(commissionRate)) / 100;
+    const commissionAmount =
+      (parseFloat(orderAmount) * parseFloat(commissionRate)) / 100;
     const restaurantAmount = parseFloat(orderAmount) - commissionAmount;
 
     return {
       commissionAmount: parseFloat(commissionAmount.toFixed(2)),
-      restaurantAmount: parseFloat(restaurantAmount.toFixed(2))
+      restaurantAmount: parseFloat(restaurantAmount.toFixed(2)),
     };
   }
 }
 // const PLATFORM_FEE_CONFIG = {
-//   fixedFee: 5,          
-//   percentageFee: 0.02,  
-//   minFee: 5,            
-//   maxFee: 50,          
+//   fixedFee: 5,
+//   percentageFee: 0.02,
+//   minFee: 5,
+//   maxFee: 50,
 // };
- const PLATFORM_FEE_CONFIG = await prisma.paymentSetup.findFirst({
-  where: { restaurantId: 3 }
+const PLATFORM_FEE_CONFIG = await prisma.paymentSetup.findFirst({
+  where: { restaurantId: 3 },
 });
 
 export const calculateOrderTotals = async (orderItems, restaurantId) => {
-
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: restaurantId },
     select: { taxRate: true },
@@ -328,15 +348,20 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
   const taxRate = restaurant?.taxRate || 0.05; // Default 5%
 
   const subtotal = orderItems.reduce(
-    (sum, item) => sum + (parseFloat(item.price) * item.quantity),
-    0
+    (sum, item) => sum + parseFloat(item.price) * item.quantity,
+    0,
   );
-   const PLATFORM_FEE_CONFIG = await prisma.paymentSetup.findFirst({
-  where: { restaurantId: 3 }
-});
+  const PLATFORM_FEE_CONFIG = await prisma.paymentSetup.findFirst({
+    where: { restaurantId: 3 },
+  });
+  console.log("Fee config: ", PLATFORM_FEE_CONFIG);
 
-  let platformFee = PLATFORM_FEE_CONFIG.fixedFee + (subtotal * PLATFORM_FEE_CONFIG.percentageFee);
-  platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));
+  let platformFee =
+    PLATFORM_FEE_CONFIG.fixedfee + subtotal * PLATFORM_FEE_CONFIG.percentagefee;
+  platformFee = Math.max(
+    PLATFORM_FEE_CONFIG.minFee,
+    Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee),
+  );
   platformFee = Math.round(platformFee * 100) / 100; // Round to 2 decimals
 
   const tax = Math.round(subtotal * taxRate * 100) / 100; // Round to 2 decimals
@@ -355,16 +380,20 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
       taxAmount: tax,
       taxLabel: `GST (${Math.round(taxRate * 100)}%)`,
       platformFeeAmount: platformFee,
-      platformFeeLabel: 'Platform Fee',
+      platformFeeLabel: "Platform Fee",
       grandTotal: totalAmount,
-    }
+    },
   };
 };
 
 export const calculatePriceBreakdown = (subtotal, taxRate = 0.05) => {
-  let platformFee = PLATFORM_FEE_CONFIG.fixedfee + (subtotal * PLATFORM_FEE_CONFIG.precentagefee);
-  platformFee = Math.max(PLATFORM_FEE_CONFIG.minFee, Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee));
-  platformFee = Math.round(platformFee * 100) / 100;  
+  let platformFee =
+    PLATFORM_FEE_CONFIG.fixedfee + subtotal * PLATFORM_FEE_CONFIG.precentagefee;
+  platformFee = Math.max(
+    PLATFORM_FEE_CONFIG.minFee,
+    Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee),
+  );
+  platformFee = Math.round(platformFee * 100) / 100;
 
   const tax = Math.round(subtotal * taxRate * 100) / 100;
 
@@ -382,8 +411,8 @@ export const calculatePriceBreakdown = (subtotal, taxRate = 0.05) => {
       taxAmount: tax,
       taxLabel: `GST (${Math.round(taxRate * 100)}%)`,
       platformFeeAmount: platformFee,
-      platformFeeLabel: 'Platform Fee',
+      platformFeeLabel: "Platform Fee",
       grandTotal: totalAmount,
-    }
+    },
   };
 };
