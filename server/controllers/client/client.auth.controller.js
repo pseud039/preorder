@@ -70,7 +70,7 @@ const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
 
     const emailToken = await tx.emailVerification.create({
       data: {
-        userId: user.id,  
+        userId: user.id,
         token: verificationToken,
         expiresAt: expirationTime,
       },
@@ -78,17 +78,20 @@ const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
 
     const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`
 
+    return { user, confirmationLink }
+  })
+
+  try {
     await sendEmail({
       to: email,
       template: 'emailConformation',
       templateData: { link: confirmationLink },
       userId: user.id,
     })
+  } catch (emailError) {
+    console.error("Failed to send verification email:", emailError.message)
+  }
 
-    return { user, confirmationLink }
-  })
-
-console.log("WORKS!");
   res
     .status(201)
     .json(
