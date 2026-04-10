@@ -142,6 +142,8 @@ export const refreshToken = asyncHandler(async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
+      domain: ".predine.in",
+    sameSite: "Lax",
       // maxAge: 1 * 60 * 60 * 1000,
       maxAge: parseDuration(ACCESS_TOKEN_EXPIRY),
       path: "/",
