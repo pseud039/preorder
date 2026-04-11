@@ -89,7 +89,7 @@ const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
       userId: user.id,
     })
   } catch (emailError) {
-    console.error("Failed to send verification email:", emailError.message)
+    console.error("Failed to send verification email:", emailError)
   }
 
   res
@@ -186,7 +186,7 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
   try {
     await sendEmail({ to: email, template:"emailConformation", userId: user.id, templateData: { link: confirmationLink },});
   } catch (emailError) {
-    console.error("Failed to send verification email:", emailError.message);
+    console.error("Failed to send verification email:", emailError);
   }
   res
     .status(200)
@@ -373,7 +373,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   try {
     await sendEmail({ to: email, template:"ForgotPassword", userId: user.id, templateData: { link: resetLink },});
   } catch (emailError) {
-    console.error("Failed to send password reset email:", emailError.message);
+    console.error("Failed to send password reset email:", emailError);
   }
   res
     .status(200)

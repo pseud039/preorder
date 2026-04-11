@@ -6,9 +6,11 @@ export class PaymentService {
   static WEBSITE = process.env.PAYTM_WEBSITE || "WEBSTAGING";
   static INDUSTRY_TYPE = process.env.PAYTM_INDUSTRY_TYPE || "Retail";
   static CHANNEL_ID = process.env.PAYTM_CHANNEL_ID || "WEB";
-  static BASE_URL = process.env.NODE_ENV === "production"
-    ? "https://securegw.paytm.in"
-    : "https://securestage.paytmpayments.com";
+  static BASE_URL = "https://securestage.paytmpayments.com";
+
+  // static BASE_URL = process.env.NODE_ENV === "production"
+  //   ? "https://securegw.paytm.in"
+  //   : "https://securestage.paytmpayments.com";
 
   static async createPaytmOrder({ orderId, amount, customerInfo }) {
     try {

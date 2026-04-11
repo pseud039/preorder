@@ -40,8 +40,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      # email-server:
-      #   condition: service_started
+      email-server:
+        condition: service_healthy
     networks:
       - preorder-network
     volumes:
@@ -62,7 +62,7 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     ports:
       - "${ADMIN_PORT:-3001}:3000"
-    depends_on: 
+    depends_on:
       - server
     networks:
       - preorder-network
@@ -88,21 +88,26 @@ services:
       - preorder-network
 
   # Email Queue Service
-  # email-server:
-  #   build:
-  #     context: ./email-server
-  #   container_name: preorder-email-server
-  #   restart: unless-stopped
-  #   env_file:
-  #     - ./email-server/.env
-  #   environment:
-  #     DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-preorder}
-  #     EMAIL_SERVER_PORT: 3001
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   networks:
-  #     - preorder-network
+  email-server:
+    build:
+      context: ./email-server
+    container_name: preorder-email-server
+    restart: unless-stopped
+    env_file:
+      - ./email-server/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-preorder}
+      EMAIL_SERVER_PORT: 3001
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - preorder-network
   
   # Prisma Migration Runner
   prisma:
@@ -110,7 +115,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.prisma
     container_name: preorder-prisma
-    restart: unless-stopped
+    restart: on-failure
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-preorder}
     depends_on:
