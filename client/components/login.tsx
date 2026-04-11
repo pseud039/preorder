@@ -59,7 +59,34 @@ export default function LoginPage() {
       }));
     }
   };
-
+const handleForgotPassword = async () => {
+  if (!formData.email) {
+    toast.error("Please enter your email to reset password.");
+    return;
+  }
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_API_URL}/client/password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: formData.email }),
+      }
+    );
+    const data = await response.json();
+    if (response.ok) {
+      toast.success("Password reset link sent to your email.");
+      setForgotPass(false);
+    } else {
+      toast.error(data.message || "Failed to send reset link. Try again.");
+    }
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    toast.error("An error occurred. Please try again later.");
+  }
+}
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {
       email: "",
@@ -202,6 +229,9 @@ console.log(data.data.accessToken)
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
               
+            </div>
+            <div className="text-xs text-orange-500 hover:underline cursor-pointer justify-end text-right" onClick={() => handleForgotPassword()}>
+              Forgot Password?
             </div>
           </div>
 

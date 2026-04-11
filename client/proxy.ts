@@ -14,7 +14,7 @@ export default function proxy(request: NextRequest) {
     "/refund-policy",
     "/privacy-policy",
   ];
-  const publicRegex = [/\/verify-email\/[0-9a-fA-Z]*/];
+  const publicRegex = [/\/verify-email\/[0-9a-fA-Z]*/, /\/reset-password\/[0-9a-fA-Z]*/];
 
   const isFile = reqUrl.pathname.includes(".");
 

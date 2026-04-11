@@ -11,6 +11,7 @@ app.get('/health', async (req, res) => {
 
 app.post('/queue', async (req, res) => {
   try {
+    console.log('Queue request body:', req.body);
     const { to, subject, body, template, templateData, userId, orderId } = req.body
     
     if (!to) {
