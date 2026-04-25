@@ -333,6 +333,54 @@ export const logout = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, null, "Logged out successfully"));
 });
 
+// export const forgotPassword = asyncHandler(async (req, res) => {
+//   const { email } = req.body;
+
+//   if (!email) {
+//     throw new ApiError(400, "Email is required");
+//   }
+
+//   const user = await prisma.user.findUnique({
+//     where: { email },
+//   });
+
+//   if (!user) {
+//     res
+//       .status(200)
+//       .json(
+//         new ApiResponse(
+//           200,
+//           null,
+//           "If the email exists, a password reset link has been sent",
+//         ),
+//       );
+//     return;
+//   }
+
+//   const resetToken = crypto.randomBytes(32).toString("hex");
+//   const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
+
+//   await prisma.passwordReset.update({
+//     where: { id: user.id },
+//     data: {
+//       passwordResetToken: resetToken,
+//       passwordResetExpiry: resetTokenExpiry,
+//     },
+//   });
+
+//   const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+//   const mailTemp = emailTemplates.ForgotPassword(email, resetLink);
+//   await sendEmail({ to: email, template:"ForgotPassword", userId: user.id, templateData: { link: resetLink },});
+//   res
+//     .status(200)
+//     .json(
+//       new ApiResponse(
+//         200,
+//         null,
+//         "If the email exists, a password reset link has been sent",
+//       ),
+//     );
+// });
 export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
@@ -345,26 +393,25 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          null,
-          "If the email exists, a password reset link has been sent",
-        ),
-      );
+    res.status(200).json(
+      new ApiResponse(200, null, "If the email exists, a password reset link has been sent")
+    );
     return;
   }
 
   const resetToken = crypto.randomBytes(32).toString("hex");
   const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
 
-  await prisma.user.update({
-    where: { id: user.id },
+  // Clear old tokens, then create a fresh one
+  await prisma.passwordReset.deleteMany({
+    where: { userId: user.id },
+  });
+
+  await prisma.passwordReset.create({
     data: {
-      passwordResetToken: resetToken,
-      passwordResetExpiry: resetTokenExpiry,
+      userId: user.id,
+      token: resetToken,  
+      expiresAt: resetTokenExpiry, 
     },
   });
 
@@ -386,6 +433,52 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     );
 });
 
+// export const resetPassword = asyncHandler(async (req, res) => {
+//   const { token } = req.params;
+//   const { password } = req.body;
+
+//   if (!token || !password) {
+//     throw new ApiError(400, "Token and password are required");
+//   }
+
+//   if (password.length < 8) {
+//     throw new ApiError(400, "Password must be at least 8 characters");
+//   }
+
+//   const user = await prisma.user.findFirst({
+//     where: {
+//       passwordResetToken: token,
+//       passwordResetExpiry: {
+//         gt: new Date(),
+//       },
+//     },
+//   });
+
+//   if (!user) {
+//     throw new ApiError(400, "Invalid or expired reset token");
+//   }
+
+//   const hashedPassword = await bcrypt.hash(password, 10);
+
+//   await prisma.user.update({
+//     where: { id: user.id },
+//     data: {
+//       password: hashedPassword,
+//       passwordResetToken: null,
+//       passwordResetExpiry: null,
+//     },
+//   });
+
+//   res
+//     .status(200)
+//     .json(
+//       new ApiResponse(200, null, "Password reset successful", "/auth/login"),
+//     );
+// });
+const maskEmail = (email) => {
+  const [user, domain] = email.split("@");
+  return `${user[0]}***@${domain}`;
+};
 export const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
@@ -398,35 +491,37 @@ export const resetPassword = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Password must be at least 8 characters");
   }
 
-  const user = await prisma.user.findFirst({
+  // Find the reset token in PasswordReset table
+  const passwordReset = await prisma.passwordReset.findFirst({
     where: {
-      passwordResetToken: token,
-      passwordResetExpiry: {
-        gt: new Date(),
-      },
+      token,
+      expiresAt: { gt: new Date() },
+      used: false,
     },
+    include: { user: true },
   });
 
-  if (!user) {
+  if (!passwordReset) {
     throw new ApiError(400, "Invalid or expired reset token");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      password: hashedPassword,
-      passwordResetToken: null,
-      passwordResetExpiry: null,
-    },
-  });
+  // Update password and mark token as used in a transaction
+ await prisma.$transaction([
+    prisma.user.update({
+      where: { id: passwordReset.userId },
+      data: { passwordHash: hashedPassword },
+    }),
+    prisma.passwordReset.update({
+      where: { id: passwordReset.id },
+      data: { used: true, usedAt: new Date() },
+    }),
+  ]);
 
-  res
-    .status(200)
-    .json(
-      new ApiResponse(200, null, "Password reset successful", "/auth/login"),
-    );
+  res.status(200).json(
+    new ApiResponse(200, null, "Password reset successful")
+  );
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
