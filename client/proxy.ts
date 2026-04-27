@@ -13,6 +13,8 @@ export default function proxy(request: NextRequest) {
     "/terms-and-conditions",
     "/refund-policy",
     "/privacy-policy",
+    "/about-us",
+    "/contact-us",
   ];
   const publicRegex = [/\/verify-email\/[0-9a-fA-Z]*/, /\/reset-password\/[0-9a-fA-Z]*/];
 
