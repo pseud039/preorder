@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, Mail, Phone, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ChevronLeft, Mail, Phone, Sparkles, User, UtensilsCrossed } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Us | Predine",
@@ -97,6 +97,17 @@ export default function AboutUsPage() {
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-4">Get in touch</h2>
           <div className="bg-white rounded-3xl shadow-sm p-5 space-y-3">
+            <div className="flex items-center gap-3 rounded-2xl bg-orange-50 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm">
+                <User className="h-4.5 w-4.5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                  Owner
+                </p>
+                <p className="text-sm font-medium text-gray-900 mt-0.5">Utkal Vats</p>
+              </div>
+            </div>
             <Link
               href="mailto:uktalvats4@gmail.com"
               className="flex items-center gap-3 rounded-2xl bg-orange-50 p-4 transition-colors hover:bg-orange-100"

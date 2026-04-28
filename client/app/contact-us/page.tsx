@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Phone,
   // Send,
+  User,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -27,6 +28,11 @@ export const metadata: Metadata = {
 };
 
 const contactItems = [
+  {
+    icon: User,
+    label: "Owner",
+    value: "Utkal Vats",
+  },
   {
     icon: Mail,
     label: "Email",
