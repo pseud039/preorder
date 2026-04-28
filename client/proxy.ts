@@ -11,7 +11,7 @@ export default function proxy(request: NextRequest) {
     "/get-started",
     "/account-deletion",
     "/terms-and-conditions",
-    "/refund-policy",
+    // "/refund-policy",
     "/privacy-policy",
     "/about-us",
     "/contact-us",

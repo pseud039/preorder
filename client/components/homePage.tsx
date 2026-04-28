@@ -451,6 +451,11 @@ export default function FoodOrderPage() {
                     {/* <Heart className="w-4 h-4 text-red-500 hover:cursor-pointer" /> */}
                   </button>
                 </h4>
+                {item.description && (
+                  <p className="px-4 text-gray-500 text-xs mb-2 line-clamp-2 leading-tight">
+                    {item.description}
+                  </p>
+                )}
                 <div className="pb-4 px-4 flex items-center justify-between">
                   <span className="font-bold text-gray-900">₹{item.price}</span>
                   <button
