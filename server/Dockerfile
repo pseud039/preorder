@@ -12,6 +12,9 @@ RUN apk add --no-cache su-exec
 RUN apk add --no-cache tzdata
 
 ENV TZ=Asia/Kolkata
+
+RUN ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime \
+    && echo "Asia/Kolkata" > /etc/timezone
 # Install deps
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=package-lock.json,target=package-lock.json \
