@@ -9,6 +9,9 @@ WORKDIR /usr/src/app
 # Needed to drop privileges later
 RUN apk add --no-cache su-exec
 
+RUN apk add --no-cache tzdata
+
+ENV TZ=Asia/Kolkata
 # Install deps
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=package-lock.json,target=package-lock.json \
