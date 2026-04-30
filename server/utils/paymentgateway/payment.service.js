@@ -6,11 +6,10 @@ export class PaymentService {
   static WEBSITE = process.env.PAYTM_WEBSITE || "WEBSTAGING";
   static INDUSTRY_TYPE = process.env.PAYTM_INDUSTRY_TYPE || "Retail";
   static CHANNEL_ID = process.env.PAYTM_CHANNEL_ID || "WEB";
-  static BASE_URL = "https://securestage.paytmpayments.com";
-
-  // static BASE_URL = process.env.NODE_ENV === "production"
-  //   ? "https://securegw.paytm.in"
-  //   : "https://securestage.paytmpayments.com";
+  static BASE_URL =
+    process.env.NODE_ENV === "production"
+      ? "https://secure.paytmpayments.com"
+      : "https://securestage.paytmpayments.com";
 
   static async createPaytmOrder({ orderId, amount, customerInfo }) {
     try {
@@ -38,7 +37,7 @@ export class PaymentService {
       // Generate checksum for the body
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        process.env.PAYTM_MERCHANT_KEY
+        this.MERCHANT_KEY,
       );
 
       paytmParams.head = {
@@ -46,20 +45,20 @@ export class PaymentService {
       };
 
       // Initiate transaction to get txnToken
-      const response = await fetch(
-        `${this.BASE_URL}/theia/api/v1/initiateTransaction?mid=${process.env.PAYTM_MERCHANT_ID}&orderId=${paytmOrderId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(paytmParams),
-        }
-      );
+      const initiateUrl = `${this.BASE_URL}/theia/api/v1/initiateTransaction?mid=${process.env.PAYTM_MERCHANT_ID}&orderId=${paytmOrderId}`;
+      const response = await fetch(initiateUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(paytmParams),
+      });
 
       const data = await response.json();
-      console.log("Paytm raw response:", JSON.stringify(data, null, 2));
-      console.log(data);
+
+      if (!data.body?.resultInfo) {
+        throw new Error("Unexpected response from Paytm");
+      }
 
       if (data.body.resultInfo.resultStatus === "S") {
         return {
@@ -71,7 +70,9 @@ export class PaymentService {
           callbackUrl: `${process.env.BASE_URL}/client/payment/callback`,
         };
       } else {
-        throw new Error(data.body.resultInfo.resultMsg || "Failed to create payment");
+        throw new Error(
+          data.body.resultInfo.resultMsg || "Failed to create payment",
+        );
       }
     } catch (error) {
       console.error("Error creating Paytm order:", error);
@@ -91,25 +92,31 @@ export class PaymentService {
       // Generate checksum
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        this.MERCHANT_KEY
+        this.MERCHANT_KEY,
       );
 
       paytmParams.head = {
         signature: checksum,
       };
 
-      const response = await fetch(
-        `${this.BASE_URL}/v3/order/status`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(paytmParams),
-        }
-      );
+      const statusUrl = `${this.BASE_URL}/v3/order/status`;
+      const response = await fetch(statusUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(paytmParams),
+      });
 
       const data = await response.json();
+
+      if (!data.body?.resultInfo) {
+        return {
+          success: false,
+          error: "Unexpected response from Paytm",
+          status: "failed",
+        };
+      }
 
       if (data.body.resultInfo.resultStatus === "TXN_SUCCESS") {
         return {
@@ -117,29 +124,29 @@ export class PaymentService {
           data: data.body,
           transactionId: data.body.txnId,
           amount: parseFloat(data.body.txnAmount),
-          status: "paid"
+          status: "paid",
         };
       } else if (data.body.resultInfo.resultStatus === "PENDING") {
         return {
           success: false,
           data: data.body,
           message: "Payment pending",
-          status: "pending"
+          status: "pending",
         };
       } else {
         return {
           success: false,
           data: data.body,
           message: data.body.resultInfo.resultMsg,
-          status: "failed"
+          status: "failed",
         };
       }
     } catch (error) {
       console.error("Error verifying Paytm payment:", error);
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error.message,
-        status: "failed"
+        status: "failed",
       };
     }
   }
@@ -148,13 +155,13 @@ export class PaymentService {
     try {
       const receivedChecksum = paytmParams.CHECKSUMHASH;
       delete paytmParams.CHECKSUMHASH;
-      
+
       const isValid = await PaytmChecksum.verifySignature(
         paytmParams,
         this.MERCHANT_KEY,
-        receivedChecksum
+        receivedChecksum,
       );
-      
+
       return isValid;
     } catch (error) {
       console.error("Error verifying checksum:", error);
@@ -177,28 +184,32 @@ export class PaymentService {
 
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        this.MERCHANT_KEY
+        this.MERCHANT_KEY,
       );
 
       paytmParams.head = {
         signature: checksum,
       };
 
-      const response = await fetch(
-        `${this.BASE_URL}/refund/apply`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(paytmParams),
-        }
-      );
+      const refundUrl = `${this.BASE_URL}/refund/apply`;
+      const response = await fetch(refundUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(paytmParams),
+      });
 
       const data = await response.json();
 
-      if (data.body.resultInfo.resultStatus === "TXN_SUCCESS" || 
-          data.body.resultInfo.resultStatus === "PENDING") {
+      if (!data.body?.resultInfo) {
+        return { success: false, error: "Unexpected response from Paytm" };
+      }
+
+      if (
+        data.body.resultInfo.resultStatus === "TXN_SUCCESS" ||
+        data.body.resultInfo.resultStatus === "PENDING"
+      ) {
         return {
           success: true,
           refundId: data.body.refundId,

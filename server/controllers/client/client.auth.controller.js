@@ -46,7 +46,7 @@ const signup = asyncHandler(async (req, res) => {
   const expirationDate = new Date();
   expirationDate.setMinutes(expirationDate.getMinutes() + 15);
 
-const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
+  const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         email,
@@ -64,9 +64,9 @@ const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
         emailVerified: true,
         phoneVerified: true,
       },
-    })
+    });
 
-    const expirationTime = new Date(Date.now() + 15 * 60 * 1000)
+    const expirationTime = new Date(Date.now() + 15 * 60 * 1000);
 
     const emailToken = await tx.emailVerification.create({
       data: {
@@ -74,22 +74,22 @@ const { user, confirmationLink } = await prisma.$transaction(async (tx) => {
         token: verificationToken,
         expiresAt: expirationTime,
       },
-    })
+    });
 
-    const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`
+    const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
 
-    return { user, confirmationLink }
-  })
+    return { user, confirmationLink };
+  });
 
   try {
     await sendEmail({
       to: email,
-      template: 'emailConformation',
+      template: "emailConformation",
       templateData: { link: confirmationLink },
       userId: user.id,
-    })
+    });
   } catch (emailError) {
-    console.error("Failed to send verification email:", emailError)
+    console.error("Failed to send verification email:", emailError);
   }
 
   res
@@ -184,7 +184,12 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
   const confirmationLink = `${process.env.FRONTEND_URL}/verify-email/${emailToken.token}`;
   const mailTemp = emailTemplates.emailConformation(email, confirmationLink);
   try {
-    await sendEmail({ to: email, template:"emailConformation", userId: user.id, templateData: { link: confirmationLink },});
+    await sendEmail({
+      to: email,
+      template: "emailConformation",
+      userId: user.id,
+      templateData: { link: confirmationLink },
+    });
   } catch (emailError) {
     console.error("Failed to send verification email:", emailError);
   }
@@ -236,13 +241,12 @@ const login = asyncHandler(async (req, res) => {
   });
 
   res.cookie("accessToken", accessToken, {
-    domain: ".predine.in",
+    domain: process.env.NODE_ENV === "production" ? ".predine.in" : undefined,
     httpOnly: true,
-    secure: true, // process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production",
     sameSite: "Lax",
-    // maxAge: 1 * 60 * 60 * 1000,
     maxAge: parseDuration(process.env.ACCESS_TOKEN_EXPIRY),
-    // path: "/",
+    path: "/"
   });
 
   const userData = {
@@ -393,9 +397,15 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    res.status(200).json(
-      new ApiResponse(200, null, "If the email exists, a password reset link has been sent")
-    );
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          null,
+          "If the email exists, a password reset link has been sent",
+        ),
+      );
     return;
   }
 
@@ -410,15 +420,20 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   await prisma.passwordReset.create({
     data: {
       userId: user.id,
-      token: resetToken,  
-      expiresAt: resetTokenExpiry, 
+      token: resetToken,
+      expiresAt: resetTokenExpiry,
     },
   });
 
   const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
   const mailTemp = emailTemplates.ForgotPassword(email, resetLink);
   try {
-    await sendEmail({ to: email, template:"ForgotPassword", userId: user.id, templateData: { link: resetLink },});
+    await sendEmail({
+      to: email,
+      template: "ForgotPassword",
+      userId: user.id,
+      templateData: { link: resetLink },
+    });
   } catch (emailError) {
     console.error("Failed to send password reset email:", emailError);
   }
@@ -508,7 +523,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Update password and mark token as used in a transaction
- await prisma.$transaction([
+  await prisma.$transaction([
     prisma.user.update({
       where: { id: passwordReset.userId },
       data: { passwordHash: hashedPassword },
@@ -519,9 +534,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
     }),
   ]);
 
-  res.status(200).json(
-    new ApiResponse(200, null, "Password reset successful")
-  );
+  res.status(200).json(new ApiResponse(200, null, "Password reset successful"));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {

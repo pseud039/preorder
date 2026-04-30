@@ -46,7 +46,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   if (!user.isActive) {
     throw new ApiError(
       403,
-      "Your account has been deactivated. Contact support."
+      "Your account has been deactivated. Contact support.",
     );
   }
 
@@ -62,7 +62,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
       role: user.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
   );
 
   const refreshToken = jwt.sign(
@@ -72,7 +72,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
       role: user.role,
     },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
   );
 
   await prisma.refreshToken.create({
@@ -84,23 +84,20 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   });
 
   res.cookie("accessToken", accessToken, {
-    domain: ".predine.in",
+    domain: process.env.NODE_ENV === "production" ? ".predine.in" : undefined,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    // maxAge: 15 * 60 * 1000, // 15 minutes
     maxAge: parseDuration(process.env.ACCESS_TOKEN_EXPIRY),
     path: "/",
   });
 
   res.cookie("refreshToken", refreshToken, {
-    domain: ".predine.in",
+    domain: process.env.NODE_ENV === "production" ? ".predine.in" : undefined,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-     maxAge: parseDuration(process.env.REFRESH_TOKEN_EXPIRY),
-
+    maxAge: parseDuration(process.env.REFRESH_TOKEN_EXPIRY),
     path: "/",
   });
 
@@ -196,11 +193,11 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       role: user.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
   );
 
   res.cookie("accessToken", newAccessToken, {
-    domain: ".predine.in",
+    domain: process.env.NODE_ENV === "production" ? ".predine.in" : undefined,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -214,14 +211,14 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         { accessToken: newAccessToken },
-        "Token refreshed successfully"
-      )
+        "Token refreshed successfully",
+      ),
     );
 });
 
 export const createAdmin = asyncHandler(async (req, res) => {
   const { email, password, name, phone } = req.body;
-  const restaurantId = Restraunt_ID
+  const restaurantId = Restraunt_ID;
 
   if (!email || !password || !name || !phone || !restaurantId) {
     throw new ApiError(400, "All fields are required");
@@ -286,7 +283,11 @@ export const createAdmin = asyncHandler(async (req, res) => {
 
   try {
     const mailTemp = emailTemplates.InviteAdmin(email, password);
-    await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
+    await sendEmail({
+      to: email,
+      subject: mailTemp.subject,
+      html: mailTemp.html,
+    });
   } catch (error) {
     console.error("Failed to send welcome email:", error);
   }
@@ -306,8 +307,8 @@ export const createAdmin = asyncHandler(async (req, res) => {
           name: restaurant.name,
         },
       },
-      "Admin created successfully"
-    )
+      "Admin created successfully",
+    ),
   );
 });
 
@@ -374,7 +375,11 @@ export const createChef = asyncHandler(async (req, res) => {
 
   try {
     const mailTemp = emailTemplates.InviteChef(email, password);
-    await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
+    await sendEmail({
+      to: email,
+      subject: mailTemp.subject,
+      html: mailTemp.html,
+    });
   } catch (error) {
     console.error("Failed to send chef invite email:", error);
   }
@@ -394,8 +399,8 @@ export const createChef = asyncHandler(async (req, res) => {
           shiftEnd: result.chef.shiftEnd,
         },
       },
-      "Chef created successfully"
-    )
+      "Chef created successfully",
+    ),
   );
 });
 
@@ -427,8 +432,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         new ApiResponse(
           200,
           null,
-          "If the email exists, a reset link has been sent"
-        )
+          "If the email exists, a reset link has been sent",
+        ),
       );
   }
 
@@ -454,7 +459,11 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   try {
     const mailTemp = emailTemplates.ForgotPassword(email, resetLink);
-    await sendEmail({ to: email, subject: mailTemp.subject, html: mailTemp.html });
+    await sendEmail({
+      to: email,
+      subject: mailTemp.subject,
+      html: mailTemp.html,
+    });
   } catch (error) {
     console.error("Failed to send reset email:", error);
   }
