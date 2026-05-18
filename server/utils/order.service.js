@@ -357,7 +357,7 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
   console.log("Fee config: ", PLATFORM_FEE_CONFIG);
 
   let platformFee =
-    PLATFORM_FEE_CONFIG.fixedfee + subtotal * PLATFORM_FEE_CONFIG.percentagefee;
+    PLATFORM_FEE_CONFIG.fixedfee + subtotal * (PLATFORM_FEE_CONFIG.precentagefee/100);
   platformFee = Math.max(
     PLATFORM_FEE_CONFIG.minFee,
     Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee),
@@ -386,33 +386,5 @@ export const calculateOrderTotals = async (orderItems, restaurantId) => {
   };
 };
 
-export const calculatePriceBreakdown = (subtotal, taxRate = 0.05) => {
-  let platformFee =
-    PLATFORM_FEE_CONFIG.fixedfee + subtotal * PLATFORM_FEE_CONFIG.precentagefee;
-  platformFee = Math.max(
-    PLATFORM_FEE_CONFIG.minFee,
-    Math.min(PLATFORM_FEE_CONFIG.maxFee, platformFee),
-  );
-  platformFee = Math.round(platformFee * 100) / 100;
 
-  const tax = Math.round(subtotal * taxRate * 100) / 100;
 
-  const totalAmount = Math.round((subtotal + tax + platformFee) * 100) / 100;
-
-  return {
-    subtotal: Math.round(subtotal * 100) / 100,
-    tax,
-    taxRate,
-    taxPercentage: Math.round(taxRate * 100),
-    platformFee,
-    totalAmount,
-    breakdown: {
-      itemsTotal: Math.round(subtotal * 100) / 100,
-      taxAmount: tax,
-      taxLabel: `GST (${Math.round(taxRate * 100)}%)`,
-      platformFeeAmount: platformFee,
-      platformFeeLabel: "Platform Fee",
-      grandTotal: totalAmount,
-    },
-  };
-};

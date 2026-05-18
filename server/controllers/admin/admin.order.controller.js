@@ -1156,7 +1156,10 @@ export const deleteOrderItem = asyncHandler(async (req, res) => {
   res.status(200).json(
     new ApiResponse(
       200,
-      updatedOrder,
+      {
+        order: updatedOrder,
+        priceBreakdown: totals ? totals.breakdown : undefined,
+      },
       `${orderItem.menuItem.name} removed from order successfully`
     )
   );
@@ -1302,7 +1305,10 @@ export const addOrderItem = asyncHandler(async (req, res) => {
   res.status(200).json(
     new ApiResponse(
       200,
-      updatedOrder,
+      {
+        order: updatedOrder,
+        priceBreakdown: totals ? totals.breakdown : undefined,
+      },
       `${menuItem.name} added to order successfully`
     )
   );
@@ -1427,7 +1433,10 @@ export const updateOrderItemQuantity = asyncHandler(async (req, res) => {
   res.status(200).json(
     new ApiResponse(
       200,
-      updatedOrder,
+      {
+        order: updatedOrder,
+        priceBreakdown: totals ? totals.breakdown : undefined,
+      },
       `${orderItem.menuItem.name} quantity updated successfully`
     )
   );

@@ -233,7 +233,7 @@ export default function TimeSlotModal({
                             onClick={() => handleSlotClick(slot)}
                             disabled={isDisabled}
                             className={`
-                              relative p-4 rounded-lg border-2 transition-all text-left
+                              relative p-2 md:p-4 rounded-lg border-2 transition-all text-left
                               ${
                                 isSelected
                                   ? "border-orange-500 bg-orange-50"
@@ -245,7 +245,7 @@ export default function TimeSlotModal({
                           >
                             {isSelected && (
                               <div className="absolute top-2 right-2">
-                                <CheckCircle className="w-5 h-5 text-orange-500 fill-current" />
+                                <CheckCircle className="w-5 h-5 text-orange-500" />
                               </div>
                             )}
 

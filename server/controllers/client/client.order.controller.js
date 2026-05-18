@@ -3,7 +3,7 @@ import { asyncHandler } from "../../utils/errorHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { NotificationService } from "../../utils/notification/notification.service.js";
-import { calculatePriceBreakdown, calculateOrderTotals } from "../../utils/order.service.js";
+import { calculateOrderTotals } from "../../utils/order.service.js";
 import crypto from "crypto";
 import Restraunt_ID from "../../utils/constant.js";
 
@@ -113,7 +113,7 @@ const getCart = asyncHandler(async (req, res) => {
   const taxRate = restaurantData?.taxRate || 0.05;
 
   // Calculate full price breakdown including tax and platform fee
-  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+  const priceBreakdown = await calculateOrderTotals(cart.items, cart.restaurantId);
 
   const maxWaitingTime = cart.items.reduce((max, item) => {
     const actualWaitingTime = restaurant
@@ -254,7 +254,7 @@ const addToCart = asyncHandler(async (req, res) => {
   });
   const taxRate = restaurantData?.taxRate || 0.05;
 
-  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+  const priceBreakdown = await calculateOrderTotals(updatedCart.items, updatedCart.restaurantId);
 
   res.status(200).json(
     new ApiResponse(
@@ -339,7 +339,7 @@ const updateCartItem = asyncHandler(async (req, res) => {
         })
       : null;
     const taxRate = restaurantData?.taxRate || 0.05;
-    const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+    const priceBreakdown = await calculateOrderTotals(updatedCart.items, updatedCart.restaurantId);
 
     return res.status(200).json(
       new ApiResponse(
@@ -381,7 +381,7 @@ const updateCartItem = asyncHandler(async (req, res) => {
     select: { taxRate: true },
   });
   const taxRate = restaurantData?.taxRate || 0.05;
-  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+  const priceBreakdown = await calculateOrderTotals(updatedCart.items, updatedCart.restaurantId);
 
   res.status(200).json(
     new ApiResponse(
@@ -450,7 +450,7 @@ const removeFromCart = asyncHandler(async (req, res) => {
       })
     : null;
   const taxRate = restaurantData?.taxRate || 0.05;
-  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+  const priceBreakdown = await calculateOrderTotals(updatedCart.items, updatedCart.restaurantId);
 
   res.status(200).json(
     new ApiResponse(
@@ -545,7 +545,7 @@ const createOrder = asyncHandler(async (req, res) => {
   );
 
   const taxRate = restaurant.taxRate || 0.05;
-  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+  const priceBreakdown = await calculateOrderTotals(cart.items, cart.restaurantId);
   const totalAmount = priceBreakdown.totalAmount;
 
   const maxWaitingTime = cart.items.reduce((max, item) => {
@@ -912,7 +912,7 @@ const getOrderById = asyncHandler(async (req, res) => {
     0
   );
   const taxRate = order.restaurant.taxRate || 0.05;
-  const priceBreakdown = calculatePriceBreakdown(subtotal, taxRate);
+  const priceBreakdown = await calculateOrderTotals(order.orderItems, order.restaurant.id);
 
   res
     .status(200)
